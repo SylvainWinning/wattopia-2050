@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import {
   BatteryCharging,
@@ -457,9 +457,15 @@ function SimulatorSection({
 export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: LiveMixSnapshot }) {
   const [snapshot, setSnapshot] = useState<LiveMixSnapshot | null>(initialSnapshot);
   const [loading, setLoading] = useState(false);
-  const [scenario, setScenario] = useState<ScenarioState>(() =>
-    typeof window === "undefined" ? defaultScenario : scenarioFromParams(new URLSearchParams(window.location.search)),
-  );
+  const [scenario, setScenario] = useState<ScenarioState>(defaultScenario);
+
+  useEffect(() => {
+    const restoreScenario = window.setTimeout(() => {
+      setScenario(scenarioFromParams(new URLSearchParams(window.location.search)));
+    }, 0);
+
+    return () => window.clearTimeout(restoreScenario);
+  }, []);
 
   const loadSnapshot = async () => {
     setLoading(true);
