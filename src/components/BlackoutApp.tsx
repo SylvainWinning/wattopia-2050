@@ -1217,8 +1217,31 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   const [shareFallbackText, setShareFallbackText] = useState("");
   const [inputLocked, setInputLocked] = useState(false);
   const inputLockRef = useRef(false);
+  const easterSequenceRef = useRef("");
+  const easterTimerRef = useRef<number | null>(null);
+  const logoTapRef = useRef({ count: 0, timer: 0 });
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    const toastNode = document.getElementById("copy-toast");
+    toastNode?.classList.add("visible");
+    window.setTimeout(() => toastNode?.classList.remove("visible"), 3400);
+  }, []);
 
   const missionState = useMemo(() => simulateMission(modeId, selectedActions, snapshot), [modeId, selectedActions, snapshot]);
+
+  const triggerEasterEgg = useCallback(() => {
+    const appNode = document.querySelector(".blackout-app");
+    const easterNode = document.getElementById("transition-easter-egg");
+    appNode?.classList.add("easter-transition");
+    easterNode?.classList.add("visible");
+    showToast("Mode transition activé");
+    if (easterTimerRef.current) window.clearTimeout(easterTimerRef.current);
+    easterTimerRef.current = window.setTimeout(() => {
+      appNode?.classList.remove("easter-transition");
+      easterNode?.classList.remove("visible");
+    }, 4200);
+  }, [showToast]);
 
   const loadSnapshot = useCallback(async () => {
     setLoading(true);
@@ -1262,6 +1285,28 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
 
     return () => window.clearTimeout(scrollTimer);
   }, [phase]);
+
+  useEffect(() => {
+    const logoTapState = logoTapRef.current;
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+      if (event.key.length !== 1) return;
+
+      easterSequenceRef.current = `${easterSequenceRef.current}${event.key.toLowerCase()}`.slice(-5);
+      if (easterSequenceRef.current === "engie") {
+        triggerEasterEgg();
+        easterSequenceRef.current = "";
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      if (easterTimerRef.current) window.clearTimeout(easterTimerRef.current);
+      if (logoTapState.timer) window.clearTimeout(logoTapState.timer);
+    };
+  }, [triggerEasterEgg]);
 
   const startMission = () => {
     inputLockRef.current = false;
@@ -1322,11 +1367,19 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const showToast = (message: string) => {
-    setToast(message);
-    const toastNode = document.getElementById("copy-toast");
-    toastNode?.classList.add("visible");
-    window.setTimeout(() => toastNode?.classList.remove("visible"), 3400);
+  const handleBrandClick = () => {
+    if (logoTapRef.current.timer) window.clearTimeout(logoTapRef.current.timer);
+    logoTapRef.current.count += 1;
+
+    if (logoTapRef.current.count >= 5) {
+      logoTapRef.current.count = 0;
+      triggerEasterEgg();
+      return;
+    }
+
+    logoTapRef.current.timer = window.setTimeout(() => {
+      logoTapRef.current.count = 0;
+    }, 1800);
   };
 
   const copyResult = async () => {
@@ -1386,7 +1439,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   return (
     <main className={clsx("blackout-app", `app-mode-${modeId}`, `app-phase-${phase}`)}>
       <header className="app-header">
-        <a href="#top" className="brand-lockup" aria-label="BLACKOUT">
+        <a href="#top" className="brand-lockup" aria-label="BLACKOUT" onPointerDown={handleBrandClick}>
           <span>
             <Zap size={18} fill="currentColor" />
           </span>
@@ -1442,6 +1495,15 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
           <textarea readOnly value={shareFallbackText} onFocus={(event) => event.currentTarget.select()} />
         </div>
       )}
+
+      <div id="transition-easter-egg" className="transition-easter-egg" aria-hidden="true">
+        <span>
+          <Sparkles size={16} />
+          Signal sponsor
+        </span>
+        <strong>Mix flexible engagé</strong>
+        <em>bleu + vert, réseau en équilibre</em>
+      </div>
 
       <div id="copy-toast" className="copy-toast" aria-live="polite">
         {toast}
