@@ -43,7 +43,11 @@ export type ActionId =
   | "priority"
   | "industry"
   | "sobriety"
-  | "hydro";
+  | "hydro"
+  | "wait"
+  | "overimport"
+  | "publicCut"
+  | "forcedRestart";
 
 export type MissionAction = {
   id: ActionId;
@@ -60,6 +64,8 @@ export type CrisisChoice = {
   title: string;
   description: string;
   tactical: string;
+  trap?: boolean;
+  lesson?: string;
   protect?: readonly string[];
   pressure?: readonly string[];
   effect: MetricEffect;
@@ -222,6 +228,68 @@ const scene = (
   event: MissionEvent,
   choices: readonly CrisisChoice[],
 ): CrisisScene => ({ hour, title, alert, cityId, operator, event, choices });
+
+const trapChoiceBank: readonly CrisisChoice[] = [
+  {
+    id: "wait",
+    title: "Attendre la confirmation complète",
+    description: "Ne rien déclencher tant que toutes les données ne sont pas consolidées.",
+    tactical: "Semble prudent, mais le réseau n'attend pas.",
+    lesson: "Piège: en crise réseau, attendre peut laisser la cascade démarrer.",
+    trap: true,
+    pressure: ["lille", "paris"],
+    effect: { stability: -13, co2Score: 2, budget: 4, citizenTrust: -3, blackoutRisk: 18, lightsOn: -12 },
+  },
+  {
+    id: "overimport",
+    title: "Acheter tout ce qui est disponible",
+    description: "Surpayer massivement le marché européen pour éviter de choisir localement.",
+    tactical: "La facilité immédiate peut vider le budget et importer du CO2.",
+    lesson: "Piège: l'interconnexion aide, mais elle n'est ni infinie ni toujours propre.",
+    trap: true,
+    protect: ["strasbourg", "paris"],
+    pressure: ["bordeaux"],
+    effect: { stability: 10, co2Score: -18, budget: -32, citizenTrust: -6, blackoutRisk: -6, lightsOn: 5 },
+  },
+  {
+    id: "publicCut",
+    title: "Couper vite les quartiers résidentiels",
+    description: "Délester largement les foyers pour garder les infrastructures sous tension.",
+    tactical: "Très brutal: la stabilité remonte, la confiance s'effondre.",
+    lesson: "Piège: une coupure large peut sauver des MW mais casser l'acceptabilité.",
+    trap: true,
+    protect: ["paris", "lyon"],
+    pressure: ["lille", "nantes", "bordeaux"],
+    effect: { stability: 16, co2Score: 4, budget: 3, citizenTrust: -28, blackoutRisk: -9, lightsOn: -18 },
+  },
+  {
+    id: "forcedRestart",
+    title: "Forcer un redémarrage impossible",
+    description: "Promettre une puissance pilotable qui ne peut pas arriver à temps.",
+    tactical: "Bonne idée sur le papier, trop lente pour ce tour.",
+    lesson: "Piège: toute production n'est pas mobilisable en quelques minutes.",
+    trap: true,
+    pressure: ["strasbourg", "lyon"],
+    effect: { stability: -9, co2Score: -6, budget: -11, citizenTrust: -10, blackoutRisk: 14, lightsOn: -8 },
+  },
+];
+
+function extraChoicesForScene(sceneIndex: number, modeId: MissionModeId): readonly CrisisChoice[] {
+  const offset = modeId === "france" ? 0 : modeId === "paris" ? 1 : 2;
+  const first = trapChoiceBank[(sceneIndex + offset) % trapChoiceBank.length];
+  const second = trapChoiceBank[(sceneIndex + offset + 2) % trapChoiceBank.length];
+  return [first, second];
+}
+
+function sceneWithExtraChoices(sceneValue: CrisisScene, sceneIndex: number, modeId: MissionModeId): CrisisScene {
+  const existingIds = new Set(sceneValue.choices.map((choice) => choice.id));
+  const extraChoices = extraChoicesForScene(sceneIndex, modeId).filter((choice) => !existingIds.has(choice.id));
+
+  return {
+    ...sceneValue,
+    choices: [...sceneValue.choices, ...extraChoices],
+  };
+}
 
 export const missionModes: Record<MissionModeId, MissionMode> = {
   france: {
@@ -1017,6 +1085,42 @@ export const missionActions: readonly MissionAction[] = [
     tradeoff: "Très bas-carbone, mais la réserve est limitée.",
     effect: { stability: 15, co2Score: 12, budget: -8, citizenTrust: 5, blackoutRisk: -13, lightsOn: 9 },
   },
+  {
+    id: "wait",
+    title: "Attendre",
+    shortTitle: "Attente",
+    icon: "megaphone",
+    description: "Reporter la décision pour obtenir plus d'informations.",
+    tradeoff: "Semble prudent, mais la fréquence peut décrocher.",
+    effect: { stability: -13, co2Score: 2, budget: 4, citizenTrust: -3, blackoutRisk: 18, lightsOn: -12 },
+  },
+  {
+    id: "overimport",
+    title: "Suracheter l'électricité",
+    shortTitle: "Surimport",
+    icon: "import",
+    description: "Acheter tout ce qui est disponible, peu importe le prix.",
+    tradeoff: "Stabilise un peu, mais détruit budget et CO2.",
+    effect: { stability: 10, co2Score: -18, budget: -32, citizenTrust: -6, blackoutRisk: -6, lightsOn: 5 },
+  },
+  {
+    id: "publicCut",
+    title: "Délester les foyers",
+    shortTitle: "Délestage",
+    icon: "shield",
+    description: "Couper des quartiers résidentiels pour sauver les services vitaux.",
+    tradeoff: "Technique efficace, socialement explosif.",
+    effect: { stability: 16, co2Score: 4, budget: 3, citizenTrust: -28, blackoutRisk: -9, lightsOn: -18 },
+  },
+  {
+    id: "forcedRestart",
+    title: "Forcer une production lente",
+    shortTitle: "Redémarrage",
+    icon: "flame",
+    description: "Compter sur une puissance qui ne peut pas arriver à temps.",
+    tradeoff: "Promesse séduisante, mauvais timing.",
+    effect: { stability: -9, co2Score: -6, budget: -11, citizenTrust: -10, blackoutRisk: 14, lightsOn: -8 },
+  },
 ];
 
 export function actionById(actionId: ActionId): MissionAction {
@@ -1026,8 +1130,8 @@ export function actionById(actionId: ActionId): MissionAction {
 }
 
 function scenesForMode(mode: MissionMode): readonly CrisisScene[] {
-  if (mode.scenes.length) return mode.scenes;
-  return missionModes.france.scenes;
+  const sourceScenes = mode.scenes.length ? mode.scenes : missionModes.france.scenes;
+  return sourceScenes.map((sceneValue, sceneIndex) => sceneWithExtraChoices(sceneValue, sceneIndex, mode.id));
 }
 
 function choiceForAction(sceneValue: CrisisScene, actionId: ActionId): CrisisChoice {

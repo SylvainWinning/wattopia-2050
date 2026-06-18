@@ -277,10 +277,14 @@ function FranceGridMap({
         </defs>
         <path
           className="france-shape"
-          d="M49.2 5.8 C54.8 7.1 58.4 8.8 63.6 11.7 C67.6 13.9 70.5 18.1 73.5 21.7 C77.7 26.8 82.4 28.9 84.7 34.6 C87.1 40.3 84.3 46.4 84.9 51.6 C85.4 56.4 90.4 62.3 86.5 67.9 C82.8 73.2 77.5 75.8 75.6 82.3 C74.4 86.4 69.7 90.3 64.2 90.7 C57.8 91.3 53.4 87.2 47.8 86.9 C42.5 86.6 38.1 90.7 32.7 88.6 C27.3 86.6 24.8 81.8 20.8 78.8 C15.9 75.1 12.1 71.7 13.7 65.8 C15.4 59.7 18.7 56.1 16.2 49.8 C13.9 44.1 8.7 40.5 10.8 34.5 C12.7 29 18.6 27.1 20.9 22.3 C23.6 16.7 27.7 12.8 33.6 13 C39.1 13.2 43.5 4.5 49.2 5.8 Z"
+          d="M48.7 4.9 L54.4 7.2 L59.9 7.7 L64.8 11.1 L68.4 16.6 L73.7 18.4 L75.6 23.2 L80.8 26.5 L82.3 31.8 L87.2 34.7 L85.9 40.5 L88.5 46.5 L85.7 51.6 L88.1 57.7 L84.4 63.1 L85.9 68.7 L80.5 72.2 L77.1 78.5 L72.2 80.1 L70.2 86.3 L63.5 90.5 L56.9 88.9 L50.4 91.9 L44.8 88.5 L38.1 89.4 L33.7 84.5 L27.6 83.2 L24.8 77.8 L18.7 75.8 L16.8 70.1 L11.8 66.7 L14.8 59.9 L12.9 54.2 L16.9 48.8 L12.1 43.1 L9.2 36.1 L13.8 30.6 L18.4 27.2 L19.9 20.8 L26.1 18.2 L30.9 12.7 L37.8 14.4 L43.1 9.4 Z"
         />
-        <path className="corsica-mark" d="M78.7 78.2 C82.6 80.3 83.7 85.7 81.4 90.8 C80.2 93.4 77.6 96.4 75.9 94.1 C74.3 91.9 75.1 87.7 74.5 84.6 C73.9 81.4 75.4 76.4 78.7 78.2 Z" />
-        <path className="border-trace" d="M20.9 22.3 C31 30 35 38 24 47 M84.9 51.6 C75 53 69 58 64.2 90.7 M13.7 65.8 C24 62 32 65 43 79" />
+        <path className="corsica-mark" d="M79.3 77.1 L82.1 80.8 L82.6 86.1 L80.4 92.5 L76.7 96.1 L74.5 92.3 L75.2 86.9 L73.9 82.4 L76.2 78.1 Z" />
+        <path
+          className="region-boundaries"
+          d="M22 28 C31 33 37 31 45 36 M45 36 C55 32 63 33 74 26 M45 36 C43 47 44 57 38 68 M45 36 C55 44 61 52 62 64 M62 64 C68 62 77 64 84 58 M38 68 C48 70 54 75 58 89 M25 77 C31 70 36 64 38 55 M18 49 C28 51 36 52 45 48 M68 17 C64 25 62 33 63 43"
+        />
+        <path className="border-trace" d="M19.9 20.8 C30.8 27.2 33.8 38.1 23.2 48.7 M85.7 51.6 C75.8 53.1 70.8 61.2 70.2 86.3 M11.8 66.7 C24.2 62.7 33.8 66.3 44.8 88.5" />
         {activeCityData && !compact && (
           <g className="target-reticle">
             <motion.circle
@@ -461,8 +465,8 @@ function MissionSelector({
       <div className="play-rules">
         <div>
           <span>Comment gagner</span>
-          <strong>Prends 5 décisions. Une seule par tour.</strong>
-          <p>Ton job est simple : garde les villes allumées, baisse le risque blackout, et évite de sacrifier totalement le CO2, le budget ou la confiance.</p>
+          <strong>5 tours. 5 choix à chaque tour. Certains sont des pièges.</strong>
+          <p>Ton job est simple : garde les villes allumées, baisse le risque blackout, et évite les fausses bonnes idées qui sacrifient CO2, budget ou confiance.</p>
         </div>
         <ol aria-label="Règles rapides">
           <li>
@@ -589,13 +593,13 @@ function ImpactBurst({ state }: { state: MissionState }) {
   return (
     <motion.div
       key={latest.decisionNumber}
-      className="impact-burst"
+      className={clsx("impact-burst", latest.choice.trap && "impact-trap")}
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.18 }}
     >
       <div>
-        <span>Ordre #{latest.decisionNumber} exécuté</span>
+        <span>{latest.choice.trap ? "Piège déclenché" : `Ordre #${latest.decisionNumber} exécuté`}</span>
         <strong>{latest.choice.title}</strong>
       </div>
       <div className="impact-deltas">
@@ -610,6 +614,12 @@ function ImpactBurst({ state }: { state: MissionState }) {
         <p>
           <ShieldCheck size={15} />
           Secteurs sécurisés: {protectedNames}
+        </p>
+      )}
+      {latest.choice.lesson && (
+        <p className="trap-feedback">
+          <AlertTriangle size={15} />
+          {latest.choice.lesson}
         </p>
       )}
     </motion.div>
@@ -664,13 +674,14 @@ function CrisisChoiceCard({
   return (
     <motion.button
       type="button"
-      className={clsx("action-card crisis-choice-card", selected && "selected")}
+      className={clsx("action-card crisis-choice-card", choice.trap && "risky-choice", selected && "selected")}
       onClick={onChoose}
       disabled={disabled}
       whileTap={{ scale: disabled ? 1 : 0.985 }}
     >
       <span className="choice-topline">
         <span className="choice-number">Choix {index + 1}</span>
+        {choice.trap && <span className="risk-pill">Risqué</span>}
         <span className="action-icon">
           <Icon size={20} />
         </span>
@@ -679,6 +690,7 @@ function CrisisChoiceCard({
         <strong>{choice.title}</strong>
         <span>{choice.description}</span>
         <em>À savoir : {choice.tactical}</em>
+        {choice.lesson && <em className="trap-lesson">{choice.lesson}</em>}
       </span>
       <span className="effect-list" aria-label="Effets">
         {effectEntries(choice.effect).slice(0, 4).map(({ key, label, value }) => (
@@ -845,7 +857,7 @@ function MissionExperience({
       <div className="section-heading">
         <span>Mission active · tour {currentTurn}/{MAX_DECISIONS}</span>
         <h2>{state.mode.title}</h2>
-        <p>Objectif clair : choisis 5 ordres pour empêcher la carte de France de s&apos;éteindre. Chaque carte est un compromis : elle aide quelque chose et coûte autre chose.</p>
+        <p>Objectif clair : choisis 5 ordres pour empêcher la carte de France de s&apos;éteindre. À chaque tour, 5 options apparaissent : certaines sauvent le réseau, d&apos;autres sont des pièges.</p>
       </div>
       <MissionHud state={state} />
       <div className="mission-layout">
@@ -862,7 +874,7 @@ function MissionExperience({
             </div>
             <p>
               <strong>{state.mode.objective}</strong>
-              <span>Lis l&apos;alerte, choisis une carte, puis regarde les villes se rallumer ou se fragiliser.</span>
+              <span>Lis l&apos;alerte, choisis une carte, puis regarde immédiatement les villes, jauges et pièges réagir.</span>
             </p>
           </div>
           <BonusObjectives state={state} />
@@ -882,11 +894,15 @@ function MissionExperience({
 
 function FinalVerdict({
   state,
+  nextMode,
   onCopy,
+  onNext,
   onReplay,
 }: {
   state: MissionState;
+  nextMode: MissionModeId;
   onCopy: () => void;
+  onNext: () => void;
   onReplay: () => void;
 }) {
   const fragileCities = gridCities.filter((city) => state.cityStates[city.id] === "fragile").map((city) => city.name);
@@ -896,6 +912,12 @@ function FinalVerdict({
     <section id="resultat" className={clsx("result-section", `result-${state.result.kind}`)}>
       <div className="result-aura" aria-hidden="true" />
       <div className="result-visual">
+        <div className="round-end-animation" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <strong>{state.result.kind === "stable" ? "VICTOIRE" : state.result.kind === "partial" ? "SAUVETAGE PARTIEL" : "BLACKOUT"}</strong>
+        </div>
         <FranceGridMap state={state} compact />
       </div>
       <div className="result-copy">
@@ -960,8 +982,12 @@ function FinalVerdict({
             <Copy size={17} />
             Copier mon résultat
           </button>
+          <button type="button" className="primary-action next-round-action" onClick={onNext}>
+            <Zap size={17} />
+            Manche suivante: {missionModes[nextMode].shortTitle}
+          </button>
           <button type="button" className="secondary-action button-reset" onClick={onReplay}>
-            Rejouer
+            Recommencer cette manche
           </button>
         </div>
       </div>
@@ -1251,6 +1277,18 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     }
   };
 
+  const nextMode = modeIds[(modeIds.indexOf(modeId) + 1) % modeIds.length];
+
+  const nextRound = () => {
+    inputLockRef.current = false;
+    setInputLocked(false);
+    setModeId(nextMode);
+    setSelectedActions([]);
+    setPhase("mission");
+    window.history.replaceState(null, "", `${window.location.pathname}${new URLSearchParams(window.location.search).get("demo") === "1" ? "?demo=1" : ""}`);
+    document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <main className={clsx("blackout-app", `app-mode-${modeId}`, `app-phase-${phase}`)}>
       <header className="app-header">
@@ -1290,7 +1328,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
         onFinish={() => setPhase("result")}
       />
 
-      {phase === "result" && <FinalVerdict state={missionState} onCopy={copyResult} onReplay={replay} />}
+      {phase === "result" && <FinalVerdict state={missionState} nextMode={nextMode} onCopy={copyResult} onNext={nextRound} onReplay={replay} />}
 
       <LiveDataPanel snapshot={snapshot} loading={loading} onRefresh={loadSnapshot} />
       <EducationSection />
