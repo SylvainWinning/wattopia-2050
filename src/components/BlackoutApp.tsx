@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -648,9 +648,11 @@ function CrisisChoiceCard({
 
 function CrisisScenePanel({
   state,
+  inputLocked,
   onChoose,
 }: {
   state: MissionState;
+  inputLocked: boolean;
   onChoose: (actionId: ActionId) => void;
 }) {
   const scene = state.activeScene;
@@ -695,7 +697,7 @@ function CrisisScenePanel({
               key={`${scene.hour}-${choice.id}-${choice.title}`}
               choice={choice}
               selected={selected}
-              disabled={false}
+              disabled={inputLocked}
               onChoose={() => onChoose(choice.id)}
             />
           );
@@ -759,11 +761,13 @@ function MissionExperience({
   phase,
   onChoose,
   onFinish,
+  inputLocked,
 }: {
   state: MissionState;
   phase: Phase;
   onChoose: (actionId: ActionId) => void;
   onFinish: () => void;
+  inputLocked: boolean;
 }) {
   const isComplete = state.selectedActions.length >= MAX_DECISIONS;
 
@@ -791,7 +795,7 @@ function MissionExperience({
           <BonusObjectives state={state} />
           <ImpactBurst state={state} />
           <MissionMeters metrics={state.metrics} />
-          <CrisisScenePanel state={state} onChoose={onChoose} />
+          <CrisisScenePanel state={state} inputLocked={inputLocked} onChoose={onChoose} />
           {isComplete && phase !== "result" && (
             <button type="button" className="primary-action wide" onClick={onFinish}>
               Révéler le verdict
@@ -1018,6 +1022,8 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   const [phase, setPhase] = useState<Phase>("intro");
   const [toast, setToast] = useState("Résultat copié");
   const [shareFallbackText, setShareFallbackText] = useState("");
+  const [inputLocked, setInputLocked] = useState(false);
+  const inputLockRef = useRef(false);
 
   const missionState = useMemo(() => simulateMission(modeId, selectedActions), [modeId, selectedActions]);
 
@@ -1065,11 +1071,15 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   }, [phase]);
 
   const startMission = () => {
+    inputLockRef.current = false;
+    setInputLocked(false);
     setPhase("mission");
     document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const startJuryDemo = () => {
+    inputLockRef.current = false;
+    setInputLocked(false);
     setModeId("france");
     setSelectedActions([]);
     setPhase("mission");
@@ -1078,24 +1088,42 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   };
 
   const selectMode = (nextModeId: MissionModeId) => {
+    inputLockRef.current = false;
+    setInputLocked(false);
     setModeId(nextModeId);
     setSelectedActions([]);
     setPhase("mission");
   };
 
   const chooseAction = (actionId: ActionId) => {
-    if (selectedActions.length >= MAX_DECISIONS) return;
-    const nextActions = [...selectedActions, actionId];
-    setSelectedActions(nextActions);
+    if (inputLockRef.current || selectedActions.length >= MAX_DECISIONS) return;
+    inputLockRef.current = true;
+    setInputLocked(true);
     setPhase("mission");
-    if (nextActions.length >= MAX_DECISIONS) {
+
+    setSelectedActions((currentActions) => {
+      if (currentActions.length >= MAX_DECISIONS) {
+        inputLockRef.current = false;
+        setInputLocked(false);
+        return currentActions;
+      }
+
+      const nextActions = [...currentActions, actionId];
       window.setTimeout(() => {
-        setPhase("result");
+        if (nextActions.length >= MAX_DECISIONS) {
+          setPhase("result");
+        }
+        inputLockRef.current = false;
+        setInputLocked(false);
       }, 280);
-    }
+
+      return nextActions;
+    });
   };
 
   const replay = () => {
+    inputLockRef.current = false;
+    setInputLocked(false);
     setSelectedActions([]);
     setPhase("mission");
     document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1184,6 +1212,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
       <MissionExperience
         state={missionState}
         phase={phase}
+        inputLocked={inputLocked}
         onChoose={chooseAction}
         onFinish={() => setPhase("result")}
       />

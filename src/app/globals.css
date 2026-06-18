@@ -159,7 +159,7 @@ a {
 .icon-button {
   justify-content: center;
   gap: 9px;
-  min-height: 42px;
+  min-height: 44px;
   border: 0;
   border-radius: 10px;
   font-weight: 760;
@@ -236,7 +236,7 @@ a {
 }
 
 .icon-button {
-  width: 42px;
+  width: 44px;
   padding: 0;
   color: var(--ink);
   background: oklch(1 0 0 / 0.08);
@@ -2237,7 +2237,7 @@ a {
   }
 
   .header-cta {
-    min-height: 38px;
+    min-height: 44px;
     padding: 0 12px;
     font-size: 0.84rem;
   }
