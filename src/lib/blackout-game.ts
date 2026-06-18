@@ -196,15 +196,49 @@ const applyEffect = (metrics: MissionMetrics, effect: MetricEffect): MissionMetr
   };
 };
 
+const trapActionIds = new Set<ActionId>(["wait", "overimport", "publicCut", "forcedRestart"]);
+
+export function isTrapAction(actionId: ActionId): boolean {
+  return trapActionIds.has(actionId);
+}
+
+function ratio(value: number | null | undefined, total: number): number {
+  return typeof value === "number" && Number.isFinite(value) && total > 0 ? value / total : 0;
+}
+
+function metricsFromSnapshot(mode: MissionMode, snapshot?: LiveMixSnapshot | null): MissionMetrics {
+  if (!snapshot) return mode.start;
+
+  const consumption = snapshot.consumption ?? snapshot.forecastToday ?? 0;
+  if (!consumption) return mode.start;
+
+  const forecast = snapshot.forecastToday ?? consumption;
+  const demandStress = clamp((consumption - forecast) / 260, -8, 14);
+  const lowCarbonShare = ratio(snapshot.nuclear, consumption) + ratio(snapshot.wind, consumption) + ratio(snapshot.solar, consumption) + ratio(snapshot.hydro, consumption) + ratio(snapshot.bioenergy, consumption);
+  const fossilShare = ratio(snapshot.gas, consumption) + ratio(snapshot.oil, consumption) + ratio(snapshot.coal, consumption);
+  const co2Anchor = snapshot.co2Rate === null ? mode.start.co2Score : clamp(100 - snapshot.co2Rate * 1.25, 18, 96);
+  const exchangeStress = snapshot.physicalExchanges === null ? 0 : clamp(Math.abs(snapshot.physicalExchanges) / 2400, 0, 9);
+  const renewableFlex = ratio(snapshot.wind, consumption) + ratio(snapshot.solar, consumption) + ratio(snapshot.hydro, consumption);
+
+  return {
+    stability: round(mode.start.stability - demandStress + renewableFlex * 10 - fossilShare * 6 - exchangeStress * 0.35),
+    co2Score: round(mode.start.co2Score * 0.52 + co2Anchor * 0.48 - fossilShare * 18),
+    budget: round(mode.start.budget - exchangeStress * 0.55 + lowCarbonShare * 3),
+    citizenTrust: mode.start.citizenTrust,
+    blackoutRisk: round(mode.start.blackoutRisk + demandStress + exchangeStress * 0.7 - renewableFlex * 7),
+    lightsOn: round(mode.start.lightsOn - demandStress * 0.7 + lowCarbonShare * 5),
+  };
+}
+
 export const gridCities: readonly GridCity[] = [
-  { id: "lille", name: "Lille", x: 50, y: 12, threshold: 54, load: 68, reserve: 38 },
-  { id: "paris", name: "Paris", x: 48, y: 30, threshold: 40, load: 92, reserve: 52, critical: true },
-  { id: "strasbourg", name: "Strasbourg", x: 78, y: 31, threshold: 64, load: 58, reserve: 30 },
-  { id: "nantes", name: "Nantes", x: 25, y: 43, threshold: 60, load: 54, reserve: 44 },
-  { id: "bordeaux", name: "Bordeaux", x: 32, y: 63, threshold: 58, load: 56, reserve: 42 },
-  { id: "lyon", name: "Lyon", x: 63, y: 55, threshold: 48, load: 78, reserve: 50, critical: true },
-  { id: "toulouse", name: "Toulouse", x: 43, y: 77, threshold: 62, load: 60, reserve: 36 },
-  { id: "marseille", name: "Marseille", x: 66, y: 82, threshold: 56, load: 66, reserve: 34 },
+  { id: "lille", name: "Lille", x: 54.4, y: 7.4, threshold: 54, load: 68, reserve: 38 },
+  { id: "paris", name: "Paris", x: 49.8, y: 24.6, threshold: 40, load: 92, reserve: 52, critical: true },
+  { id: "strasbourg", name: "Strasbourg", x: 85.2, y: 27.3, threshold: 64, load: 58, reserve: 30 },
+  { id: "nantes", name: "Nantes", x: 24.2, y: 40.4, threshold: 60, load: 54, reserve: 44 },
+  { id: "bordeaux", name: "Bordeaux", x: 30.6, y: 63.4, threshold: 58, load: 56, reserve: 42 },
+  { id: "lyon", name: "Lyon", x: 66, y: 54.5, threshold: 48, load: 78, reserve: 50, critical: true },
+  { id: "toulouse", name: "Toulouse", x: 43.8, y: 75.4, threshold: 62, load: 60, reserve: 36 },
+  { id: "marseille", name: "Marseille", x: 69.5, y: 78.3, threshold: 56, load: 66, reserve: 34 },
 ];
 
 export const gridEdges: readonly GridEdge[] = [
@@ -238,8 +272,8 @@ const trapChoiceBank: readonly CrisisChoice[] = [
     tactical: "Semble prudent, mais le réseau n'attend pas.",
     lesson: "Piège: en crise réseau, attendre peut laisser la cascade démarrer.",
     trap: true,
-    pressure: ["lille", "paris"],
-    effect: { stability: -13, co2Score: 2, budget: 4, citizenTrust: -3, blackoutRisk: 18, lightsOn: -12 },
+    pressure: ["lille", "paris", "strasbourg"],
+    effect: { stability: -22, co2Score: 1, budget: 3, citizenTrust: -9, blackoutRisk: 29, lightsOn: -22 },
   },
   {
     id: "overimport",
@@ -249,8 +283,8 @@ const trapChoiceBank: readonly CrisisChoice[] = [
     lesson: "Piège: l'interconnexion aide, mais elle n'est ni infinie ni toujours propre.",
     trap: true,
     protect: ["strasbourg", "paris"],
-    pressure: ["bordeaux"],
-    effect: { stability: 10, co2Score: -18, budget: -32, citizenTrust: -6, blackoutRisk: -6, lightsOn: 5 },
+    pressure: ["bordeaux", "nantes"],
+    effect: { stability: 7, co2Score: -28, budget: -42, citizenTrust: -12, blackoutRisk: -4, lightsOn: 2 },
   },
   {
     id: "publicCut",
@@ -260,8 +294,8 @@ const trapChoiceBank: readonly CrisisChoice[] = [
     lesson: "Piège: une coupure large peut sauver des MW mais casser l'acceptabilité.",
     trap: true,
     protect: ["paris", "lyon"],
-    pressure: ["lille", "nantes", "bordeaux"],
-    effect: { stability: 16, co2Score: 4, budget: 3, citizenTrust: -28, blackoutRisk: -9, lightsOn: -18 },
+    pressure: ["lille", "nantes", "bordeaux", "toulouse"],
+    effect: { stability: 11, co2Score: 2, budget: 2, citizenTrust: -42, blackoutRisk: -5, lightsOn: -30 },
   },
   {
     id: "forcedRestart",
@@ -270,8 +304,8 @@ const trapChoiceBank: readonly CrisisChoice[] = [
     tactical: "Bonne idée sur le papier, trop lente pour ce tour.",
     lesson: "Piège: toute production n'est pas mobilisable en quelques minutes.",
     trap: true,
-    pressure: ["strasbourg", "lyon"],
-    effect: { stability: -9, co2Score: -6, budget: -11, citizenTrust: -10, blackoutRisk: 14, lightsOn: -8 },
+    pressure: ["strasbourg", "lyon", "marseille"],
+    effect: { stability: -18, co2Score: -12, budget: -20, citizenTrust: -16, blackoutRisk: 24, lightsOn: -18 },
   },
 ];
 
@@ -1186,7 +1220,7 @@ export const missionActions: readonly MissionAction[] = [
     icon: "megaphone",
     description: "Reporter la décision pour obtenir plus d'informations.",
     tradeoff: "Semble prudent, mais la fréquence peut décrocher.",
-    effect: { stability: -13, co2Score: 2, budget: 4, citizenTrust: -3, blackoutRisk: 18, lightsOn: -12 },
+    effect: { stability: -22, co2Score: 1, budget: 3, citizenTrust: -9, blackoutRisk: 29, lightsOn: -22 },
   },
   {
     id: "overimport",
@@ -1195,7 +1229,7 @@ export const missionActions: readonly MissionAction[] = [
     icon: "import",
     description: "Acheter tout ce qui est disponible, peu importe le prix.",
     tradeoff: "Stabilise un peu, mais détruit budget et CO2.",
-    effect: { stability: 10, co2Score: -18, budget: -32, citizenTrust: -6, blackoutRisk: -6, lightsOn: 5 },
+    effect: { stability: 7, co2Score: -28, budget: -42, citizenTrust: -12, blackoutRisk: -4, lightsOn: 2 },
   },
   {
     id: "publicCut",
@@ -1204,7 +1238,7 @@ export const missionActions: readonly MissionAction[] = [
     icon: "shield",
     description: "Couper des quartiers résidentiels pour sauver les services vitaux.",
     tradeoff: "Technique efficace, socialement explosif.",
-    effect: { stability: 16, co2Score: 4, budget: 3, citizenTrust: -28, blackoutRisk: -9, lightsOn: -18 },
+    effect: { stability: 11, co2Score: 2, budget: 2, citizenTrust: -42, blackoutRisk: -5, lightsOn: -30 },
   },
   {
     id: "forcedRestart",
@@ -1213,7 +1247,7 @@ export const missionActions: readonly MissionAction[] = [
     icon: "flame",
     description: "Compter sur une puissance qui ne peut pas arriver à temps.",
     tradeoff: "Promesse séduisante, mauvais timing.",
-    effect: { stability: -9, co2Score: -6, budget: -11, citizenTrust: -10, blackoutRisk: 14, lightsOn: -8 },
+    effect: { stability: -18, co2Score: -12, budget: -20, citizenTrust: -16, blackoutRisk: 24, lightsOn: -18 },
   },
 ];
 
@@ -1448,13 +1482,15 @@ function operatorMessage(sceneValue: CrisisScene, choice: CrisisChoice, metrics:
 }
 
 function resultFromMetrics(metrics: MissionMetrics, selectedActions: readonly MissionAction[]): MissionResult {
-  const score = round(
+  const trapCount = selectedActions.filter((action) => isTrapAction(action.id)).length;
+  const rawScore =
     metrics.stability * 0.3 +
-      metrics.co2Score * 0.22 +
-      metrics.budget * 0.14 +
-      metrics.citizenTrust * 0.18 +
-      (100 - metrics.blackoutRisk) * 0.16,
-  );
+    metrics.co2Score * 0.22 +
+    metrics.budget * 0.14 +
+    metrics.citizenTrust * 0.18 +
+    (100 - metrics.blackoutRisk) * 0.16 -
+    trapCount * 11;
+  const score = round(rawScore);
   const gasUsed = selectedActions.some((action) => action.id === "gas");
   const sobrietyUsed = selectedActions.some((action) => action.id === "sobriety" || action.id === "domestic");
   const storageUsed = selectedActions.some((action) => action.id === "batteries" || action.id === "hydro");
@@ -1472,13 +1508,16 @@ function resultFromMetrics(metrics: MissionMetrics, selectedActions: readonly Mi
       : metrics.co2Score >= metrics.citizenTrust
         ? "Tu as gardé une stratégie relativement bas-carbone."
         : "Tu as préservé l'acceptabilité citoyenne dans une crise tendue.";
-  const biggestTradeoff = gasUsed
-    ? "Le gaz a protégé le réseau, mais il a fait chuter le score CO2."
-    : expensiveActions >= 2
-      ? "La France reste plus stable, mais le budget a beaucoup encaissé."
-      : metrics.citizenTrust < 48
-        ? "Les décisions techniques ont tendu la confiance citoyenne."
-        : "Le compromis principal reste la faible marge réseau au pic.";
+  const biggestTradeoff =
+    trapCount > 0
+      ? `${trapCount} piège${trapCount > 1 ? "s" : ""} déclenché${trapCount > 1 ? "s" : ""}: le score final encaisse un gros malus.`
+      : gasUsed
+        ? "Le gaz a protégé le réseau, mais il a fait chuter le score CO2."
+        : expensiveActions >= 2
+          ? "La France reste plus stable, mais le budget a beaucoup encaissé."
+          : metrics.citizenTrust < 48
+            ? "Les décisions techniques ont tendu la confiance citoyenne."
+            : "Le compromis principal reste la faible marge réseau au pic.";
 
   const tips = [
     gasUsed
@@ -1530,10 +1569,11 @@ function resultFromMetrics(metrics: MissionMetrics, selectedActions: readonly Mi
 export function simulateMission(
   modeId: MissionModeId,
   actionIds: readonly ActionId[],
+  snapshot?: LiveMixSnapshot | null,
 ): MissionState {
   const mode = missionModes[modeId] ?? missionModes.france;
   const scenes = scenesForMode(mode);
-  let metrics = mode.start;
+  let metrics = metricsFromSnapshot(mode, snapshot);
   const steps: MissionStep[] = [];
   const selectedActions = actionIds.slice(0, MAX_DECISIONS).map(actionById);
   const selectedChoices: CrisisChoice[] = [];

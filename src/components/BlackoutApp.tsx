@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { fetchLiveMixSnapshot } from "@/lib/fetch-live-mix";
+import { franceCorsicaPoints, franceMainlandPoints, franceRegionLines, pointsToSvgPath } from "@/lib/france-map-geometry";
 import type { LiveMixSnapshot } from "@/lib/live-mix";
 import {
   MAX_DECISIONS,
@@ -85,6 +86,21 @@ const modeIds: readonly MissionModeId[] = ["france", "paris", "future2050"];
 
 const formatNumber = (value: number | null): string =>
   value === null ? "n.d." : new Intl.NumberFormat("fr-FR").format(Math.round(value));
+
+const formatSnapshotTime = (snapshot: LiveMixSnapshot | null): string => {
+  if (!snapshot?.timestamp) return "";
+
+  try {
+    return new Intl.DateTimeFormat("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(snapshot.timestamp));
+  } catch {
+    return "";
+  }
+};
 
 const resultParam: Record<MissionState["result"]["kind"], string> = {
   stable: "stable",
@@ -244,14 +260,14 @@ function FranceGridMap({
         </defs>
         <path
           className="france-shape"
-          d="M45.6 5.8 L52.2 6.8 L58.9 10.6 L62.7 17.1 L68.1 20.5 L74.7 21.8 L78.8 27.5 L82.2 35.6 L87.3 41.4 L83.4 47.9 L86.6 55.7 L81.2 62.2 L78.8 70.1 L72.4 73.9 L70.6 81.5 L63.7 83.8 L58.8 88.8 L50.7 85.8 L43.7 89.4 L35.2 87.2 L29.7 82.9 L21.1 81.4 L17.6 74.2 L10.9 70.1 L13.4 61.7 L10.3 55.1 L15.6 48.2 L9.8 40.4 L7.8 32.8 L14.8 27.3 L19.6 21.4 L21.8 15.1 L29.3 14.3 L35.8 10.8 L40.9 12.7 Z"
+          d={pointsToSvgPath(franceMainlandPoints)}
         />
-        <path className="corsica-mark" d="M78.8 75.7 L82.1 79.8 L82.7 86.7 L79.8 95.2 L75.8 97.4 L73.4 91.6 L74.4 84.9 L73.5 79.2 L76.2 76.4 Z" />
+        <path className="corsica-mark" d={pointsToSvgPath(franceCorsicaPoints)} />
         <path
           className="region-boundaries"
-          d="M22 28 C31 33 37 31 45 36 M45 36 C55 32 63 33 74 26 M45 36 C43 47 44 57 38 68 M45 36 C55 44 61 52 62 64 M62 64 C68 62 77 64 84 58 M38 68 C48 70 54 75 58 89 M25 77 C31 70 36 64 38 55 M18 49 C28 51 36 52 45 48 M68 17 C64 25 62 33 63 43"
+          d={franceRegionLines.map((line) => line.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join(" ")).join(" ")}
         />
-        <path className="border-trace" d="M21.8 15.1 C30.8 25.2 31.8 36.1 22.2 45.7 M83.4 47.9 C76.8 54.1 72.4 63.2 70.6 81.5 M10.9 70.1 C23.2 64.7 33.8 69.3 43.7 89.4" />
+        <path className="border-trace" d="M3.4 32.5 C19 36 25 43 27.1 49.3 M88.1 23.6 C78 39 74 50 79.3 67.9 M22.6 77.6 C37 79 49 83 55.2 86.7" />
         {activeCityData && !compact && (
           <g className="target-reticle">
             <motion.circle
@@ -572,12 +588,15 @@ function ImpactBurst({ state }: { state: MissionState }) {
         <strong>{latest.choice.title}</strong>
       </div>
       <div className="impact-deltas">
-        {effectEntries(latest.choice.effect).slice(0, 3).map(({ key, label, value }) => (
-          <span key={key} className={value >= 0 ? "positive" : "negative"} title={label}>
-            {value > 0 ? "+" : ""}
-            {value} {label.replace(" réseau", "")}
-          </span>
-        ))}
+        {effectEntries(latest.choice.effect)
+          .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
+          .slice(0, 3)
+          .map(({ key, label, value }) => (
+            <span key={key} className={effectIsGood(key, value) ? "positive" : "negative"} title={label}>
+              {value > 0 ? "+" : ""}
+              {value} {label.replace(" réseau", "")}
+            </span>
+          ))}
       </div>
       {protectedNames && (
         <p>
@@ -639,6 +658,9 @@ function CrisisChoiceCard({
 }) {
   const action = actionForChoice(choice);
   const Icon = actionIcons[action.icon];
+  const visibleEffects = effectEntries(choice.effect)
+    .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
+    .slice(0, 2);
 
   return (
     <motion.button
@@ -650,7 +672,7 @@ function CrisisChoiceCard({
     >
       <span className="choice-topline">
         <span className="choice-number">Choix {index + 1}</span>
-        {choice.trap && <span className="risk-pill">Risqué</span>}
+        {choice.trap && <span className="risk-pill">Piège</span>}
         <span className="action-icon">
           <Icon size={20} />
         </span>
@@ -662,11 +684,12 @@ function CrisisChoiceCard({
         {choice.lesson && <em className="trap-lesson">{choice.lesson}</em>}
       </span>
       <span className="effect-list" aria-label="Effets">
-        {effectEntries(choice.effect).slice(0, 4).map(({ key, label, value }) => (
+        {visibleEffects.map(({ key, label, value }) => (
           <span key={key} className={effectIsGood(key, value) ? "positive" : "negative"} title={label}>
             {effectChipLabel(key, value)}
           </span>
         ))}
+        {choice.trap && <span className="trap-score-chip">Score -11</span>}
       </span>
       {(choice.protect?.length || choice.pressure?.length) && (
         <span className="tactical-tags">
@@ -844,18 +867,23 @@ function NarrativeLog({ state }: { state: MissionState }) {
 function MissionExperience({
   state,
   phase,
+  snapshot,
+  loading,
   onChoose,
   onFinish,
   inputLocked,
 }: {
   state: MissionState;
   phase: Phase;
+  snapshot: LiveMixSnapshot | null;
+  loading: boolean;
   onChoose: (actionId: ActionId) => void;
   onFinish: () => void;
   inputLocked: boolean;
 }) {
   const isComplete = state.selectedActions.length >= MAX_DECISIONS;
   const currentTurn = Math.min(state.selectedActions.length + 1, MAX_DECISIONS);
+  const snapshotTime = formatSnapshotTime(snapshot);
 
   return (
     <section id="mission" className="mission-shell mission-arcade">
@@ -864,7 +892,14 @@ function MissionExperience({
           <span>Mission active</span>
           <h2>{state.mode.title}</h2>
         </div>
-        <p>Choisis 5 ordres. La carte et les jauges réagissent tout de suite.</p>
+        <div className="arcade-heading-side">
+          <p>Choisis 5 ordres. La carte et les jauges réagissent tout de suite.</p>
+          <span className={clsx("arcade-data-source", snapshot?.isFallback && "fallback")}>
+            <Activity size={13} />
+            {loading ? "Synchronisation RTE..." : snapshot?.isFallback ? "Données de démonstration" : "RTE éCO2mix"}
+            {snapshotTime && <em>{snapshotTime}</em>}
+          </span>
+        </div>
       </div>
       <ArcadeStatusBar state={state} currentTurn={currentTurn} />
       <div className="arcade-layout">
@@ -904,12 +939,14 @@ function FinalVerdict({
 }) {
   const fragileCities = gridCities.filter((city) => state.cityStates[city.id] === "fragile").map((city) => city.name);
   const offCities = gridCities.filter((city) => state.cityStates[city.id] === "off").map((city) => city.name);
+  const verdictTone = state.result.kind === "stable" ? "verdict-good" : state.result.kind === "blackout" ? "verdict-bad" : "verdict-mid";
+  const gradeTone = state.gameRank === "S" || state.gameRank === "A" ? "grade-good" : state.gameRank === "D" || state.result.kind === "blackout" ? "grade-bad" : "grade-mid";
 
   return (
-    <section id="resultat" className={clsx("result-section", `result-${state.result.kind}`)}>
+    <section id="resultat" className={clsx("result-section", `result-${state.result.kind}`, verdictTone)}>
       <div className="result-aura" aria-hidden="true" />
       <div className="result-visual">
-        <div className="round-end-animation" aria-hidden="true">
+        <div className={clsx("round-end-animation", verdictTone)} aria-hidden="true">
           <span />
           <span />
           <span />
@@ -919,7 +956,7 @@ function FinalVerdict({
       </div>
       <div className="result-copy">
         <span>Verdict final</span>
-        <div className="final-grade">
+        <div className={clsx("final-grade", gradeTone)}>
           <i aria-hidden="true" />
           <strong>{state.gameRank}</strong>
           <span>Grade {rankName(state.gameRank)}</span>
@@ -1121,7 +1158,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   const [inputLocked, setInputLocked] = useState(false);
   const inputLockRef = useRef(false);
 
-  const missionState = useMemo(() => simulateMission(modeId, selectedActions), [modeId, selectedActions]);
+  const missionState = useMemo(() => simulateMission(modeId, selectedActions, snapshot), [modeId, selectedActions, snapshot]);
 
   const loadSnapshot = useCallback(async () => {
     setLoading(true);
@@ -1321,6 +1358,8 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
       <MissionExperience
         state={missionState}
         phase={phase}
+        snapshot={snapshot}
+        loading={loading}
         inputLocked={inputLocked}
         onChoose={chooseAction}
         onFinish={() => setPhase("result")}

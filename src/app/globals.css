@@ -14,9 +14,9 @@
   --cyan: oklch(0.79 0.13 196);
   --green: oklch(0.75 0.15 152);
   --amber: oklch(0.82 0.15 76);
-  --orange: oklch(0.72 0.17 42);
+  --orange: var(--amber);
   --red: oklch(0.62 0.2 27);
-  --violet: oklch(0.68 0.17 292);
+  --violet: var(--cyan);
   --shadow-tight: 0 8px 8px oklch(0.04 0.02 255 / 0.28);
   --radius: 12px;
   --motion-fast: 140ms;
@@ -46,8 +46,8 @@ body {
   margin: 0;
   min-width: 320px;
   background:
-    radial-gradient(circle at 18% 4%, oklch(0.34 0.13 235 / 0.34), transparent 30rem),
-    radial-gradient(circle at 86% 12%, oklch(0.62 0.18 27 / 0.22), transparent 28rem),
+    radial-gradient(circle at 18% 4%, oklch(0.34 0.13 235 / 0.24), transparent 30rem),
+    radial-gradient(circle at 86% 12%, oklch(0.79 0.13 196 / 0.12), transparent 28rem),
     linear-gradient(135deg, var(--bg-deep), var(--bg));
   color: var(--ink);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -1587,8 +1587,13 @@ a {
 }
 
 .impact-deltas .negative {
-  color: var(--orange);
-  background: oklch(0.72 0.17 42 / 0.12);
+  color: var(--amber);
+  background: oklch(0.82 0.15 76 / 0.12);
+}
+
+.impact-trap .impact-deltas .negative {
+  color: var(--red);
+  background: oklch(0.62 0.2 27 / 0.14);
 }
 
 .crisis-panel {
@@ -1791,8 +1796,8 @@ a {
 .risk-pill {
   border-radius: 999px;
   padding: 4px 7px;
-  color: var(--amber);
-  background: oklch(0.82 0.15 76 / 0.12);
+  color: oklch(0.95 0.04 28);
+  background: oklch(0.62 0.2 27 / 0.2);
   font-size: 0.72rem;
   font-weight: 860;
 }
@@ -1885,6 +1890,11 @@ a {
   background: oklch(0.82 0.15 76 / 0.11);
 }
 
+.trap-score-chip {
+  color: oklch(0.95 0.04 28) !important;
+  background: oklch(0.62 0.2 27 / 0.16) !important;
+}
+
 .choice-cta {
   grid-area: cta;
   display: inline-flex;
@@ -1933,6 +1943,40 @@ a {
   font-size: 0.94rem;
   line-height: 1.4;
   text-align: right;
+}
+
+.arcade-heading-side {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+}
+
+.arcade-data-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  border: 1px solid oklch(0.79 0.13 196 / 0.16);
+  border-radius: 999px;
+  padding: 5px 8px;
+  color: var(--muted);
+  background: oklch(0.79 0.13 196 / 0.07);
+  font-size: 0.72rem;
+  font-weight: 760;
+}
+
+.arcade-data-source svg {
+  color: var(--cyan);
+}
+
+.arcade-data-source em {
+  color: var(--faint);
+  font-style: normal;
+}
+
+.arcade-data-source.fallback {
+  border-color: oklch(0.82 0.15 76 / 0.16);
+  background: oklch(0.82 0.15 76 / 0.06);
 }
 
 .arcade-status {
@@ -2243,8 +2287,10 @@ a {
 }
 
 .arcade-actions-grid .action-card.risky-choice {
-  border-color: oklch(0.82 0.15 76 / 0.28);
-  background: oklch(0.14 0.04 252 / 0.82);
+  border-color: oklch(0.62 0.2 27 / 0.34);
+  background:
+    linear-gradient(135deg, oklch(0.62 0.2 27 / 0.08), transparent 54%),
+    oklch(0.12 0.035 255 / 0.82);
 }
 
 .mission-secondary {
@@ -2331,6 +2377,22 @@ a {
     radial-gradient(circle at 72% 36%, oklch(0.82 0.15 76 / 0.12), transparent 18rem);
 }
 
+.result-section.verdict-good .result-aura {
+  background:
+    radial-gradient(circle at 28% 48%, oklch(0.75 0.15 152 / 0.24), transparent 20rem),
+    radial-gradient(circle at 72% 36%, oklch(0.79 0.13 196 / 0.18), transparent 18rem);
+  animation-name: verdict-aura, victory-lift;
+  animation-duration: 3.4s, 1.6s;
+  animation-iteration-count: infinite, 1;
+}
+
+.result-section.verdict-bad .result-aura {
+  animation-name: blackout-warning;
+  animation-duration: 860ms;
+  animation-timing-function: steps(2, end);
+  animation-iteration-count: 3;
+}
+
 .result-section > *:not(.result-aura) {
   position: relative;
   z-index: 1;
@@ -2401,6 +2463,25 @@ a {
   box-shadow: 0 0 24px oklch(0.62 0.2 27 / 0.34);
 }
 
+.round-end-animation.verdict-good span {
+  animation-name: round-finish-ring, victory-ring;
+  animation-duration: 1.9s, 1.9s;
+  animation-iteration-count: infinite, infinite;
+}
+
+.round-end-animation.verdict-bad {
+  animation: verdict-shock 640ms steps(2, end) 2;
+}
+
+.round-end-animation.verdict-bad span {
+  border-style: dashed;
+  animation-duration: 620ms;
+}
+
+.round-end-animation.verdict-bad strong {
+  animation: danger-stamp 780ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .result-copy {
   padding: clamp(10px, 2vw, 24px);
 }
@@ -2447,6 +2528,35 @@ a {
   color: var(--amber);
   font-size: 3.2rem;
   line-height: 0.9;
+}
+
+.final-grade.grade-good {
+  border-color: oklch(0.75 0.15 152 / 0.28);
+  background: oklch(0.75 0.15 152 / 0.1);
+}
+
+.final-grade.grade-good strong {
+  color: var(--green);
+}
+
+.final-grade.grade-good i {
+  border-color: oklch(0.75 0.15 152 / 0.44);
+}
+
+.final-grade.grade-bad {
+  border-color: oklch(0.62 0.2 27 / 0.34);
+  background: oklch(0.62 0.2 27 / 0.1);
+}
+
+.final-grade.grade-bad strong {
+  color: var(--red);
+  animation: danger-stamp 840ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.final-grade.grade-bad i {
+  border-color: oklch(0.62 0.2 27 / 0.44);
+  animation-duration: 520ms;
+  animation-timing-function: steps(6, end);
 }
 
 .final-grade span {
@@ -3001,6 +3111,80 @@ a {
   }
 }
 
+@keyframes victory-ring {
+  0% {
+    filter: drop-shadow(0 0 0 oklch(0.75 0.15 152 / 0));
+  }
+
+  40% {
+    filter: drop-shadow(0 0 14px oklch(0.75 0.15 152 / 0.42));
+  }
+
+  100% {
+    filter: drop-shadow(0 0 0 oklch(0.75 0.15 152 / 0));
+  }
+}
+
+@keyframes victory-lift {
+  0% {
+    transform: translateY(10px) scale(0.98);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes blackout-warning {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: translateX(0);
+  }
+
+  45% {
+    opacity: 0.88;
+    transform: translateX(-6px);
+  }
+
+  70% {
+    opacity: 0.34;
+    transform: translateX(5px);
+  }
+}
+
+@keyframes verdict-shock {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+
+  35% {
+    transform: translateX(-5px) rotate(-0.7deg);
+  }
+
+  70% {
+    transform: translateX(4px) rotate(0.5deg);
+  }
+}
+
+@keyframes danger-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.26);
+  }
+
+  45% {
+    opacity: 1;
+    transform: scale(0.94);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes grade-orbit {
   to {
     transform: rotate(360deg);
@@ -3156,6 +3340,19 @@ a {
   .education-grid,
   .data-grid {
     grid-template-columns: 1fr;
+  }
+
+  .arcade-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .arcade-heading p {
+    text-align: left;
+  }
+
+  .arcade-heading-side {
+    justify-items: start;
   }
 
   .game-hud {

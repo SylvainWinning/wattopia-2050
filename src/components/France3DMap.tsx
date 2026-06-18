@@ -4,6 +4,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import clsx from "clsx";
+import { franceCorsicaPoints, franceMainlandPoints, franceRegionLines, type MapPoint } from "@/lib/france-map-geometry";
 import { gridCities, gridEdges, type CityState, type GridCity, type MissionState } from "@/lib/blackout-game";
 
 type France3DMapProps = {
@@ -12,89 +13,11 @@ type France3DMapProps = {
   onReady?: () => void;
 };
 
-const mainlandPoints = [
-  [45.6, 5.8],
-  [52.2, 6.8],
-  [58.9, 10.6],
-  [62.7, 17.1],
-  [68.1, 20.5],
-  [74.7, 21.8],
-  [78.8, 27.5],
-  [82.2, 35.6],
-  [87.3, 41.4],
-  [83.4, 47.9],
-  [86.6, 55.7],
-  [81.2, 62.2],
-  [78.8, 70.1],
-  [72.4, 73.9],
-  [70.6, 81.5],
-  [63.7, 83.8],
-  [58.8, 88.8],
-  [50.7, 85.8],
-  [43.7, 89.4],
-  [35.2, 87.2],
-  [29.7, 82.9],
-  [21.1, 81.4],
-  [17.6, 74.2],
-  [10.9, 70.1],
-  [13.4, 61.7],
-  [10.3, 55.1],
-  [15.6, 48.2],
-  [9.8, 40.4],
-  [7.8, 32.8],
-  [14.8, 27.3],
-  [19.6, 21.4],
-  [21.8, 15.1],
-  [29.3, 14.3],
-  [35.8, 10.8],
-  [40.9, 12.7],
-] as const;
-
-const corsicaPoints = [
-  [78.8, 75.7],
-  [82.1, 79.8],
-  [82.7, 86.7],
-  [79.8, 95.2],
-  [75.8, 97.4],
-  [73.4, 91.6],
-  [74.4, 84.9],
-  [73.5, 79.2],
-  [76.2, 76.4],
-] as const;
-
-const regionLines = [
-  [
-    [22, 28],
-    [45, 36],
-    [74, 26],
-  ],
-  [
-    [45, 36],
-    [38, 68],
-    [58, 89],
-  ],
-  [
-    [45, 36],
-    [62, 64],
-    [84, 58],
-  ],
-  [
-    [25, 77],
-    [38, 55],
-    [68, 17],
-  ],
-  [
-    [18, 49],
-    [45, 48],
-    [85, 52],
-  ],
-] as const;
-
 function toScenePoint(x: number, y: number, z = 0) {
-  return new THREE.Vector3((x - 50) / 9, (50 - y) / 9, z);
+  return new THREE.Vector3((x - 50) / 8.8, (50 - y) / 8.8, z);
 }
 
-function shapeFrom(points: readonly (readonly [number, number])[]) {
+function shapeFrom(points: readonly MapPoint[]) {
   const shape = new THREE.Shape();
   points.forEach(([x, y], index) => {
     const point = toScenePoint(x, y);
@@ -108,7 +31,7 @@ function shapeFrom(points: readonly (readonly [number, number])[]) {
 function cityColor(state: CityState) {
   if (state === "off") return "#ff4d5a";
   if (state === "fragile") return "#f7b733";
-  if (state === "priority") return "#a78bfa";
+  if (state === "priority") return "#d7f7ff";
   return "#34d6ff";
 }
 
@@ -120,14 +43,16 @@ function classifyRisk(state: MissionState) {
 
 function FranceMesh({ tone }: { tone: string }) {
   const groupRef = useRef<THREE.Group>(null);
-  const { mainland, corsica, boundaries } = useMemo(() => {
-    const options: THREE.ExtrudeGeometryOptions = { depth: 0.26, bevelEnabled: true, bevelSize: 0.035, bevelThickness: 0.035, bevelSegments: 2 };
+  const { mainland, corsica, mainlandCap, corsicaCap, boundaries } = useMemo(() => {
+    const options: THREE.ExtrudeGeometryOptions = { depth: 0.34, bevelEnabled: true, bevelSize: 0.045, bevelThickness: 0.05, bevelSegments: 3 };
     return {
-      mainland: new THREE.ExtrudeGeometry(shapeFrom(mainlandPoints), options),
-      corsica: new THREE.ExtrudeGeometry(shapeFrom(corsicaPoints), options),
-      boundaries: regionLines.map((line) => {
+      mainland: new THREE.ExtrudeGeometry(shapeFrom(franceMainlandPoints), options),
+      corsica: new THREE.ExtrudeGeometry(shapeFrom(franceCorsicaPoints), options),
+      mainlandCap: new THREE.ShapeGeometry(shapeFrom(franceMainlandPoints)),
+      corsicaCap: new THREE.ShapeGeometry(shapeFrom(franceCorsicaPoints)),
+      boundaries: franceRegionLines.map((line) => {
         const geometry = new THREE.BufferGeometry().setFromPoints(line.map(([x, y]) => toScenePoint(x, y, 0.34)));
-        const material = new THREE.LineBasicMaterial({ color: "#55d7ff", transparent: true, opacity: 0.18 });
+        const material = new THREE.LineBasicMaterial({ color: "#9be8ff", transparent: true, opacity: 0.2 });
         return new THREE.Line(geometry, material);
       }),
     };
@@ -143,11 +68,23 @@ function FranceMesh({ tone }: { tone: string }) {
 
   return (
     <group ref={groupRef} rotation={[-0.28, 0.08, 0.02]} position={[0, 0, -0.08]}>
+      <mesh geometry={mainland} position={[0.06, -0.08, -0.3]}>
+        <meshStandardMaterial color="#050915" roughness={0.8} metalness={0.08} transparent opacity={0.66} />
+      </mesh>
+      <mesh geometry={corsica} position={[0.06, -0.08, -0.28]}>
+        <meshStandardMaterial color="#050915" roughness={0.8} metalness={0.08} transparent opacity={0.58} />
+      </mesh>
       <mesh geometry={mainland}>
-        <meshStandardMaterial color={color} emissive="#0a8fbf" emissiveIntensity={tone === "danger" ? 0.12 : 0.22} roughness={0.36} metalness={0.38} transparent opacity={0.9} />
+        <meshStandardMaterial color={color} emissive="#0a8fbf" emissiveIntensity={tone === "danger" ? 0.1 : 0.18} roughness={0.32} metalness={0.48} transparent opacity={0.92} />
       </mesh>
       <mesh geometry={corsica} position={[0, 0, 0.02]}>
-        <meshStandardMaterial color={color} emissive="#0a8fbf" emissiveIntensity={0.18} roughness={0.38} metalness={0.36} transparent opacity={0.86} />
+        <meshStandardMaterial color={color} emissive="#0a8fbf" emissiveIntensity={0.14} roughness={0.34} metalness={0.42} transparent opacity={0.88} />
+      </mesh>
+      <mesh geometry={mainlandCap} position={[0, 0, 0.365]}>
+        <meshBasicMaterial color="#6ee7ff" transparent opacity={0.08} />
+      </mesh>
+      <mesh geometry={corsicaCap} position={[0, 0, 0.385]}>
+        <meshBasicMaterial color="#6ee7ff" transparent opacity={0.07} />
       </mesh>
       {boundaries.map((boundary, index) => (
         <primitive key={index} object={boundary} />
@@ -211,6 +148,7 @@ function CityNode({ city, state, active }: { city: GridCity; state: CityState; a
   const groupRef = useRef<THREE.Group>(null);
   const color = cityColor(state);
   const point = toScenePoint(city.x, city.y, 0.63);
+  const towerHeight = state === "off" ? 0.08 : state === "fragile" ? 0.22 : state === "priority" ? 0.42 : 0.34;
 
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
@@ -220,6 +158,10 @@ function CityNode({ city, state, active }: { city: GridCity; state: CityState; a
 
   return (
     <group ref={groupRef} position={point}>
+      <mesh position={[0, 0, towerHeight / 2 - 0.05]}>
+        <cylinderGeometry args={[city.id === "paris" ? 0.06 : 0.045, city.id === "paris" ? 0.075 : 0.052, towerHeight, 14]} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={state === "off" ? 0.12 : 0.72} roughness={0.28} metalness={0.32} transparent opacity={state === "off" ? 0.38 : 0.82} />
+      </mesh>
       <mesh>
         <sphereGeometry args={[city.id === "paris" ? 0.16 : 0.115, 24, 24]} />
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={state === "off" ? 0.3 : active ? 2.4 : 1.45} roughness={0.24} metalness={0.2} />
@@ -243,10 +185,11 @@ function HologramScene({ state }: { state: MissionState }) {
     <>
       <color attach="background" args={["#020713"]} />
       <fog attach="fog" args={["#020713", 8, 18]} />
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[0, 5, 6]} intensity={1.8} color="#9be8ff" />
-      <pointLight position={[0, 0, 3.8]} intensity={tone === "danger" ? 18 : 12} color={tone === "danger" ? "#ff4d5a" : "#35d7ff"} />
-      <group position={[0, -0.02, 0]} scale={0.74}>
+      <ambientLight intensity={0.55} />
+      <directionalLight position={[-3, 6, 7]} intensity={2.2} color="#d6f7ff" />
+      <pointLight position={[0, 0, 4.2]} intensity={tone === "danger" ? 18 : 12} color={tone === "danger" ? "#ff4d5a" : "#35d7ff"} />
+      <pointLight position={[-4, -3, 2.4]} intensity={3.8} color="#1ea7ff" />
+      <group position={[-0.1, -0.1, 0]} scale={0.72}>
         <FranceMesh tone={tone} />
         {gridEdges.map((edge, index) => {
           const from = cityById.get(edge.from);
