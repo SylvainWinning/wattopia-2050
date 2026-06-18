@@ -117,6 +117,33 @@ function effectEntries(effect: MetricEffect) {
     }));
 }
 
+function effectIsGood(key: keyof MissionMetrics, value: number) {
+  if (key === "blackoutRisk") return value < 0;
+  return value > 0;
+}
+
+function effectChipLabel(key: keyof MissionMetrics, value: number) {
+  const sign = value > 0 ? "+" : "";
+  const valueText = `${sign}${value}`;
+
+  switch (key) {
+    case "stability":
+      return `Stabilité ${valueText}`;
+    case "blackoutRisk":
+      return value < 0 ? `Risque ${value}` : `Risque +${value}`;
+    case "co2Score":
+      return value > 0 ? `CO2 mieux +${value}` : `CO2 pire ${value}`;
+    case "budget":
+      return value > 0 ? `Budget +${value}` : `Coût ${value}`;
+    case "citizenTrust":
+      return value > 0 ? `Confiance +${value}` : `Confiance ${value}`;
+    case "lightsOn":
+      return value > 0 ? `Lumières +${value}` : `Lumières ${value}`;
+    default:
+      return `${metricLabels[key]} ${valueText}`;
+  }
+}
+
 function actionForChoice(choice: CrisisChoice): MissionAction {
   return actionById(choice.id);
 }
@@ -430,23 +457,51 @@ function MissionSelector({
   onSelect: (modeId: MissionModeId) => void;
 }) {
   return (
-    <section className="mode-strip" aria-label="Choix de mission">
-      {modeIds.map((id) => {
-        const mode = missionModes[id];
-        const active = id === modeId;
+    <section className="mode-select-section" aria-label="Choix de mission">
+      <div className="play-rules">
+        <div>
+          <span>Comment gagner</span>
+          <strong>Prends 5 décisions. Une seule par tour.</strong>
+          <p>Ton job est simple : garde les villes allumées, baisse le risque blackout, et évite de sacrifier totalement le CO2, le budget ou la confiance.</p>
+        </div>
+        <ol aria-label="Règles rapides">
+          <li>
+            <strong>1</strong>
+            Choisis une mission
+          </li>
+          <li>
+            <strong>2</strong>
+            Lis l&apos;alerte du tour
+          </li>
+          <li>
+            <strong>3</strong>
+            Envoie un ordre
+          </li>
+          <li>
+            <strong>4</strong>
+            Regarde la France réagir
+          </li>
+        </ol>
+      </div>
+      <div className="mode-strip">
+        {modeIds.map((id) => {
+          const mode = missionModes[id];
+          const active = id === modeId;
 
-        return (
-          <button
-            type="button"
-            key={id}
-            className={clsx("mode-choice", active && "active")}
-            onClick={() => onSelect(id)}
-          >
-            <span>{mode.title}</span>
-            <strong>{mode.objective}</strong>
-          </button>
-        );
-      })}
+          return (
+            <button
+              type="button"
+              key={id}
+              className={clsx("mode-choice", active && "active")}
+              onClick={() => onSelect(id)}
+            >
+              <em>{active ? "Mission sélectionnée" : "Choisir"}</em>
+              <span>{mode.title}</span>
+              <strong>{mode.objective}</strong>
+            </button>
+          );
+        })}
+      </div>
     </section>
   );
 }
@@ -592,11 +647,13 @@ function CascadeReplay({ state }: { state: MissionState }) {
 
 function CrisisChoiceCard({
   choice,
+  index,
   selected,
   disabled,
   onChoose,
 }: {
   choice: CrisisChoice;
+  index: number;
   selected: boolean;
   disabled: boolean;
   onChoose: () => void;
@@ -612,19 +669,21 @@ function CrisisChoiceCard({
       disabled={disabled}
       whileTap={{ scale: disabled ? 1 : 0.985 }}
     >
-      <span className="action-icon">
-        <Icon size={20} />
+      <span className="choice-topline">
+        <span className="choice-number">Choix {index + 1}</span>
+        <span className="action-icon">
+          <Icon size={20} />
+        </span>
       </span>
       <span className="action-body">
         <strong>{choice.title}</strong>
         <span>{choice.description}</span>
-        <em>{choice.tactical}</em>
+        <em>À savoir : {choice.tactical}</em>
       </span>
       <span className="effect-list" aria-label="Effets">
         {effectEntries(choice.effect).slice(0, 4).map(({ key, label, value }) => (
-          <span key={key} className={value >= 0 ? "positive" : "negative"} title={label}>
-            {value > 0 ? "+" : ""}
-            {value}
+          <span key={key} className={effectIsGood(key, value) ? "positive" : "negative"} title={label}>
+            {effectChipLabel(key, value)}
           </span>
         ))}
       </span>
@@ -642,6 +701,10 @@ function CrisisChoiceCard({
           ))}
         </span>
       )}
+      <span className="choice-cta">
+        <Zap size={15} />
+        Envoyer cet ordre
+      </span>
     </motion.button>
   );
 }
@@ -674,6 +737,10 @@ function CrisisScenePanel({
         <span>BLACKOUT RISK</span>
         <em />
       </div>
+      <div className="turn-brief">
+        <strong>Tour {state.selectedActions.length + 1} sur {MAX_DECISIONS}</strong>
+        <span>Choisis 1 ordre. Les lumières, les jauges et le score bougent immédiatement.</span>
+      </div>
       <div className="crisis-kicker">
         <span>{scene.hour}</span>
         <strong>{scene.title}</strong>
@@ -689,13 +756,14 @@ function CrisisScenePanel({
         </p>
       )}
       <div className="actions-grid">
-        {scene.choices.map((choice) => {
+        {scene.choices.map((choice, index) => {
           const selected = state.steps.some((selectedStep) => selectedStep.choice === choice);
 
           return (
             <CrisisChoiceCard
               key={`${scene.hour}-${choice.id}-${choice.title}`}
               choice={choice}
+              index={index}
               selected={selected}
               disabled={inputLocked}
               onChoose={() => onChoose(choice.id)}
@@ -710,11 +778,11 @@ function CrisisScenePanel({
 function MissionMeters({ metrics }: { metrics: MissionMetrics }) {
   return (
     <div className="meters-panel">
-      <MetricMeter label="Stabilité réseau" value={metrics.stability} />
-      <MetricMeter label="Risque blackout" value={metrics.blackoutRisk} inverse />
+      <MetricMeter label="Stabilité" value={metrics.stability} />
+      <MetricMeter label="Blackout" value={metrics.blackoutRisk} inverse />
       <MetricMeter label="CO2" value={metrics.co2Score} />
       <MetricMeter label="Budget" value={metrics.budget} />
-      <MetricMeter label="Confiance citoyenne" value={metrics.citizenTrust} />
+      <MetricMeter label="Citoyens" value={metrics.citizenTrust} />
     </div>
   );
 }
@@ -770,13 +838,14 @@ function MissionExperience({
   inputLocked: boolean;
 }) {
   const isComplete = state.selectedActions.length >= MAX_DECISIONS;
+  const currentTurn = Math.min(state.selectedActions.length + 1, MAX_DECISIONS);
 
   return (
     <section id="mission" className="mission-shell">
       <div className="section-heading">
-        <span>Mission active</span>
+        <span>Mission active · tour {currentTurn}/{MAX_DECISIONS}</span>
         <h2>{state.mode.title}</h2>
-        <p>{state.mode.pitch}</p>
+        <p>Objectif clair : choisis 5 ordres pour empêcher la carte de France de s&apos;éteindre. Chaque carte est un compromis : elle aide quelque chose et coûte autre chose.</p>
       </div>
       <MissionHud state={state} />
       <div className="mission-layout">
@@ -787,10 +856,14 @@ function MissionExperience({
         <div className="mission-controls">
           <div className="decision-header">
             <div>
-              <span>Décisions restantes</span>
+              <span>À jouer</span>
               <strong>{state.decisionsRemaining}</strong>
+              <em>ordres</em>
             </div>
-            <p>{state.mode.objective}</p>
+            <p>
+              <strong>{state.mode.objective}</strong>
+              <span>Lis l&apos;alerte, choisis une carte, puis regarde les villes se rallumer ou se fragiliser.</span>
+            </p>
           </div>
           <BonusObjectives state={state} />
           <ImpactBurst state={state} />
