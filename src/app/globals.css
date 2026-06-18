@@ -486,6 +486,11 @@ a {
   font-size: 1rem;
 }
 
+.hero-stage .hologram-readout,
+.arcade-map-panel .hologram-readout {
+  display: none;
+}
+
 .france-grid-map {
   position: relative;
   overflow: hidden;
