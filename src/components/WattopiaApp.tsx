@@ -451,6 +451,43 @@ function EnergyMap() {
   );
 }
 
+function MissionBrief() {
+  return (
+    <section id="mission" className="section-shell mission-brief" aria-labelledby="mission-title">
+      <div className="mission-copy">
+        <p className="scenario-label">Le défi</p>
+        <h2 id="mission-title">Garde les lumières allumées en France, toute une journée de 2050.</h2>
+        <p>
+          Wattopia part du mix électrique réel d’aujourd’hui, puis te met aux commandes d’un scénario 2050. Le but : obtenir un bon score, limiter le CO₂ et éviter les heures critiques.
+        </p>
+      </div>
+      <div className="mission-steps" aria-label="Étapes du défi">
+        <article>
+          <span>
+            <Gauge size={19} />
+          </span>
+          <strong>Observe le réseau actuel</strong>
+          <p>Consommation, nucléaire, éolien, solaire, hydraulique, gaz et CO₂ viennent des données RTE éCO2mix.</p>
+        </article>
+        <article>
+          <span>
+            <Cable size={19} />
+          </span>
+          <strong>Construis ton mix 2050</strong>
+          <p>Ajuste les curseurs : plus de renouvelables, plus de stockage, plus de sobriété, ou un socle pilotable plus fort.</p>
+        </article>
+        <article>
+          <span>
+            <AlertTriangle size={19} />
+          </span>
+          <strong>Teste les moments difficiles</strong>
+          <p>Nuit sans vent, pic hivernal, vague de froid : si la marge devient négative, le risque de blackout grimpe.</p>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 function LiveMixSection({
   snapshot,
   loading,
@@ -927,7 +964,7 @@ function SimulatorSection({
       <div className="section-heading">
         <div>
           <h2>Salle de contrôle 2050</h2>
-          <p>Déplace les curseurs, déclenche une crise, puis regarde le réseau tenir ou décrocher heure par heure.</p>
+          <p>Vise au moins 80/100, zéro heure critique, et un CO₂ bas. Les curseurs changent immédiatement le verdict.</p>
         </div>
         <div className="simulator-actions">
           <button className="ghost-button" type="button" onClick={() => setIsPlaying((playing) => !playing)}>
@@ -939,6 +976,27 @@ function SimulatorSection({
             Copier mon scénario
           </button>
         </div>
+      </div>
+
+      <div className="playbook-panel">
+        <div>
+          <span className="playbook-kicker">Ce que tu dois faire</span>
+          <strong>Construis un mix qui produit assez, reste stable, et tient sous stress.</strong>
+        </div>
+        <ul>
+          <li>
+            <ShieldCheck size={16} />
+            <span>Si la stabilité chute, ajoute du stockage, de la sobriété ou une base pilotable.</span>
+          </li>
+          <li>
+            <CloudSun size={16} />
+            <span>Teste une crise : elle révèle les faiblesses que le score moyen cache.</span>
+          </li>
+          <li>
+            <Share2 size={16} />
+            <span>Quand ton scénario tient, copie le lien ou télécharge la carte résultat.</span>
+          </li>
+        </ul>
       </div>
 
       <div className="mission-strip">
@@ -1146,6 +1204,7 @@ export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: Live
           </span>
         </a>
         <nav className="hidden items-center gap-1 md:flex" aria-label="Navigation principale">
+          <a href="#mission">Mission</a>
           <a href="#cockpit">Cockpit</a>
           <a href="#maintenant">Maintenant</a>
           <a href="#simulateur">Simulateur</a>
@@ -1166,7 +1225,9 @@ export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: Live
           <motion.p className="hero-subtitle" initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.06 }}>
             Construis le mix énergétique de la France et évite le blackout.
           </motion.p>
-          <p className="hero-proof">Basé sur des données réelles du réseau électrique français.</p>
+          <p className="hero-proof">
+            Ta mission : régler les sources d’énergie, lancer des crises météo, puis atteindre le meilleur score possible sans heures critiques. Basé sur des données réelles du réseau électrique français.
+          </p>
           <div className="hero-actions">
             <button className="primary-button" type="button" onClick={() => document.getElementById("simulateur")?.scrollIntoView({ behavior: "smooth" })}>
               <Zap size={18} />
@@ -1179,21 +1240,22 @@ export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: Live
           <div className="hero-facts" aria-label="Points clés">
             <span>
               <ShieldCheck size={16} />
-              Score instantané
+              But : 80/100+
             </span>
             <span>
               <Cable size={16} />
-              Simulation 24h
+              Zéro heure critique
             </span>
             <span>
               <CloudSun size={16} />
-              Stress tests de crise
+              Crises météo
             </span>
           </div>
         </div>
         <EnergyMap />
       </section>
 
+      <MissionBrief />
       <ControlRoomOverview snapshot={snapshot} scenario={scenario} />
       <LiveMixSection snapshot={snapshot} loading={loading} onRefresh={loadSnapshot} />
       <SimulatorSection scenario={scenario} setScenario={setScenario} onCopy={copyScenario} />

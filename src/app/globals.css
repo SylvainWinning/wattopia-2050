@@ -278,6 +278,87 @@ a {
   padding: 9px 12px;
 }
 
+.mission-brief {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 18px;
+  align-items: stretch;
+  padding-top: 0;
+  padding-bottom: clamp(36px, 6vw, 66px);
+}
+
+.mission-copy {
+  display: grid;
+  align-content: center;
+  min-height: 280px;
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, oklch(0.18 0.035 260), oklch(0.27 0.08 260));
+  color: white;
+  padding: clamp(22px, 4vw, 34px);
+}
+
+.mission-copy h2 {
+  max-width: 620px;
+  margin-top: 10px;
+  font-size: clamp(1.8rem, 3.6vw, 3.15rem);
+  font-weight: 805;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-wrap: balance;
+}
+
+.mission-copy p:not(.scenario-label) {
+  max-width: 62ch;
+  margin-top: 16px;
+  color: oklch(1 0 0 / 0.76);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.mission-copy .scenario-label {
+  color: oklch(0.8 0.11 218);
+}
+
+.mission-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mission-steps article {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+  padding: 18px;
+}
+
+.mission-steps article > span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--primary);
+}
+
+.mission-steps strong {
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 780;
+  line-height: 1.2;
+}
+
+.mission-steps p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
 .energy-map {
   min-height: 500px;
   overflow: hidden;
@@ -592,6 +673,57 @@ a {
 
 .simulator-shell {
   padding-top: clamp(42px, 7vw, 70px);
+}
+
+.playbook-panel {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.88fr) minmax(0, 1.12fr);
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 16px;
+  border: 1px solid oklch(0.45 0.15 260 / 0.18);
+  border-radius: 14px;
+  background: oklch(0.985 0.012 260);
+  padding: 18px;
+}
+
+.playbook-kicker {
+  display: block;
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.playbook-panel strong {
+  display: block;
+  max-width: 48ch;
+  margin-top: 6px;
+  color: var(--ink);
+  font-size: 1.3rem;
+  font-weight: 790;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+}
+
+.playbook-panel ul {
+  display: grid;
+  gap: 10px;
+}
+
+.playbook-panel li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 620;
+  line-height: 1.45;
+}
+
+.playbook-panel li svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--primary);
 }
 
 .cockpit-shell {
@@ -1512,6 +1644,7 @@ a {
 
 @media (max-width: 980px) {
   .hero-section,
+  .mission-brief,
   .live-grid,
   .simulator-grid,
   .control-room-grid,
@@ -1546,6 +1679,7 @@ a {
   }
 
   .mission-strip,
+  .playbook-panel,
   .challenge-bar.cinematic {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1627,8 +1761,10 @@ a {
   }
 
   .live-cards,
+  .mission-steps,
   .challenge-bar,
   .challenge-bar.cinematic,
+  .playbook-panel,
   .result-stats,
   .mission-strip,
   .compare-grid,
