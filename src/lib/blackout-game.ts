@@ -270,7 +270,7 @@ const trapChoiceBank: readonly CrisisChoice[] = [
     title: "Attendre la confirmation complète",
     description: "Ne rien déclencher tant que toutes les données ne sont pas consolidées.",
     tactical: "Semble prudent, mais le réseau n'attend pas.",
-    lesson: "Piège: en crise réseau, attendre peut laisser la cascade démarrer.",
+    lesson: "Erreur de timing: en crise réseau, attendre peut laisser la cascade démarrer.",
     trap: true,
     pressure: ["lille", "paris", "strasbourg"],
     effect: { stability: -22, co2Score: 1, budget: 3, citizenTrust: -9, blackoutRisk: 29, lightsOn: -22 },
@@ -280,7 +280,7 @@ const trapChoiceBank: readonly CrisisChoice[] = [
     title: "Acheter tout ce qui est disponible",
     description: "Surpayer massivement le marché européen pour éviter de choisir localement.",
     tactical: "La facilité immédiate peut vider le budget et importer du CO2.",
-    lesson: "Piège: l'interconnexion aide, mais elle n'est ni infinie ni toujours propre.",
+    lesson: "Limite cachée: l'interconnexion aide, mais elle n'est ni infinie ni toujours propre.",
     trap: true,
     protect: ["strasbourg", "paris"],
     pressure: ["bordeaux", "nantes"],
@@ -291,7 +291,7 @@ const trapChoiceBank: readonly CrisisChoice[] = [
     title: "Couper vite les quartiers résidentiels",
     description: "Délester largement les foyers pour garder les infrastructures sous tension.",
     tactical: "Très brutal: la stabilité remonte, la confiance s'effondre.",
-    lesson: "Piège: une coupure large peut sauver des MW mais casser l'acceptabilité.",
+    lesson: "Coût social majeur: une coupure large peut sauver des MW mais casser l'acceptabilité.",
     trap: true,
     protect: ["paris", "lyon"],
     pressure: ["lille", "nantes", "bordeaux", "toulouse"],
@@ -302,7 +302,7 @@ const trapChoiceBank: readonly CrisisChoice[] = [
     title: "Forcer un redémarrage impossible",
     description: "Promettre une puissance pilotable qui ne peut pas arriver à temps.",
     tactical: "Bonne idée sur le papier, trop lente pour ce tour.",
-    lesson: "Piège: toute production n'est pas mobilisable en quelques minutes.",
+    lesson: "Mauvais délai: toute production n'est pas mobilisable en quelques minutes.",
     trap: true,
     pressure: ["strasbourg", "lyon", "marseille"],
     effect: { stability: -18, co2Score: -12, budget: -20, citizenTrust: -16, blackoutRisk: 24, lightsOn: -18 },
@@ -1510,7 +1510,7 @@ function resultFromMetrics(metrics: MissionMetrics, selectedActions: readonly Mi
         : "Tu as préservé l'acceptabilité citoyenne dans une crise tendue.";
   const biggestTradeoff =
     trapCount > 0
-      ? `${trapCount} piège${trapCount > 1 ? "s" : ""} déclenché${trapCount > 1 ? "s" : ""}: le score final encaisse un gros malus.`
+      ? `${trapCount} fausse bonne idée${trapCount > 1 ? "s" : ""} dans la stratégie: le score final encaisse un gros malus.`
       : gasUsed
         ? "Le gaz a protégé le réseau, mais il a fait chuter le score CO2."
         : expensiveActions >= 2

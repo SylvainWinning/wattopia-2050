@@ -150,26 +150,90 @@ function effectIsGood(key: keyof MissionMetrics, value: number) {
   return value > 0;
 }
 
-function effectChipLabel(key: keyof MissionMetrics, value: number) {
-  const sign = value > 0 ? "+" : "";
-  const valueText = `${sign}${value}`;
-
-  switch (key) {
-    case "stability":
-      return `Stabilité ${valueText}`;
-    case "blackoutRisk":
-      return value < 0 ? `Risque ${value}` : `Risque +${value}`;
-    case "co2Score":
-      return value > 0 ? `CO2 mieux +${value}` : `CO2 pire ${value}`;
-    case "budget":
-      return value > 0 ? `Budget +${value}` : `Coût ${value}`;
-    case "citizenTrust":
-      return value > 0 ? `Confiance +${value}` : `Confiance ${value}`;
-    case "lightsOn":
-      return value > 0 ? `Lumières +${value}` : `Lumières ${value}`;
+function choiceHint(choice: CrisisChoice, action: MissionAction) {
+  switch (action.id) {
+    case "wait":
+      return "Demande du temps dans une situation instable.";
+    case "overimport":
+      return "Mobilise le marché européen sous forte contrainte.";
+    case "publicCut":
+      return "Réduit la demande par un arbitrage social lourd.";
+    case "forcedRestart":
+      return "Engage une production avec délai d'arrivée.";
+    case "gas":
+      return "Apporte une puissance pilotable très rapide.";
+    case "batteries":
+      return "Injecte une réserve courte sur le réseau.";
+    case "sobriety":
+    case "domestic":
+      return "Agit sur la demande sans couper brutalement.";
+    case "imports":
+      return "Cherche une marge externe temporaire.";
+    case "hydro":
+      return "Utilise une réserve pilotable bas-carbone.";
+    case "industry":
+      return "Déplace une partie de la charge économique.";
+    case "priority":
+      return "Protège les usages vitaux en priorité.";
     default:
-      return `${metricLabels[key]} ${valueText}`;
+      return choice.tactical;
   }
+}
+
+function choiceSignalTags(choice: CrisisChoice, action: MissionAction) {
+  const tags: string[] = [];
+  const add = (tag: string) => {
+    if (!tags.includes(tag)) tags.push(tag);
+  };
+
+  switch (action.id) {
+    case "wait":
+      add("Analyse");
+      add("Timing");
+      break;
+    case "overimport":
+    case "imports":
+      add("Marché");
+      add("Interconnexion");
+      break;
+    case "publicCut":
+    case "priority":
+      add("Services vitaux");
+      add("Acceptabilité");
+      break;
+    case "forcedRestart":
+    case "gas":
+      add("Production");
+      add("Carbone");
+      break;
+    case "batteries":
+    case "hydro":
+      add("Réserve");
+      add("Stockage");
+      break;
+    case "sobriety":
+    case "domestic":
+      add("Sobriété");
+      add("Citoyens");
+      break;
+    case "industry":
+      add("Industrie");
+      add("Économie");
+      break;
+    default:
+      break;
+  }
+
+  effectEntries(choice.effect)
+    .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
+    .forEach(({ key }) => {
+      if (key === "stability" || key === "blackoutRisk") add("Fréquence");
+      if (key === "co2Score") add("CO2");
+      if (key === "budget") add("Budget");
+      if (key === "citizenTrust") add("Confiance");
+    });
+
+  return tags.slice(0, 3);
 }
 
 function actionForChoice(choice: CrisisChoice): MissionAction {
@@ -502,8 +566,8 @@ function MissionSelector({
       <div className="play-rules">
         <div>
           <span>Comment gagner</span>
-          <strong>5 tours. 8 choix à chaque tour. Certains sont des pièges.</strong>
-          <p>Ton job est simple : garde les villes allumées, baisse le risque blackout, et évite les fausses bonnes idées qui sacrifient CO2, budget ou confiance.</p>
+          <strong>5 tours. 8 choix à chaque tour. Certains ordres sont trompeurs.</strong>
+          <p>Ton job est simple : garde les villes allumées, baisse le risque blackout, et évite les ordres séduisants qui sacrifient CO2, budget ou confiance.</p>
         </div>
         <ol aria-label="Règles rapides">
           <li>
@@ -585,7 +649,7 @@ function ImpactBurst({ state }: { state: MissionState }) {
       transition={{ duration: 0.18 }}
     >
       <div>
-        <span>{latest.choice.trap ? "Piège déclenché" : `Ordre #${latest.decisionNumber} exécuté`}</span>
+        <span>{`Ordre #${latest.decisionNumber} exécuté`}</span>
         <strong>{latest.choice.title}</strong>
       </div>
       <div className="impact-deltas">
@@ -659,21 +723,18 @@ function CrisisChoiceCard({
 }) {
   const action = actionForChoice(choice);
   const Icon = actionIcons[action.icon];
-  const visibleEffects = effectEntries(choice.effect)
-    .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
-    .slice(0, 2);
+  const previewTags = choiceSignalTags(choice, action);
 
   return (
     <motion.button
       type="button"
-      className={clsx("action-card crisis-choice-card", choice.trap && "risky-choice", selected && "selected")}
+      className={clsx("action-card crisis-choice-card", selected && "selected")}
       onClick={onChoose}
       disabled={disabled}
       whileTap={{ scale: disabled ? 1 : 0.985 }}
     >
       <span className="choice-topline">
         <span className="choice-number">Choix {index + 1}</span>
-        {choice.trap && <span className="risk-pill">Piège</span>}
         <span className="action-icon">
           <Icon size={20} />
         </span>
@@ -681,27 +742,25 @@ function CrisisChoiceCard({
       <span className="action-body">
         <strong>{choice.title}</strong>
         <span className="choice-description">{choice.description}</span>
-        <em>À savoir : {choice.tactical}</em>
-        {choice.lesson && <em className="trap-lesson">{choice.lesson}</em>}
+        <em>Signal : {choiceHint(choice, action)}</em>
       </span>
-      <span className="effect-list" aria-label="Effets">
-        {visibleEffects.map(({ key, label, value }) => (
-          <span key={key} className={effectIsGood(key, value) ? "positive" : "negative"} title={label}>
-            {effectChipLabel(key, value)}
+      <span className="effect-list preview-list" aria-label="Domaines concernés">
+        {previewTags.map((tag) => (
+          <span key={tag} className="neutral">
+            {tag}
           </span>
         ))}
-        {choice.trap && <span className="trap-score-chip">Score -11</span>}
       </span>
       {(choice.protect?.length || choice.pressure?.length) && (
         <span className="tactical-tags">
           {choice.protect?.slice(0, 2).map((cityId) => (
             <span key={`protect-${cityId}`} className="tag-protect">
-              Sauve {gridCities.find((city) => city.id === cityId)?.name ?? cityId}
+              Zone {gridCities.find((city) => city.id === cityId)?.name ?? cityId}
             </span>
           ))}
           {choice.pressure?.slice(0, 1).map((cityId) => (
             <span key={`pressure-${cityId}`} className="tag-pressure">
-              Fragilise {gridCities.find((city) => city.id === cityId)?.name ?? cityId}
+              Zone {gridCities.find((city) => city.id === cityId)?.name ?? cityId}
             </span>
           ))}
         </span>
