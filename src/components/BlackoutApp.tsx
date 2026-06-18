@@ -1054,6 +1054,16 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     };
   }, [loadSnapshot]);
 
+  useEffect(() => {
+    if (phase !== "result") return;
+
+    const scrollTimer = window.setTimeout(() => {
+      document.getElementById("resultat")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 40);
+
+    return () => window.clearTimeout(scrollTimer);
+  }, [phase]);
+
   const startMission = () => {
     setPhase("mission");
     document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1081,7 +1091,6 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     if (nextActions.length >= MAX_DECISIONS) {
       window.setTimeout(() => {
         setPhase("result");
-        document.getElementById("resultat")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 280);
     }
   };

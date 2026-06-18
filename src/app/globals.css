@@ -2244,8 +2244,8 @@ a {
 
   .blackout-hero {
     width: min(100% - 24px, 680px);
-    gap: 18px;
-    padding-top: 24px;
+    gap: 16px;
+    padding-top: 18px;
   }
 
   .hero-copy h1 {
@@ -2253,7 +2253,7 @@ a {
   }
 
   .hero-text {
-    margin-top: 16px;
+    margin-top: 14px;
     font-size: 0.98rem;
     line-height: 1.5;
   }
@@ -2263,9 +2263,17 @@ a {
   }
 
   .data-note {
-    margin-top: 12px;
+    margin-top: 10px;
     font-size: 0.86rem;
     line-height: 1.45;
+  }
+
+  .hero-hud-strip {
+    margin-top: 16px;
+  }
+
+  .hero-actions {
+    margin-top: 22px;
   }
 
   .france-grid-map,
