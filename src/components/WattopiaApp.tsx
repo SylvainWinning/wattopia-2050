@@ -25,6 +25,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import clsx from "clsx";
+import { fetchLiveMixSnapshot } from "@/lib/fetch-live-mix";
 import type { LiveMixSnapshot } from "@/lib/live-mix";
 import {
   type ChallengeId,
@@ -471,17 +472,21 @@ export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: Live
     setLoading(true);
     try {
       const demo = new URLSearchParams(window.location.search).get("demo") === "1";
-      const response = await fetch(`/api/live-mix${demo ? "?demo=1" : ""}`);
-      const nextSnapshot = (await response.json()) as LiveMixSnapshot;
-      setSnapshot(nextSnapshot);
+      setSnapshot(await fetchLiveMixSnapshot(demo));
     } catch {
-      const response = await fetch("/api/live-mix?demo=1");
-      const nextSnapshot = (await response.json()) as LiveMixSnapshot;
-      setSnapshot(nextSnapshot);
+      setSnapshot(await fetchLiveMixSnapshot(true));
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const refreshSnapshot = window.setTimeout(() => {
+      void loadSnapshot();
+    }, 0);
+
+    return () => window.clearTimeout(refreshSnapshot);
+  }, []);
 
   const copyScenario = () => {
     const params = scenarioToParams(scenario);

@@ -15,19 +15,24 @@ Ouvrir [http://localhost:3000](http://localhost:3000).
 - `npm run dev` : serveur local
 - `npm run lint` : vérification ESLint
 - `npm run build` : build de production
+- `npm run build:github` : export statique pour GitHub Pages
 
 ## Données
 
-L'app interroge l'API ODRÉ / OpenDataSoft du dataset RTE `eco2mix-national-tr` via `/api/live-mix`.
+L'app interroge depuis le navigateur l'API ODRÉ / OpenDataSoft du dataset RTE `eco2mix-national-tr`.
 
 Si l'API ne répond pas, si les champs sont incomplets, ou si l'URL contient `?demo=1`, l'app affiche un fallback local marqué “Données de démonstration”.
 
 ## Publication
 
-Déploiement recommandé :
+La publication se fait automatiquement via GitHub Pages à chaque push sur `main`.
+
+Lien public :
+
+[https://sylvainwinning.github.io/wattopia-2050/](https://sylvainwinning.github.io/wattopia-2050/)
+
+Pour tester l'export localement :
 
 ```bash
-npm run build
+npm run build:github
 ```
-
-Puis publier le dossier sur Vercel.

@@ -15,7 +15,6 @@ export async function fetchLiveMixSnapshot(forceDemo = false): Promise<LiveMixSn
     });
     const response = await fetch(`${endpoint}?${params.toString()}`, {
       headers: { accept: "application/json" },
-      next: { revalidate: 300 },
     });
 
     if (!response.ok) {
