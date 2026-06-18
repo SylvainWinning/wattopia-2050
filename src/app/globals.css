@@ -372,6 +372,120 @@ a {
   min-width: 0;
 }
 
+.france-map-stage {
+  position: relative;
+  min-width: 0;
+}
+
+.france-map-fallback {
+  position: relative;
+  z-index: 1;
+  transition: opacity 220ms ease;
+}
+
+.france-map-stage.three-ready .france-map-fallback {
+  opacity: 0;
+}
+
+.france-map-3d-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms ease;
+}
+
+.france-map-3d-layer.ready {
+  opacity: 1;
+}
+
+.france-3d-map {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 50% 44%, oklch(0.79 0.13 196 / 0.18), transparent 17rem),
+    linear-gradient(145deg, oklch(0.05 0.025 255), oklch(0.14 0.045 252));
+}
+
+.france-3d-map canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.france-3d-map::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(transparent 0 48%, oklch(1 0 0 / 0.035) 49%, transparent 50%),
+    radial-gradient(circle at 50% 42%, transparent 36%, oklch(0.02 0.02 255 / 0.38) 100%);
+  background-size: 100% 7px, auto;
+  mix-blend-mode: screen;
+}
+
+.france-3d-labels {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.france-3d-label {
+  position: absolute;
+  transform: translate(7px, -13px);
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 820;
+  text-shadow: 0 0 8px #020713, 0 0 14px rgb(52 214 255 / 0.62);
+}
+
+.france-3d-label.label-fragile {
+  color: var(--amber);
+}
+
+.france-3d-label.label-off {
+  color: var(--red);
+}
+
+.france-3d-label.label-priority {
+  color: var(--violet);
+}
+
+.france-3d-label.active {
+  color: white;
+}
+
+.hologram-readout {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 5;
+  display: grid;
+  gap: 3px;
+  min-width: 160px;
+  padding: 10px 12px;
+  border: 1px solid oklch(0.79 0.13 196 / 0.24);
+  border-radius: 10px;
+  color: var(--muted);
+  background: oklch(0.04 0.024 255 / 0.82);
+}
+
+.hologram-readout span {
+  color: var(--cyan);
+  font-size: 0.72rem;
+  font-weight: 820;
+}
+
+.hologram-readout strong {
+  color: white;
+  font-size: 1rem;
+}
+
 .france-grid-map {
   position: relative;
   overflow: hidden;
@@ -2685,6 +2799,17 @@ a {
 
   .city-node text {
     display: none;
+  }
+
+  .france-3d-label {
+    display: none;
+  }
+
+  .hologram-readout {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    min-width: 0;
   }
 
   .map-readout,

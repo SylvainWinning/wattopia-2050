@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import {
@@ -49,6 +50,16 @@ import {
 } from "@/lib/blackout-game";
 
 type Phase = "intro" | "mission" | "result";
+
+type France3DMapProps = {
+  state: MissionState;
+  compact?: boolean;
+  onReady?: () => void;
+};
+
+const France3DMap = dynamic<France3DMapProps>(() => import("./France3DMap").then((mod) => mod.France3DMap), {
+  ssr: false,
+});
 
 const metricLabels: Record<keyof MissionMetrics, string> = {
   stability: "Stabilité réseau",
@@ -375,10 +386,62 @@ function FranceGridMap({
   );
 }
 
+function FranceHybridMap({
+  state,
+  compact = false,
+  enable3D = true,
+}: {
+  state: MissionState;
+  compact?: boolean;
+  enable3D?: boolean;
+}) {
+  const [threeReady, setThreeReady] = useState(false);
+  const [canRender3D, setCanRender3D] = useState(false);
+
+  useEffect(() => {
+    if (!enable3D) return;
+
+    const supportsWebGl = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        return Boolean(window.WebGLRenderingContext && (canvas.getContext("webgl") || canvas.getContext("experimental-webgl")));
+      } catch {
+        return false;
+      }
+    };
+
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setCanRender3D(!motionQuery.matches && supportsWebGl());
+    const timer = window.setTimeout(update, 0);
+    motionQuery.addEventListener("change", update);
+
+    return () => {
+      window.clearTimeout(timer);
+      motionQuery.removeEventListener("change", update);
+    };
+  }, [enable3D]);
+
+  const show3D = enable3D && canRender3D;
+
+  return (
+    <div className={clsx("france-map-stage", compact && "compact", show3D && "three-enabled", show3D && threeReady && "three-ready")}>
+      <div className="france-map-fallback">
+        <FranceGridMap state={state} compact={compact} />
+      </div>
+      {show3D && (
+        <div className={clsx("france-map-3d-layer", threeReady && "ready")}>
+          <France3DMap state={state} compact={compact} onReady={() => setThreeReady(true)} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Hero({
   state,
   snapshot,
   loading,
+  enable3D,
   onStart,
   onDemo,
   onRefresh,
@@ -386,6 +449,7 @@ function Hero({
   state: MissionState;
   snapshot: LiveMixSnapshot | null;
   loading: boolean;
+  enable3D: boolean;
   onStart: () => void;
   onDemo: () => void;
   onRefresh: () => void;
@@ -435,7 +499,7 @@ function Hero({
         <p className="data-note">{buildMissionFromSnapshot(snapshot)}</p>
       </div>
       <div className="hero-stage">
-        <FranceGridMap state={state} />
+        <FranceHybridMap state={state} enable3D={enable3D} />
         <div className="rank-console">
           <span>Grade potentiel</span>
           <strong>{state.gameRank}</strong>
@@ -862,7 +926,7 @@ function MissionExperience({
       <MissionHud state={state} />
       <div className="mission-layout">
         <div className="mission-visual">
-          <FranceGridMap state={state} />
+          <FranceHybridMap state={state} enable3D={phase === "mission"} />
           <NarrativeLog state={state} />
         </div>
         <div className="mission-controls">
@@ -918,7 +982,7 @@ function FinalVerdict({
           <span />
           <strong>{state.result.kind === "stable" ? "VICTOIRE" : state.result.kind === "partial" ? "SAUVETAGE PARTIEL" : "BLACKOUT"}</strong>
         </div>
-        <FranceGridMap state={state} compact />
+        <FranceHybridMap state={state} compact />
       </div>
       <div className="result-copy">
         <span>Verdict final</span>
@@ -1313,6 +1377,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
         state={missionState}
         snapshot={snapshot}
         loading={loading}
+        enable3D={phase === "intro"}
         onRefresh={loadSnapshot}
         onStart={startMission}
         onDemo={startJuryDemo}
