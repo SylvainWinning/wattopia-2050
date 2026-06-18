@@ -33,6 +33,11 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { buildDaySimulation, summarizeDaySimulation, type DaySimulationPoint } from "@/lib/day-simulation";
+import {
+  buildGrandDebatEnergetique,
+  type DebateFactionId,
+  type DebateStance,
+} from "@/lib/debate";
 import { fetchLiveMixSnapshot } from "@/lib/fetch-live-mix";
 import type { LiveMixSnapshot } from "@/lib/live-mix";
 import {
@@ -66,6 +71,36 @@ const challengeIcons: Record<ChallengeId, LucideIcon> = {
   importLimit: MapPinned,
 };
 
+const debateFactionVisuals: Record<DebateFactionId, { icon: LucideIcon; role: string; tone: string }> = {
+  reseau: {
+    icon: RadioTower,
+    role: "sécurité d'approvisionnement",
+    tone: "var(--primary)",
+  },
+  climat: {
+    icon: Leaf,
+    role: "CO₂, sobriété, bas-carbone",
+    tone: energyColors.bio,
+  },
+  industrie: {
+    icon: Factory,
+    role: "coût, puissance, continuité",
+    tone: energyColors.nuclear,
+  },
+  territoires: {
+    icon: MapPinned,
+    role: "acceptabilité et répartition",
+    tone: energyColors.hydro,
+  },
+};
+
+const debateStanceClass: Record<DebateStance, string> = {
+  support: "support",
+  conditional: "conditional",
+  concerned: "concerned",
+  opposed: "opposed",
+};
+
 const formatMw = (value: number | null): string =>
   value === null ? "n.d." : `${new Intl.NumberFormat("fr-FR").format(Math.round(value))} MW`;
 
@@ -82,6 +117,58 @@ const formatDate = (iso: string): string =>
     timeStyle: "short",
     timeZone: "Europe/Paris",
   }).format(new Date(iso));
+
+type DaySummary = ReturnType<typeof summarizeDaySimulation>;
+
+function missionStatus(result: SimulationResult, summary: DaySummary) {
+  if (summary.blackoutHours > 0 || summary.maxRisk >= 70) {
+    return {
+      tone: "danger",
+      label: "Alerte blackout",
+      headline: `${summary.blackoutHours || 1} h critique${summary.blackoutHours > 1 ? "s" : ""} détectée${summary.blackoutHours > 1 ? "s" : ""}`,
+      detail: `Le réseau décroche autour de ${summary.worstHour.label}. Réduis la demande ou renforce les moyens pilotables et le stockage.`,
+    };
+  }
+
+  if (result.score < 80 || summary.maxRisk >= 45) {
+    return {
+      tone: "tense",
+      label: "Tension réseau",
+      headline: "La France tient, mais sans vraie marge",
+      detail: `Le pire moment arrive à ${summary.worstHour.label}. Une crise plus dure peut faire basculer le scénario.`,
+    };
+  }
+
+  return {
+    tone: "secure",
+    label: "Mission stabilisée",
+    headline: "La France reste alimentée pendant 24h",
+    detail: "Le mix absorbe le pic, garde le CO₂ bas et conserve une réserve de sécurité.",
+  };
+}
+
+function stressVerdict(result: SimulationResult, summary: DaySummary): string {
+  if (summary.blackoutHours > 0 || summary.maxRisk >= 82) return "Blackout probable";
+  if (summary.status === "critical") return "Réseau critique";
+  if (summary.status === "tense" || summary.maxRisk >= 48) return "Réseau fragile";
+  return result.verdict;
+}
+
+function stressExplanation(result: SimulationResult, summary: DaySummary): string {
+  if (summary.blackoutHours > 0) {
+    return `Le stress test détecte ${summary.blackoutHours} heure${summary.blackoutHours > 1 ? "s" : ""} critique${summary.blackoutHours > 1 ? "s" : ""}. Le scénario doit gagner de la marge à ${summary.worstHour.label} avant d'être validé.`;
+  }
+
+  if (summary.status === "critical" || summary.maxRisk >= 82) {
+    return `Le réseau tient de justesse dans le modèle, mais le risque grimpe à ${summary.maxRisk}%. Renforce le stockage, la sobriété ou les moyens pilotables.`;
+  }
+
+  if (summary.status === "tense" || summary.maxRisk >= 48) {
+    return `Le scénario passe, mais avec peu de marge au pire moment (${summary.worstHour.label}). Une crise plus dure peut le faire basculer.`;
+  }
+
+  return result.explanation;
+}
 
 const sharePalette = {
   ink: "#111827",
@@ -171,7 +258,7 @@ function buildScenarioCardSvg(
     <text x="132" y="509" fill="white" font-family="Arial, sans-serif" font-size="17" font-weight="800">${escapeXml(challenge.label)}</text>
 
     <text x="590" y="118" fill="${sharePalette.muted}" font-family="Arial, sans-serif" font-size="22" font-weight="800">CARTE DU SCÉNARIO</text>
-    <text x="590" y="176" fill="${sharePalette.ink}" font-family="Arial, sans-serif" font-size="46" font-weight="900">${escapeXml(result.verdict)}</text>
+    <text x="590" y="176" fill="${sharePalette.ink}" font-family="Arial, sans-serif" font-size="46" font-weight="900">${escapeXml(stressVerdict(result, summary))}</text>
     <text x="590" y="216" fill="${sharePalette.muted}" font-family="Arial, sans-serif" font-size="20" font-weight="600">Stress test 24h · modèle simplifié pour hackathon</text>
 
     <circle cx="662" cy="376" r="116" fill="url(#score)" />
@@ -393,61 +480,6 @@ function SliderControl({
         <span className="w-12 text-right font-mono text-sm font-semibold text-[var(--ink)]">{value}</span>
       </span>
     </label>
-  );
-}
-
-function EnergyMap() {
-  return (
-    <div className="energy-map" aria-hidden="true">
-      <svg viewBox="0 0 760 560" role="img">
-        <defs>
-          <linearGradient id="gridLine" x1="0" x2="1">
-            <stop offset="0%" stopColor="oklch(0.72 0.12 218)" />
-            <stop offset="50%" stopColor="oklch(0.45 0.15 260)" />
-            <stop offset="100%" stopColor="oklch(0.78 0.17 82)" />
-          </linearGradient>
-          <filter id="softGlow">
-            <feGaussianBlur stdDeviation="7" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        <path
-          className="map-shape"
-          d="M337 73 461 95 533 171 594 229 569 331 611 402 502 466 399 487 302 452 203 466 143 383 182 289 143 211 220 142Z"
-        />
-        <path className="flow-line flow-one" d="M194 391 C268 337 294 253 377 221 C465 187 514 235 575 299" />
-        <path className="flow-line flow-two" d="M212 153 C284 214 356 258 413 339 C449 391 502 417 560 421" />
-        <path className="flow-line flow-three" d="M302 451 C327 363 309 279 365 205 C402 155 449 126 516 128" />
-        <path className="flow-line flow-four" d="M164 260 C258 267 344 296 444 278 C506 266 542 231 587 204" />
-        {[
-          [220, 142, "wind"],
-          [461, 95, "nuclear"],
-          [575, 299, "solar"],
-          [302, 452, "hydro"],
-          [413, 339, "storage"],
-          [182, 289, "city"],
-          [533, 171, "gas"],
-        ].map(([x, y, kind], index) => (
-          <g className={clsx("node", `node-${kind}`)} key={`${kind}-${index}`} transform={`translate(${x} ${y})`}>
-            <circle r="18" />
-            <circle r="5" />
-          </g>
-        ))}
-        <g className="city" transform="translate(295 398)">
-          <rect x="0" y="22" width="22" height="48" rx="5" />
-          <rect x="32" y="0" width="28" height="70" rx="6" />
-          <rect x="72" y="14" width="20" height="56" rx="5" />
-          <rect x="106" y="30" width="34" height="40" rx="6" />
-        </g>
-      </svg>
-      <div className="map-caption">
-        <RadioTower size={17} />
-        <span>Réseau 2050 : équilibre, flexibilité, pilotage</span>
-      </div>
-    </div>
   );
 }
 
@@ -681,7 +713,8 @@ function FranceScenarioMap({
   result: SimulationResult;
   activePoint: DaySimulationPoint;
 }) {
-  const gridTone = result.blackoutRisk > 65 ? "danger" : result.stability > 72 ? "stable" : "tense";
+  const pointRisk = Math.max(activePoint.blackoutRisk, result.blackoutRisk);
+  const gridTone = activePoint.margin < -0.5 || pointRisk > 68 ? "danger" : pointRisk > 45 ? "tense" : "stable";
   const nodeScale = {
     solar: 12 + scenario.solar * 0.16,
     wind: 12 + scenario.wind * 0.14,
@@ -689,6 +722,11 @@ function FranceScenarioMap({
     hydro: 12 + scenario.hydro * 0.34,
     storage: 12 + scenario.storage * 0.13,
     gas: 10 + scenario.gas * 0.26,
+  };
+  const cityStatus = (index: number) => {
+    if (gridTone === "danger" && index % 3 === 0) return "blackout";
+    if (gridTone === "danger" || (gridTone === "tense" && index % 2 === 0)) return "fragile";
+    return "online";
   };
 
   return (
@@ -711,11 +749,16 @@ function FranceScenarioMap({
             <stop offset="48%" stopColor={energyColors.nuclear} />
             <stop offset="100%" stopColor={energyColors.solar} />
           </linearGradient>
+          <radialGradient id="cityGlow">
+            <stop offset="0%" stopColor="white" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          </radialGradient>
         </defs>
         <path
           className="control-france"
           d="M319 56 451 82 523 155 604 219 574 333 627 419 512 495 397 525 300 488 197 503 122 406 160 300 117 214 202 127Z"
         />
+        {gridTone !== "stable" ? <circle className="blackout-pulse" cx="360" cy="310" r={gridTone === "danger" ? 205 : 150} /> : null}
         <path className="control-region" d="M319 56 332 225 202 127" />
         <path className="control-region" d="M332 225 523 155 604 219" />
         <path className="control-region" d="M332 225 397 525 197 503" />
@@ -744,6 +787,20 @@ function FranceScenarioMap({
             <text x="198" y="404">Zone sous tension</text>
           </g>
         ) : null}
+        {[
+          { name: "Lille", x: 421, y: 150 },
+          { name: "Paris", x: 355, y: 246 },
+          { name: "Rennes", x: 212, y: 280 },
+          { name: "Lyon", x: 460, y: 365 },
+          { name: "Bordeaux", x: 284, y: 424 },
+          { name: "Marseille", x: 497, y: 468 },
+        ].map((city, index) => (
+          <g className={clsx("grid-city", cityStatus(index))} key={city.name} transform={`translate(${city.x} ${city.y})`}>
+            <circle className="grid-city-glow" r="19" />
+            <circle className="grid-city-core" r="6" />
+            <text y="29">{city.name}</text>
+          </g>
+        ))}
         <g className="control-city" transform="translate(300 395)">
           <rect x="0" y="22" width="22" height="50" rx="5" />
           <rect x="34" y="0" width="30" height="72" rx="6" />
@@ -754,7 +811,7 @@ function FranceScenarioMap({
       <div className="map-readout">
         <span>Marge active</span>
         <strong>{activePoint.margin >= 0 ? "+" : ""}{activePoint.margin}</strong>
-        <small>risque {activePoint.blackoutRisk}%</small>
+        <small>risque {Math.round(pointRisk)}%</small>
       </div>
     </div>
   );
@@ -788,7 +845,7 @@ function ScenarioPassport({
     <div className="scenario-passport">
       <div>
         <p className="scenario-label">Carte du scénario</p>
-        <h3>{result.verdict}</h3>
+        <h3>{stressVerdict(result, summary)}</h3>
         <p>Un résumé prêt à partager : score, stress test 24h et grands choix de mix.</p>
       </div>
       <div className="passport-score">
@@ -859,7 +916,7 @@ function ControlRoomOverview({
             <Activity size={18} />
             <span>{activeChallenge.label}</span>
           </div>
-          <strong>{result.verdict}</strong>
+          <strong>{stressVerdict(result, summary)}</strong>
           <p>
             La marge minimale simulée atteint {summary.minMargin >= 0 ? "+" : ""}{summary.minMargin} points à {summary.worstHour.label}. Le scénario traverse {summary.blackoutHours} heure{summary.blackoutHours > 1 ? "s" : ""} critique{summary.blackoutHours > 1 ? "s" : ""}.
           </p>
@@ -919,6 +976,79 @@ function ControlRoomOverview({
   );
 }
 
+function MissionControlHero({
+  snapshot,
+  scenario,
+  onLaunch,
+}: {
+  snapshot: LiveMixSnapshot | null;
+  scenario: ScenarioState;
+  onLaunch: () => void;
+}) {
+  const result = useMemo(() => simulateScenario(scenario), [scenario]);
+  const dayPoints = useMemo(() => buildDaySimulation(scenario), [scenario]);
+  const summary = useMemo(() => summarizeDaySimulation(dayPoints), [dayPoints]);
+  const status = missionStatus(result, summary);
+  const activePoint = summary.worstHour;
+  const challenge = challenges[scenario.challenge];
+
+  return (
+    <section id="top" className={clsx("mission-control-hero", `mission-${status.tone}`)}>
+      <div className="mission-command-copy">
+        <div className="mission-command-label">
+          <span>Mission Control France 2050</span>
+          <i>{snapshot?.sourceLabel ?? "Connexion RTE..."}</i>
+        </div>
+        <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+          Stabilisez la France avant la coupure.
+        </motion.h1>
+        <motion.p className="mission-command-lede" initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.06 }}>
+          Prenez les commandes du réseau, déclenchez une crise, puis défendez votre mix devant le Grand Débat. Les villes doivent rester allumées 24h.
+        </motion.p>
+
+        <div className="mission-alert-card">
+          <span>{status.label}</span>
+          <strong>{status.headline}</strong>
+          <p>{status.detail}</p>
+        </div>
+
+        <div className="mission-command-actions">
+          <button className="primary-button" type="button" onClick={onLaunch}>
+            <Zap size={18} />
+            Entrer en Mission Control
+          </button>
+          <a className="secondary-button" href="#debat">
+            Voir le Grand Débat
+          </a>
+        </div>
+
+        <div className="mission-command-metrics" aria-label="Objectifs de mission">
+          <span>
+            <small>Crise active</small>
+            <strong>{challenge.short}</strong>
+          </span>
+          <span>
+            <small>Heures critiques</small>
+            <strong>{summary.blackoutHours}/24</strong>
+          </span>
+          <span>
+            <small>Score cible</small>
+            <strong>{result.score}/100</strong>
+          </span>
+        </div>
+      </div>
+
+      <div className="mission-command-stage">
+        <div className="stage-header">
+          <span>Blackout Pulse Test</span>
+          <strong>{activePoint.label}</strong>
+        </div>
+        <FranceScenarioMap scenario={scenario} result={result} activePoint={activePoint} />
+      </div>
+    </section>
+  );
+}
+
 function SimulatorSection({
   scenario,
   setScenario,
@@ -963,8 +1093,8 @@ function SimulatorSection({
     <section id="simulateur" className="section-shell simulator-shell">
       <div className="section-heading">
         <div>
-          <h2>Salle de contrôle 2050</h2>
-          <p>Vise au moins 80/100, zéro heure critique, et un CO₂ bas. Les curseurs changent immédiatement le verdict.</p>
+          <h2>Blackout Simulator 24h</h2>
+          <p>Déclenche une crise, ajuste le mix et observe si la carte décroche heure par heure. Objectif : 80/100, zéro heure critique et un CO₂ bas.</p>
         </div>
         <div className="simulator-actions">
           <button className="ghost-button" type="button" onClick={() => setIsPlaying((playing) => !playing)}>
@@ -980,7 +1110,7 @@ function SimulatorSection({
 
       <div className="playbook-panel">
         <div>
-          <span className="playbook-kicker">Ce que tu dois faire</span>
+          <span className="playbook-kicker">Mode opératoire</span>
           <strong>Construis un mix qui produit assez, reste stable, et tient sous stress.</strong>
         </div>
         <ul>
@@ -1041,8 +1171,8 @@ function SimulatorSection({
           <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <p className="scenario-label">{challenges[scenario.challenge].label}</p>
-              <h3>{result.verdict}</h3>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--muted)]">{result.explanation}</p>
+              <h3>{stressVerdict(result, daySummary)}</h3>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--muted)]">{stressExplanation(result, daySummary)}</p>
             </div>
             <ScoreRing score={result.score} />
           </div>
@@ -1129,6 +1259,87 @@ function SimulatorSection({
   );
 }
 
+function DebateSection({ scenario }: { scenario: ScenarioState }) {
+  const result = useMemo(() => simulateScenario(scenario), [scenario]);
+  const dayPoints = useMemo(() => buildDaySimulation(scenario), [scenario]);
+  const summary = useMemo(() => summarizeDaySimulation(dayPoints), [dayPoints]);
+  const debate = useMemo(() => buildGrandDebatEnergetique(scenario, result, summary), [scenario, result, summary]);
+
+  return (
+    <section id="debat" className="section-shell debate-shell">
+      <div className="debate-head">
+        <div>
+          <p className="scenario-label">Grand Débat Énergétique</p>
+          <h2>Votre mix ne doit pas seulement tenir. Il doit aussi convaincre.</h2>
+          <p>
+            Chaque camp regarde le même scénario sous un angle différent. Le score global ne suffit pas : un bon plan doit sécuriser le réseau, baisser le CO₂, rester finançable et acceptable.
+          </p>
+        </div>
+        <div className="debate-verdict">
+          <span>Verdict politique</span>
+          <strong>{debate.verdictLabel}</strong>
+          <small>{debate.coalitionLabel}</small>
+          <b>{debate.score}/100</b>
+        </div>
+      </div>
+
+      <div className="faction-grid">
+        {debate.cards.map((faction) => {
+          const visual = debateFactionVisuals[faction.id];
+          const Icon = visual.icon;
+          return (
+            <article className={clsx("faction-card", `stance-${debateStanceClass[faction.stance]}`)} key={faction.id}>
+              <div className="faction-top">
+                <span style={{ color: visual.tone }}>
+                  <Icon size={20} />
+                </span>
+                <div>
+                  <h3>{faction.title}</h3>
+                  <p>{visual.role}</p>
+                </div>
+              </div>
+              <div className="faction-score">
+                <strong>{faction.score}</strong>
+                <span>/100</span>
+              </div>
+              <div className="faction-meter">
+                <i style={{ width: `${faction.score}%`, background: visual.tone }} />
+              </div>
+              <p className="faction-stance">{faction.stanceLabel}</p>
+              <p className="faction-message">{faction.message}</p>
+              <div className="faction-priorities" aria-label={`Priorités ${faction.title}`}>
+                {faction.priorities.map((priority) => (
+                  <span key={priority}>{priority}</span>
+                ))}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="debate-summary">
+        <strong>{debate.message}</strong>
+        <p>Le but n’est pas de “trouver la vérité”, mais de rendre visibles les arbitrages : un scénario doit tenir techniquement, climatiquement, économiquement et politiquement.</p>
+      </div>
+
+      <div className="dilemma-strip">
+        <article>
+          <strong>Le choix impossible</strong>
+          <p>Plus de gaz sécurise les pics, mais dégrade le climat.</p>
+        </article>
+        <article>
+          <strong>La vraie flexibilité</strong>
+          <p>Renouvelables élevés sans stockage : la carte tient le jour, mais souffre le soir.</p>
+        </article>
+        <article>
+          <strong>Le levier silencieux</strong>
+          <p>La sobriété baisse la demande avant même de produire un MW de plus.</p>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: LiveMixSnapshot }) {
   const [snapshot, setSnapshot] = useState<LiveMixSnapshot | null>(initialSnapshot);
   const [loading, setLoading] = useState(false);
@@ -1167,10 +1378,14 @@ export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: Live
     const demo = new URLSearchParams(window.location.search).get("demo");
     if (demo === "1") params.set("demo", "1");
     const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-    const toast = document.getElementById("copy-toast");
-    toast?.classList.add("visible");
-    window.setTimeout(() => toast?.classList.remove("visible"), 4000);
-    window.setTimeout(() => window.history.replaceState(null, "", url), 140);
+    window.history.replaceState(null, "", url);
+
+    const showToast = (message: string) => {
+      const toast = document.getElementById("copy-toast");
+      if (toast) toast.textContent = message;
+      toast?.classList.add("visible");
+      window.setTimeout(() => toast?.classList.remove("visible"), 4000);
+    };
 
     const fallbackCopy = () => {
       const helper = document.createElement("textarea");
@@ -1180,15 +1395,29 @@ export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: Live
       helper.style.opacity = "0";
       document.body.appendChild(helper);
       helper.select();
-      document.execCommand("copy");
+      const copied = document.execCommand("copy");
       document.body.removeChild(helper);
+      return copied;
     };
 
-    if (navigator.clipboard?.writeText) {
-      void navigator.clipboard.writeText(url).catch(fallbackCopy);
-    } else {
-      fallbackCopy();
-    }
+    const copyUrl = async () => {
+      let copied = false;
+
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(url);
+          copied = true;
+        } else {
+          copied = fallbackCopy();
+        }
+      } catch {
+        copied = fallbackCopy();
+      }
+
+      showToast(copied ? "Lien de scénario copié" : "Lien prêt dans la barre d'adresse");
+    };
+
+    void copyUrl();
   };
 
   return (
@@ -1204,61 +1433,29 @@ export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: Live
           </span>
         </a>
         <nav className="hidden items-center gap-1 md:flex" aria-label="Navigation principale">
-          <a href="#mission">Mission</a>
-          <a href="#cockpit">Cockpit</a>
-          <a href="#maintenant">Maintenant</a>
-          <a href="#simulateur">Simulateur</a>
-          <a href="#methode">Méthode</a>
+          <a href="#top">Mission Control</a>
+          <a href="#simulateur">Blackout</a>
+          <a href="#debat">Grand Débat</a>
+          <a href="#maintenant">Données</a>
           <a href="#sources">Sources</a>
         </nav>
         <button className="primary-button compact" type="button" onClick={() => document.getElementById("simulateur")?.scrollIntoView({ behavior: "smooth" })}>
-          <Share2 size={16} />
-          Simuler
+          <AlertTriangle size={16} />
+          Lancer une crise
         </button>
       </header>
 
-      <section id="top" className="hero-section">
-        <div className="hero-copy">
-          <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            Wattopia 2050
-          </motion.h1>
-          <motion.p className="hero-subtitle" initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.06 }}>
-            Construis le mix énergétique de la France et évite le blackout.
-          </motion.p>
-          <p className="hero-proof">
-            Ta mission : régler les sources d’énergie, lancer des crises météo, puis atteindre le meilleur score possible sans heures critiques. Basé sur des données réelles du réseau électrique français.
-          </p>
-          <div className="hero-actions">
-            <button className="primary-button" type="button" onClick={() => document.getElementById("simulateur")?.scrollIntoView({ behavior: "smooth" })}>
-              <Zap size={18} />
-              Lancer la simulation
-            </button>
-            <a className="secondary-button" href="#maintenant">
-              Voir le mix actuel
-            </a>
-          </div>
-          <div className="hero-facts" aria-label="Points clés">
-            <span>
-              <ShieldCheck size={16} />
-              But : 80/100+
-            </span>
-            <span>
-              <Cable size={16} />
-              Zéro heure critique
-            </span>
-            <span>
-              <CloudSun size={16} />
-              Crises météo
-            </span>
-          </div>
-        </div>
-        <EnergyMap />
-      </section>
+      <MissionControlHero
+        snapshot={snapshot}
+        scenario={scenario}
+        onLaunch={() => document.getElementById("simulateur")?.scrollIntoView({ behavior: "smooth" })}
+      />
 
       <MissionBrief />
       <ControlRoomOverview snapshot={snapshot} scenario={scenario} />
       <LiveMixSection snapshot={snapshot} loading={loading} onRefresh={loadSnapshot} />
       <SimulatorSection scenario={scenario} setScenario={setScenario} onCopy={copyScenario} />
+      <DebateSection scenario={scenario} />
 
       <section id="methode" className="section-shell method-shell">
         <div>

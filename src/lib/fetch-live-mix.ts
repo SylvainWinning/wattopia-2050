@@ -5,7 +5,7 @@ const requestTimeoutMs = 4500;
 
 async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), requestTimeoutMs);
+  const timeout = globalThis.setTimeout(() => controller.abort(), requestTimeoutMs);
 
   try {
     return await fetch(url, {
@@ -13,7 +13,7 @@ async function fetchWithTimeout(url: string): Promise<Response> {
       signal: controller.signal,
     });
   } finally {
-    window.clearTimeout(timeout);
+    globalThis.clearTimeout(timeout);
   }
 }
 
@@ -34,24 +34,28 @@ export async function fetchLiveMixSnapshot(forceDemo = false): Promise<LiveMixSn
   }
 
   try {
-    const params = new URLSearchParams({
+    const recentParams = new URLSearchParams({
       order_by: "-date_heure",
-      limit: "1",
-      where: "consommation is not null",
+      limit: "24",
     });
-    let records = await fetchCandidateRecords(params);
+    let records = await fetchCandidateRecords(recentParams);
 
-    if (!records.length) {
-      records = await fetchCandidateRecords(new URLSearchParams({
-        order_by: "-date_heure",
-        limit: "20",
-      }));
-    }
-
-    const firstRecord = records.find((record) => {
+    let firstRecord = records.find((record) => {
       if (!record || typeof record !== "object") return false;
       return hasUsableSnapshot(mapEco2MixRecord(record));
     });
+
+    if (!firstRecord) {
+      records = await fetchCandidateRecords(new URLSearchParams({
+        order_by: "-date_heure",
+        limit: "6",
+        where: "consommation is not null",
+      }));
+      firstRecord = records.find((record) => {
+        if (!record || typeof record !== "object") return false;
+        return hasUsableSnapshot(mapEco2MixRecord(record));
+      });
+    }
 
     if (!firstRecord || typeof firstRecord !== "object") throw new Error("aucune donnée exploitable");
 

@@ -195,6 +195,250 @@ a {
   transform: none;
 }
 
+.mission-control-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(500px, 0.98fr) minmax(430px, 1.02fr);
+  gap: 24px;
+  align-items: center;
+  width: min(1340px, calc(100% - 32px));
+  min-height: calc(100vh - 72px);
+  margin: 0 auto;
+  padding: 28px 0 28px;
+  overflow: hidden;
+}
+
+.mission-control-hero::before {
+  position: absolute;
+  inset: 18px 0 28px;
+  z-index: 0;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 64% 38%, oklch(0.72 0.12 218 / 0.26), transparent 32%),
+    radial-gradient(circle at 28% 18%, oklch(0.78 0.17 82 / 0.2), transparent 28%),
+    linear-gradient(135deg, oklch(0.14 0.04 260), oklch(0.24 0.08 260));
+  content: "";
+}
+
+.mission-control-hero::after {
+  position: absolute;
+  inset: 18px 0 28px;
+  z-index: 0;
+  border-radius: 18px;
+  pointer-events: none;
+  background:
+    linear-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(1 0 0 / 0.04) 1px, transparent 1px);
+  background-size: 42px 42px;
+  content: "";
+  mask-image: linear-gradient(90deg, black, transparent 82%);
+}
+
+.mission-control-hero.mission-danger::before {
+  background:
+    radial-gradient(circle at 68% 40%, oklch(0.55 0.18 28 / 0.32), transparent 34%),
+    radial-gradient(circle at 26% 18%, oklch(0.78 0.17 82 / 0.18), transparent 28%),
+    linear-gradient(135deg, oklch(0.14 0.04 260), oklch(0.24 0.08 28));
+}
+
+.mission-control-hero.mission-tense::before {
+  background:
+    radial-gradient(circle at 68% 38%, oklch(0.67 0.16 48 / 0.3), transparent 34%),
+    radial-gradient(circle at 26% 18%, oklch(0.72 0.12 218 / 0.2), transparent 28%),
+    linear-gradient(135deg, oklch(0.14 0.04 260), oklch(0.24 0.08 260));
+}
+
+.mission-command-copy,
+.mission-command-stage {
+  position: relative;
+  z-index: 1;
+}
+
+.mission-command-copy {
+  padding: 34px clamp(18px, 3vw, 36px);
+  color: white;
+}
+
+.mission-command-label {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.mission-command-label span,
+.mission-command-label i {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 780;
+  padding: 0 10px;
+}
+
+.mission-command-label span {
+  background: oklch(1 0 0 / 0.14);
+  color: white;
+}
+
+.mission-command-label i {
+  border: 1px solid oklch(1 0 0 / 0.18);
+  color: oklch(1 0 0 / 0.72);
+  font-style: normal;
+}
+
+.mission-command-copy h1 {
+  max-width: 12.8ch;
+  margin-top: 18px;
+  color: white;
+  font-size: 4.2rem;
+  font-weight: 830;
+  letter-spacing: -0.035em;
+  line-height: 0.9;
+  text-wrap: balance;
+}
+
+.mission-command-lede {
+  max-width: 620px;
+  margin-top: 16px;
+  color: oklch(1 0 0 / 0.76);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.mission-alert-card {
+  max-width: 620px;
+  margin-top: 16px;
+  border: 1px solid oklch(1 0 0 / 0.16);
+  border-radius: 14px;
+  background: oklch(1 0 0 / 0.09);
+  padding: 16px;
+}
+
+.mission-alert-card span,
+.mission-alert-card strong,
+.mission-alert-card p {
+  display: block;
+}
+
+.mission-alert-card span {
+  color: oklch(0.78 0.17 82);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.mission-alert-card strong {
+  margin-top: 6px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+
+.mission-alert-card p {
+  margin-top: 7px;
+  color: oklch(1 0 0 / 0.68);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.mission-danger .mission-alert-card span {
+  color: oklch(0.78 0.16 38);
+}
+
+.mission-command-actions,
+.mission-command-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.mission-command-actions .secondary-button {
+  border-color: oklch(1 0 0 / 0.16);
+  background: oklch(1 0 0 / 0.1);
+  color: white;
+}
+
+.mission-command-actions .secondary-button:hover {
+  background: oklch(1 0 0 / 0.16);
+}
+
+.mission-command-metrics span {
+  min-width: 138px;
+  border: 1px solid oklch(1 0 0 / 0.14);
+  border-radius: 12px;
+  background: oklch(1 0 0 / 0.08);
+  padding: 12px;
+}
+
+.mission-command-metrics small,
+.mission-command-metrics strong {
+  display: block;
+}
+
+.mission-command-metrics small {
+  color: oklch(1 0 0 / 0.62);
+  font-size: 0.72rem;
+  font-weight: 720;
+}
+
+.mission-command-metrics strong {
+  margin-top: 5px;
+  color: white;
+  font-size: 0.94rem;
+  font-weight: 780;
+}
+
+.mission-command-stage {
+  align-self: center;
+  margin-right: 18px;
+  border: 1px solid oklch(1 0 0 / 0.13);
+  border-radius: 16px;
+  background: oklch(0.11 0.035 260 / 0.74);
+  padding: 12px;
+}
+
+.stage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid oklch(1 0 0 / 0.12);
+  color: white;
+  padding: 4px 4px 12px;
+}
+
+.stage-header span {
+  color: oklch(1 0 0 / 0.62);
+  font-size: 0.8rem;
+  font-weight: 760;
+}
+
+.stage-header strong {
+  border-radius: 999px;
+  background: oklch(1 0 0 / 0.12);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.86rem;
+  padding: 7px 10px;
+}
+
+.mission-command-stage .france-control-map {
+  min-height: 0;
+  border: 0;
+  background: transparent;
+}
+
+.mission-command-stage .france-control-map::before {
+  opacity: 0.72;
+}
+
+.mission-command-stage .france-control-map > svg {
+  height: 470px;
+}
+
 .hero-section {
   position: relative;
   display: grid;
@@ -1028,6 +1272,12 @@ a {
     linear-gradient(145deg, oklch(0.17 0.04 260), oklch(0.25 0.07 28));
 }
 
+.france-control-map.tense {
+  background:
+    radial-gradient(circle at 52% 42%, oklch(0.67 0.16 48 / 0.24), transparent 38%),
+    linear-gradient(145deg, oklch(0.17 0.04 260), oklch(0.25 0.07 260));
+}
+
 .france-control-map > svg {
   position: relative;
   z-index: 1;
@@ -1128,6 +1378,58 @@ a {
   font-size: 12px;
   font-weight: 720;
   text-anchor: middle;
+}
+
+.blackout-pulse {
+  fill: none;
+  stroke: oklch(0.72 0.17 35 / 0.68);
+  stroke-width: 5;
+  transform-origin: center;
+  animation: blackout-pulse 1.8s ease-out infinite;
+}
+
+.france-control-map.tense .blackout-pulse {
+  stroke: oklch(0.78 0.17 82 / 0.62);
+  stroke-width: 4;
+}
+
+.grid-city {
+  filter: url("#controlGlow");
+}
+
+.grid-city-glow {
+  fill: url("#cityGlow");
+  opacity: 0.18;
+}
+
+.grid-city-core {
+  stroke: white;
+  stroke-width: 2;
+}
+
+.grid-city text {
+  fill: oklch(1 0 0 / 0.84);
+  font-size: 13px;
+  font-weight: 760;
+  text-anchor: middle;
+}
+
+.grid-city.online .grid-city-core {
+  fill: oklch(0.67 0.15 154);
+}
+
+.grid-city.fragile .grid-city-core {
+  fill: oklch(0.78 0.17 82);
+  animation: city-flicker 1.35s ease-in-out infinite;
+}
+
+.grid-city.blackout .grid-city-core {
+  fill: oklch(0.58 0.18 28);
+  animation: city-outage 1.05s steps(2, end) infinite;
+}
+
+.grid-city.blackout text {
+  fill: oklch(0.86 0.1 42);
 }
 
 .blackout-zone path {
@@ -1561,6 +1863,276 @@ a {
   rotate: -90deg;
 }
 
+.debate-shell {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 14% 8%, oklch(0.72 0.12 218 / 0.18), transparent 30%),
+    linear-gradient(180deg, white, oklch(0.975 0.012 260));
+}
+
+.debate-shell::before {
+  position: absolute;
+  inset: auto -8% -22% 54%;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.45 0.15 260 / 0.14), transparent 66%);
+  content: "";
+  pointer-events: none;
+}
+
+.debate-head {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.34fr);
+  gap: 18px;
+  align-items: stretch;
+  margin-bottom: 18px;
+}
+
+.debate-head h2 {
+  max-width: 760px;
+  margin-top: 8px;
+  font-size: 3rem;
+  font-weight: 820;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-wrap: balance;
+}
+
+.debate-head p {
+  max-width: 770px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.debate-verdict {
+  display: grid;
+  align-content: center;
+  min-height: 210px;
+  border-radius: 14px;
+  background: var(--ink);
+  color: white;
+  padding: 18px;
+}
+
+.debate-verdict span,
+.debate-verdict small,
+.debate-verdict strong,
+.debate-verdict b {
+  display: block;
+}
+
+.debate-verdict span {
+  color: oklch(1 0 0 / 0.62);
+  font-size: 0.78rem;
+  font-weight: 760;
+}
+
+.debate-verdict strong {
+  margin-top: 10px;
+  font-size: 1.75rem;
+  font-weight: 810;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.debate-verdict small {
+  margin-top: 10px;
+  color: oklch(1 0 0 / 0.68);
+  font-size: 0.86rem;
+  font-weight: 640;
+  line-height: 1.35;
+}
+
+.debate-verdict b {
+  margin-top: 18px;
+  color: oklch(0.78 0.17 82);
+  font-size: 1.05rem;
+  font-weight: 820;
+}
+
+.faction-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.faction-card {
+  display: grid;
+  min-height: 292px;
+  align-content: start;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+  padding: 16px;
+}
+
+.faction-card.stance-support {
+  border-color: oklch(0.67 0.15 154 / 0.32);
+  background: linear-gradient(180deg, oklch(0.98 0.018 154), white 48%);
+}
+
+.faction-card.stance-opposed {
+  border-color: oklch(0.58 0.18 28 / 0.32);
+  background: linear-gradient(180deg, oklch(0.98 0.018 28), white 50%);
+}
+
+.faction-top {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+}
+
+.faction-top > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.faction-top h3 {
+  font-size: 1.04rem;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+
+.faction-top p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.faction-score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 18px;
+}
+
+.faction-score strong {
+  color: var(--ink);
+  font-size: 2.75rem;
+  font-weight: 830;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+.faction-score span {
+  color: var(--muted);
+  font-weight: 730;
+}
+
+.faction-meter {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: oklch(0.91 0.012 260);
+  margin-top: 12px;
+}
+
+.faction-meter i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.faction-stance {
+  margin-top: 12px;
+  color: var(--primary-strong);
+  font-size: 0.85rem;
+  font-weight: 780;
+}
+
+.faction-message {
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.faction-priorities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.faction-priorities span {
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 720;
+  padding: 6px 8px;
+}
+
+.debate-summary {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
+  gap: 18px;
+  align-items: center;
+  margin-top: 14px;
+  border-radius: 14px;
+  background: var(--ink);
+  color: white;
+  padding: 18px;
+}
+
+.debate-summary strong {
+  font-size: 1.24rem;
+  font-weight: 790;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+
+.debate-summary p {
+  color: oklch(1 0 0 / 0.72);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.dilemma-strip {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.dilemma-strip article {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+  padding: 16px;
+}
+
+.dilemma-strip strong {
+  display: block;
+  font-size: 0.98rem;
+  font-weight: 780;
+}
+
+.dilemma-strip p {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
 .method-shell {
   padding: clamp(24px, 4vw, 38px);
 }
@@ -1642,7 +2214,47 @@ a {
   }
 }
 
+@keyframes blackout-pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.76);
+  }
+
+  35% {
+    opacity: 0.86;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes city-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.48;
+  }
+}
+
+@keyframes city-outage {
+  0%,
+  42% {
+    opacity: 0.28;
+  }
+
+  43%,
+  100% {
+    opacity: 0.92;
+  }
+}
+
 @media (max-width: 980px) {
+  .mission-control-hero,
   .hero-section,
   .mission-brief,
   .live-grid,
@@ -1654,6 +2266,32 @@ a {
 
   .hero-section {
     min-height: auto;
+  }
+
+  .mission-control-hero {
+    min-height: auto;
+    padding: 24px 0 34px;
+  }
+
+  .mission-control-hero::after {
+    mask-image: linear-gradient(180deg, black, transparent 90%);
+  }
+
+  .mission-command-copy {
+    padding-bottom: 10px;
+  }
+
+  .mission-command-copy h1 {
+    max-width: 13ch;
+    font-size: 3.85rem;
+  }
+
+  .mission-command-stage {
+    margin: 0 18px 18px;
+  }
+
+  .mission-command-stage .france-control-map > svg {
+    height: 390px;
   }
 
   .hero-copy h1 {
@@ -1680,8 +2318,14 @@ a {
 
   .mission-strip,
   .playbook-panel,
-  .challenge-bar.cinematic {
+  .challenge-bar.cinematic,
+  .faction-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .debate-head,
+  .debate-summary {
+    grid-template-columns: 1fr;
   }
 
   .command-verdict,
@@ -1713,6 +2357,69 @@ a {
     gap: 22px;
     padding-top: 32px;
     padding-bottom: 28px;
+  }
+
+  .mission-control-hero {
+    width: min(100% - 22px, 1340px);
+    padding-top: 12px;
+  }
+
+  .mission-control-hero::before,
+  .mission-control-hero::after {
+    inset: 10px 0 18px;
+    border-radius: 14px;
+  }
+
+  .mission-command-copy {
+    padding: 28px 18px 6px;
+  }
+
+  .mission-command-copy h1 {
+    max-width: 10.5ch;
+    margin-top: 18px;
+    font-size: 3.35rem;
+    line-height: 0.92;
+  }
+
+  .mission-command-lede {
+    margin-top: 16px;
+    font-size: 0.98rem;
+    line-height: 1.58;
+  }
+
+  .mission-alert-card {
+    margin-top: 16px;
+  }
+
+  .mission-command-actions,
+  .mission-command-actions > *,
+  .mission-command-metrics,
+  .mission-command-metrics span {
+    width: 100%;
+  }
+
+  .mission-command-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mission-command-metrics span {
+    min-width: 0;
+    padding: 10px 8px;
+  }
+
+  .mission-command-metrics strong {
+    font-size: 0.86rem;
+  }
+
+  .mission-command-stage {
+    margin: 0 10px 18px;
+    padding: 9px;
+  }
+
+  .stage-header {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .hero-copy h1 {
@@ -1765,6 +2472,8 @@ a {
   .challenge-bar,
   .challenge-bar.cinematic,
   .playbook-panel,
+  .faction-grid,
+  .dilemma-strip,
   .result-stats,
   .mission-strip,
   .compare-grid,
@@ -1782,6 +2491,23 @@ a {
 
   .france-control-map > svg {
     height: 430px;
+  }
+
+  .mission-command-stage .france-control-map > svg {
+    height: 360px;
+  }
+
+  .debate-head h2 {
+    font-size: 2.25rem;
+    line-height: 1.03;
+  }
+
+  .debate-verdict {
+    min-height: 0;
+  }
+
+  .faction-card {
+    min-height: 0;
   }
 
   .map-status-strip {
@@ -1820,6 +2546,36 @@ a {
 }
 
 @media (max-width: 430px) {
+  .mission-control-hero {
+    width: min(100% - 16px, 1340px);
+  }
+
+  .mission-command-copy h1 {
+    font-size: 2.55rem;
+  }
+
+  .mission-command-label {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .mission-alert-card {
+    padding: 14px;
+  }
+
+  .mission-alert-card p {
+    display: none;
+  }
+
+  .mission-command-actions .secondary-button {
+    display: none;
+  }
+
+  .stage-header {
+    align-items: center;
+    flex-direction: row;
+  }
+
   .hero-actions,
   .hero-actions > *,
   .section-heading .primary-button,
@@ -1850,6 +2606,23 @@ a {
     height: 360px;
   }
 
+  .mission-command-stage .france-control-map > svg {
+    height: 230px;
+  }
+
+  .mission-command-stage .map-status-strip {
+    display: none;
+  }
+
+  .map-status-strip,
+  .map-readout {
+    border-radius: 12px;
+  }
+
+  .map-readout {
+    flex-wrap: wrap;
+  }
+
   .metric-card {
     min-height: 140px;
   }
@@ -1861,6 +2634,14 @@ a {
 
   .passport-score strong {
     font-size: 3.25rem;
+  }
+
+  .debate-head h2 {
+    font-size: 1.92rem;
+  }
+
+  .debate-summary {
+    padding: 16px;
   }
 }
 
