@@ -5,10 +5,12 @@ import { motion } from "framer-motion";
 import {
   Activity,
   AlertTriangle,
+  Award,
   BatteryCharging,
   Cable,
   CheckCircle2,
   Copy,
+  Crosshair,
   Factory,
   Flame,
   Gauge,
@@ -18,6 +20,9 @@ import {
   RadioTower,
   RefreshCw,
   ShieldCheck,
+  Sparkles,
+  TimerReset,
+  Trophy,
   Waves,
   Zap,
   type LucideIcon,
@@ -122,6 +127,30 @@ function classifyRisk(metrics: MissionMetrics) {
   return "secure";
 }
 
+function missionClock(state: MissionState) {
+  const secondsRemaining = Math.max(0, 300 - state.selectedActions.length * 52);
+  const minutes = Math.floor(secondsRemaining / 60);
+  const seconds = String(secondsRemaining % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function threatLabel(metrics: MissionMetrics) {
+  if (metrics.blackoutRisk >= 78) return "ALERTE ROUGE";
+  if (metrics.blackoutRisk >= 58) return "RÉSEAU INSTABLE";
+  if (metrics.blackoutRisk >= 34) return "MARGE TENDUE";
+  return "CONTRÔLE REPRIS";
+}
+
+function rankName(rank: MissionState["gameRank"]) {
+  return {
+    S: "Légendaire",
+    A: "Maîtrise",
+    B: "Solide",
+    C: "Sous tension",
+    D: "Critique",
+  }[rank];
+}
+
 function MetricMeter({
   label,
   value,
@@ -162,9 +191,11 @@ function FranceGridMap({
   const tone = classifyRisk(state.metrics);
   const cityById = new Map(gridCities.map((city) => [city.id, city]));
   const activeCity = state.activeScene?.cityId;
+  const activeCityData = activeCity ? cityById.get(activeCity) : null;
 
   return (
     <div className={clsx("france-grid-map", `map-${tone}`, compact && "compact")}>
+      <div className="map-vignette" aria-hidden="true" />
       <svg viewBox="0 0 100 100" role="img" aria-label="Carte stylisée du réseau électrique français">
         <defs>
           <filter id="networkGlow" x="-30%" y="-30%" width="160%" height="160%">
@@ -181,6 +212,22 @@ function FranceGridMap({
         />
         <path className="corsica-mark" d="M78.7 78.2 C82.6 80.3 83.7 85.7 81.4 90.8 C80.2 93.4 77.6 96.4 75.9 94.1 C74.3 91.9 75.1 87.7 74.5 84.6 C73.9 81.4 75.4 76.4 78.7 78.2 Z" />
         <path className="border-trace" d="M20.9 22.3 C31 30 35 38 24 47 M84.9 51.6 C75 53 69 58 64.2 90.7 M13.7 65.8 C24 62 32 65 43 79" />
+        {activeCityData && !compact && (
+          <g className="target-reticle">
+            <motion.circle
+              cx={activeCityData.x}
+              cy={activeCityData.y}
+              r="9"
+              initial={false}
+              animate={{ r: [7, 13, 7], opacity: [0.86, 0.16, 0.86] }}
+              transition={{ duration: 1.45, repeat: Infinity, ease: "easeOut" }}
+            />
+            <line x1={activeCityData.x - 12} y1={activeCityData.y} x2={activeCityData.x - 6} y2={activeCityData.y} />
+            <line x1={activeCityData.x + 6} y1={activeCityData.y} x2={activeCityData.x + 12} y2={activeCityData.y} />
+            <line x1={activeCityData.x} y1={activeCityData.y - 12} x2={activeCityData.x} y2={activeCityData.y - 6} />
+            <line x1={activeCityData.x} y1={activeCityData.y + 6} x2={activeCityData.x} y2={activeCityData.y + 12} />
+          </g>
+        )}
         {gridEdges.map((edge) => {
           const from = cityById.get(edge.from);
           const to = cityById.get(edge.to);
@@ -230,6 +277,13 @@ function FranceGridMap({
           );
         })}
       </svg>
+      {!compact && (
+        <div className="sector-strip" aria-hidden="true">
+          <span>NORD</span>
+          <span>OUEST</span>
+          <span>SUD-EST</span>
+        </div>
+      )}
       <div className="map-readout">
         <span>{state.metrics.lightsOn}% des zones restent allumées</span>
         <strong>{state.metrics.blackoutRisk}% risque blackout</strong>
@@ -272,6 +326,20 @@ function Hero({
         <p className="hero-text">
           La demande explose. Le réseau vacille. Tu as 5 décisions pour garder la France allumée sans faire exploser le CO2, le budget ou la confiance citoyenne.
         </p>
+        <div className="hero-hud-strip" aria-label="Paramètres de mission">
+          <span>
+            <TimerReset size={15} />
+            5:00
+          </span>
+          <span>
+            <Crosshair size={15} />
+            5 ordres
+          </span>
+          <span>
+            <Trophy size={15} />
+            Grade live
+          </span>
+        </div>
         <div className="hero-actions">
           <button type="button" className="primary-action" onClick={onStart}>
             <Zap size={18} />
@@ -285,6 +353,11 @@ function Hero({
       </div>
       <div className="hero-stage">
         <FranceGridMap state={state} />
+        <div className="rank-console">
+          <span>Grade potentiel</span>
+          <strong>{state.gameRank}</strong>
+          <em>{rankName(state.gameRank)}</em>
+        </div>
         <div className="risk-console">
           <span>Jauge blackout</span>
           <strong>{state.metrics.blackoutRisk}%</strong>
@@ -326,6 +399,143 @@ function MissionSelector({
   );
 }
 
+function MissionHud({ state }: { state: MissionState }) {
+  const progress = (state.selectedActions.length / MAX_DECISIONS) * 100;
+
+  return (
+    <div className={clsx("game-hud", `hud-${classifyRisk(state.metrics)}`)}>
+      <div className="hud-cell hud-clock">
+        <span>
+          <TimerReset size={15} />
+          Temps crise
+        </span>
+        <strong>{missionClock(state)}</strong>
+      </div>
+      <div className="hud-cell hud-threat">
+        <span>
+          <AlertTriangle size={15} />
+          Niveau menace
+        </span>
+        <strong>{threatLabel(state.metrics)}</strong>
+      </div>
+      <div className="hud-progress" aria-label={`${state.selectedActions.length} décisions prises sur ${MAX_DECISIONS}`}>
+        <div>
+          <span>Ordres envoyés</span>
+          <strong>
+            {state.selectedActions.length}/{MAX_DECISIONS}
+          </strong>
+        </div>
+        <div className="hud-progress-track">
+          <motion.span initial={false} animate={{ width: `${progress}%` }} transition={{ duration: 0.22 }} />
+        </div>
+      </div>
+      <div className="hud-cell hud-combo">
+        <span>
+          <Sparkles size={15} />
+          Combo
+        </span>
+        <strong>{state.comboLabel}</strong>
+      </div>
+      <div className="hud-cell hud-rank">
+        <span>
+          <Award size={15} />
+          Grade
+        </span>
+        <strong>{state.gameRank}</strong>
+        <em>{state.commandPoints} XP</em>
+      </div>
+    </div>
+  );
+}
+
+function BonusObjectives({ state }: { state: MissionState }) {
+  return (
+    <div className="bonus-objectives" aria-label="Objectifs bonus">
+      <div>
+        <Sparkles size={16} />
+        <strong>Objectifs bonus</strong>
+      </div>
+      <ul>
+        {state.bonusObjectives.map((objective) => (
+          <li key={objective.id} className={objective.completed ? "complete" : "pending"}>
+            <span>{objective.title}</span>
+            <em>{objective.text}</em>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ImpactBurst({ state }: { state: MissionState }) {
+  const latest = state.steps.at(-1);
+  if (!latest) return null;
+
+  const protectedNames = (latest.choice.protect ?? [])
+    .map((cityId) => gridCities.find((city) => city.id === cityId)?.name)
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(", ");
+
+  return (
+    <motion.div
+      key={latest.decisionNumber}
+      className="impact-burst"
+      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.18 }}
+    >
+      <div>
+        <span>Ordre #{latest.decisionNumber} exécuté</span>
+        <strong>{latest.choice.title}</strong>
+      </div>
+      <div className="impact-deltas">
+        {effectEntries(latest.choice.effect).slice(0, 3).map(({ key, label, value }) => (
+          <span key={key} className={value >= 0 ? "positive" : "negative"} title={label}>
+            {value > 0 ? "+" : ""}
+            {value} {label.replace(" réseau", "")}
+          </span>
+        ))}
+      </div>
+      {protectedNames && (
+        <p>
+          <ShieldCheck size={15} />
+          Secteurs sécurisés: {protectedNames}
+        </p>
+      )}
+    </motion.div>
+  );
+}
+
+function CascadeReplay({ state }: { state: MissionState }) {
+  if (!state.steps.length) return null;
+
+  return (
+    <div className="cascade-replay" aria-label="Replay de la cascade">
+      <div>
+        <Crosshair size={17} />
+        <strong>Replay cascade</strong>
+      </div>
+      <ol>
+        {state.steps.map((step) => {
+          const offCount = Object.values(step.cityStates).filter((cityState) => cityState === "off").length;
+          const fragileCount = Object.values(step.cityStates).filter((cityState) => cityState === "fragile").length;
+
+          return (
+            <li key={`${step.decisionNumber}-${step.choice.title}`}>
+              <span>#{step.decisionNumber}</span>
+              <strong>{step.choice.title}</strong>
+              <em>
+                {offCount === 0 ? "0 coupure" : `${offCount} coupure${offCount > 1 ? "s" : ""}`} · {fragileCount} fragile
+              </em>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
 function CrisisChoiceCard({
   choice,
   selected,
@@ -364,6 +574,20 @@ function CrisisChoiceCard({
           </span>
         ))}
       </span>
+      {(choice.protect?.length || choice.pressure?.length) && (
+        <span className="tactical-tags">
+          {choice.protect?.slice(0, 2).map((cityId) => (
+            <span key={`protect-${cityId}`} className="tag-protect">
+              Sauve {gridCities.find((city) => city.id === cityId)?.name ?? cityId}
+            </span>
+          ))}
+          {choice.pressure?.slice(0, 1).map((cityId) => (
+            <span key={`pressure-${cityId}`} className="tag-pressure">
+              Fragilise {gridCities.find((city) => city.id === cityId)?.name ?? cityId}
+            </span>
+          ))}
+        </span>
+      )}
     </motion.button>
   );
 }
@@ -492,6 +716,7 @@ function MissionExperience({
         <h2>{state.mode.title}</h2>
         <p>{state.mode.pitch}</p>
       </div>
+      <MissionHud state={state} />
       <div className="mission-layout">
         <div className="mission-visual">
           <FranceGridMap state={state} />
@@ -505,6 +730,8 @@ function MissionExperience({
             </div>
             <p>{state.mode.objective}</p>
           </div>
+          <BonusObjectives state={state} />
+          <ImpactBurst state={state} />
           <MissionMeters metrics={state.metrics} />
           <CrisisScenePanel state={state} onChoose={onChoose} />
           {isComplete && phase !== "result" && (
@@ -537,6 +764,11 @@ function FinalVerdict({
       </div>
       <div className="result-copy">
         <span>Verdict final</span>
+        <div className="final-grade">
+          <strong>{state.gameRank}</strong>
+          <span>Grade {rankName(state.gameRank)}</span>
+          <em>{state.commandPoints} XP crise</em>
+        </div>
         <h2>{state.result.title}</h2>
         <p>{state.result.text}</p>
         <div className="score-lockup">
@@ -554,6 +786,23 @@ function FinalVerdict({
               : `Zones coupées: ${offCities.join(", ")}.`}
           </p>
         </div>
+        {state.achievements.length > 0 && (
+          <div className="achievement-board" aria-label="Trophées débloqués">
+            <div>
+              <Trophy size={18} />
+              <strong>Trophées débloqués</strong>
+            </div>
+            <ul>
+              {state.achievements.map((achievement) => (
+                <li key={achievement.id} className={`achievement-${achievement.tone}`}>
+                  <span>{achievement.title}</span>
+                  <em>{achievement.text}</em>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <CascadeReplay state={state} />
         <div className="result-insights">
           <p>
             <CheckCircle2 size={16} />

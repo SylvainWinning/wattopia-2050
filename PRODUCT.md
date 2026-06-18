@@ -20,6 +20,8 @@ BLACKOUT turns energy-system complexity into a short playable crisis. The user s
 
 Success means the user understands in under 10 seconds that a blackout threatens France, that decisions are needed, and that every choice has visible consequences across stability, CO2, cost and social trust.
 
+The experience should now feel closer to a premium crisis mini-game than a dashboard: visible mission timer, combo label, grade, XP, objectives, tactical feedback, achievements and cascade replay.
+
 ## Experience Model
 
 ### 1. Immersive Intro
@@ -32,9 +34,11 @@ The main game is a 5-decision mission made of crisis scenes. Mission France is c
 
 Each scene names an hour, a threatened city corridor, an operator message and three tactical choices. Choices can protect or pressure cities, so the map reacts like a simplified cascading grid rather than a static dashboard.
 
+The mission UI includes a game HUD: crisis clock, threat level, order progression, combo state, grade and XP. Bonus objectives translate pedagogy into optional challenges such as avoiding gas, preventing city outages and preserving public trust.
+
 ### 3. Final Verdict
 
-The result shows whether the blackout was avoided, partial, or national. The map state, score, operator profile, fragile/off cities, best strategic point, biggest compromise, tips and share action make the scenario easy to present to a jury.
+The result shows whether the blackout was avoided, partial, or national. The map state, score, rank, XP, achievements, cascade replay, operator profile, fragile/off cities, best strategic point, biggest compromise, tips and share action make the scenario easy to present to a jury.
 
 ## Brand Personality
 

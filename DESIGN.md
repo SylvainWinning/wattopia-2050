@@ -2,9 +2,9 @@
 
 ## Visual Theme
 
-BLACKOUT is a dark, premium product experience that feels like a civic energy control room during a national incident. The physical scene is a solo hackathon judge opening the app on a laptop or phone under time pressure; they must understand the threat, play fast, and remember the visual story.
+BLACKOUT is a dark, premium product experience that feels like a civic energy control room crossed with a restrained strategy video game. The physical scene is a solo hackathon judge opening the app on a laptop or phone under time pressure; they must understand the threat, play fast, and remember the visual story.
 
-The interface should be operational rather than decorative: France, grid tension, five decisions, visible consequences, final verdict.
+The interface should be operational and game-like rather than decorative: France, grid tension, five decisions, visible consequences, mission HUD, bonus objectives, final verdict.
 
 ## Product Scenes
 
@@ -14,11 +14,11 @@ The first viewport carries the brand: BLACKOUT, "Empêche la France de s'éteind
 
 ### Mission
 
-The mission scene places the map and narrative log beside a crisis panel. It should not feel like a settings dashboard. Each scene has an hour, an operator radio message, a threatened city corridor and three tactical choices. Each click changes stability, CO2, budget, citizen trust, blackout risk, lights on and city states.
+The mission scene places the map and narrative log beside a crisis panel. It should not feel like a settings dashboard. Each scene has an hour, an operator radio message, a threatened city corridor and three tactical choices. Each click changes stability, CO2, budget, citizen trust, blackout risk, lights on and city states, then gives immediate impact feedback.
 
 ### Verdict
 
-The verdict is the payoff: the map state, score, result title, operator profile, fragile/off cities, best decision angle, biggest compromise, tips and copy action. It must work as a jury slide without extra explanation.
+The verdict is the payoff: the map state, score, grade, XP, trophies, cascade replay, result title, operator profile, fragile/off cities, best decision angle, biggest compromise, tips and copy action. It must work as a jury slide without extra explanation.
 
 ## Color Palette
 
@@ -46,10 +46,12 @@ Use Geist Sans for all UI. BLACKOUT can use a large compact heading, but letter 
 - Sticky header with compact brand, navigation, and one CTA.
 - Intro hero with source badge, launch CTA, France grid and risk console.
 - Mode selector for Mission France, Paris 19h42, and 2050 nuit sans vent.
+- Game HUD with clock, threat level, order progression, combo label, rank and XP.
 - France map with a more realistic mainland silhouette, Corsica, city states and animated energy lines.
 - Five-decision mission engine with crisis choices and metric meters.
+- Bonus objectives, tactical tags and impact burst after each decision.
 - Narrative/radio log with deterministic events.
-- Final verdict with share action.
+- Final verdict with grade, achievements, cascade replay and share action.
 - Live data panel with RTE/ODRÉ/fallback state.
 - Education section and source footer.
 

@@ -99,6 +99,22 @@ export type MissionResult = {
   tips: string[];
 };
 
+export type Achievement = {
+  id: string;
+  title: string;
+  text: string;
+  tone: "stability" | "carbon" | "trust" | "budget" | "risk";
+};
+
+export type GameRank = "S" | "A" | "B" | "C" | "D";
+
+export type BonusObjective = {
+  id: string;
+  title: string;
+  text: string;
+  completed: boolean;
+};
+
 export type MissionState = {
   mode: MissionMode;
   selectedActions: MissionAction[];
@@ -110,6 +126,11 @@ export type MissionState = {
   activeScene: CrisisScene | null;
   operatorMessages: string[];
   strategyProfile: string;
+  achievements: Achievement[];
+  gameRank: GameRank;
+  commandPoints: number;
+  comboLabel: string;
+  bonusObjectives: BonusObjective[];
 };
 
 export type GridCity = {
@@ -703,6 +724,129 @@ function deriveStrategyProfile(metrics: MissionMetrics, selectedActions: readonl
   return "Arbitre de crise";
 }
 
+function deriveAchievements(
+  metrics: MissionMetrics,
+  selectedActions: readonly MissionAction[],
+  cityStates: Record<string, CityState>,
+): Achievement[] {
+  const actionIds = new Set(selectedActions.map((action) => action.id));
+  const allCriticalOn = ["paris", "lyon"].every((cityId) => cityStates[cityId] === "on" || cityStates[cityId] === "priority");
+  const offCount = Object.values(cityStates).filter((state) => state === "off").length;
+  const achievements: Achievement[] = [];
+
+  if (metrics.blackoutRisk <= 35) {
+    achievements.push({
+      id: "blackout-dodged",
+      title: "Blackout évité",
+      text: "Risque final sous le seuil critique.",
+      tone: "risk",
+    });
+  }
+  if (metrics.co2Score >= 72 && !actionIds.has("gas")) {
+    achievements.push({
+      id: "low-carbon",
+      title: "Bas-carbone",
+      text: "Aucun recours gaz majeur dans la stratégie.",
+      tone: "carbon",
+    });
+  }
+  if (actionIds.has("batteries") && actionIds.has("hydro")) {
+    achievements.push({
+      id: "storage-master",
+      title: "Maître du stockage",
+      text: "Batteries et hydraulique mobilisées au bon moment.",
+      tone: "stability",
+    });
+  }
+  if (actionIds.has("sobriety") || actionIds.has("domestic")) {
+    achievements.push({
+      id: "demand-pilot",
+      title: "Pilotage de la demande",
+      text: "La consommation a participé au sauvetage.",
+      tone: "trust",
+    });
+  }
+  if (allCriticalOn) {
+    achievements.push({
+      id: "vital-services",
+      title: "Services vitaux",
+      text: "Paris et Lyon restent alimentés.",
+      tone: "trust",
+    });
+  }
+  if (offCount === 0 && metrics.lightsOn >= 72) {
+    achievements.push({
+      id: "full-grid",
+      title: "Carte rallumée",
+      text: "Aucune grande ville coupée au rapport final.",
+      tone: "stability",
+    });
+  }
+  if (metrics.budget >= 42) {
+    achievements.push({
+      id: "budget-held",
+      title: "Marge budgétaire",
+      text: "La crise est contenue sans vider les réserves.",
+      tone: "budget",
+    });
+  }
+
+  return achievements.slice(0, 5);
+}
+
+function deriveGameRank(score: number, metrics: MissionMetrics): GameRank {
+  if (score >= 88 && metrics.blackoutRisk <= 28) return "S";
+  if (score >= 76) return "A";
+  if (score >= 62) return "B";
+  if (score >= 45) return "C";
+  return "D";
+}
+
+function deriveBonusObjectives(
+  metrics: MissionMetrics,
+  selectedActions: readonly MissionAction[],
+  cityStates: Record<string, CityState>,
+): BonusObjective[] {
+  const actionIds = new Set(selectedActions.map((action) => action.id));
+  const offCount = Object.values(cityStates).filter((state) => state === "off").length;
+
+  return [
+    {
+      id: "no-gas",
+      title: "Sans gaz",
+      text: "Stabiliser sans centrale gaz de secours.",
+      completed: selectedActions.length > 0 && !actionIds.has("gas") && metrics.stability >= 58,
+    },
+    {
+      id: "no-city-off",
+      title: "Aucune ville coupée",
+      text: "Finir avec toutes les grandes villes alimentées.",
+      completed: selectedActions.length > 0 && offCount === 0 && metrics.lightsOn >= 64,
+    },
+    {
+      id: "public-trust",
+      title: "Confiance maintenue",
+      text: "Garder l'acceptabilité citoyenne au-dessus de 60.",
+      completed: selectedActions.length > 0 && metrics.citizenTrust >= 60,
+    },
+  ];
+}
+
+function deriveComboLabel(selectedActions: readonly MissionAction[]): string {
+  if (!selectedActions.length) return "Combo prêt";
+  const ids = selectedActions.map((action) => action.id);
+  const latest = selectedActions[selectedActions.length - 1];
+  const storageCount = ids.filter((id) => id === "batteries" || id === "hydro").length;
+  const demandCount = ids.filter((id) => id === "sobriety" || id === "domestic" || id === "industry").length;
+
+  if (storageCount >= 2) return "Combo stockage x2";
+  if (demandCount >= 2) return "Combo flexibilité x2";
+  if (latest.id === "gas") return "Coup de force";
+  if (latest.id === "priority") return "Bouclier vital";
+  if (latest.id === "imports") return "Pont européen";
+  return `${latest.shortTitle} engagé`;
+}
+
 function operatorMessage(sceneValue: CrisisScene, choice: CrisisChoice, metrics: MissionMetrics): string {
   if (metrics.blackoutRisk <= 35 && metrics.stability >= 70) {
     return `${sceneValue.hour} - ${choice.title}: fréquence stabilisée, la carte reprend de la lumière.`;
@@ -830,17 +974,27 @@ export function simulateMission(
 
   const cityStates = steps.at(-1)?.cityStates ?? simulateCascade(metrics, selectedChoices);
 
+  const result = resultFromMetrics(metrics, selectedActions);
+  const achievements = deriveAchievements(metrics, selectedActions, cityStates);
+  const commandPoints = round(result.score + selectedActions.length * 5 + achievements.length * 4 - metrics.blackoutRisk * 0.08);
+  const bonusObjectives = deriveBonusObjectives(metrics, selectedActions, cityStates);
+
   return {
     mode,
     selectedActions,
     metrics,
     steps,
-    result: resultFromMetrics(metrics, selectedActions),
+    result,
     decisionsRemaining: Math.max(0, MAX_DECISIONS - selectedActions.length),
     cityStates,
     activeScene: selectedActions.length >= MAX_DECISIONS ? null : scenes[selectedActions.length],
     operatorMessages: steps.map((step) => step.operatorMessage),
     strategyProfile: deriveStrategyProfile(metrics, selectedActions),
+    achievements,
+    gameRank: deriveGameRank(result.score, metrics),
+    commandPoints,
+    comboLabel: deriveComboLabel(selectedActions),
+    bonusObjectives,
   };
 }
 
@@ -859,6 +1013,7 @@ export function buildMissionFromSnapshot(snapshot: LiveMixSnapshot | null): stri
 export function buildShareText(state: MissionState): string {
   return [
     `J'ai joué à BLACKOUT et j'ai obtenu ${state.result.score}/100 sur ${state.mode.title}.`,
+    `Grade: ${state.gameRank} | XP crise: ${state.commandPoints}`,
     `Profil: ${state.strategyProfile}`,
     `Stabilité: ${state.metrics.stability}`,
     `CO2: ${state.metrics.co2Score}`,
