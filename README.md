@@ -8,7 +8,7 @@ Mini-application web de hackathon : “Peux-tu alimenter la France en 2050 sans 
 - Carte énergétique stylisée de la France, réactive au scénario choisi
 - Simulation 24h accélérée avec courbes demande / production / marge
 - Scénarios de crise : nuit sans vent, pic hivernal, vague de froid, réacteurs indisponibles, importations limitées
-- Carte de scénario partageable avec score, verdict, mix et heures critiques
+- Carte de scénario partageable avec score, verdict, mix et heures critiques, exportable en image PNG
 - Snapshot temps réel du mix électrique français via RTE éCO2mix / ODRÉ
 
 ## Lancer en local

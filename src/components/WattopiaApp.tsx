@@ -10,6 +10,7 @@ import {
   ChevronDown,
   CloudSun,
   Copy,
+  Download,
   Factory,
   Flame,
   Gauge,
@@ -81,6 +82,167 @@ const formatDate = (iso: string): string =>
     timeStyle: "short",
     timeZone: "Europe/Paris",
   }).format(new Date(iso));
+
+const sharePalette = {
+  ink: "#111827",
+  muted: "#64748b",
+  panel: "#ffffff",
+  primary: "#3f46a8",
+  solar: "#f6c443",
+  wind: "#5ab8df",
+  hydro: "#316fd1",
+  nuclear: "#7c4fd6",
+  storage: "#1aa49a",
+  gas: "#df8a2f",
+  danger: "#c64535",
+  green: "#2c9b5f",
+};
+
+const escapeXml = (value: string | number): string =>
+  String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+
+function buildScenarioCardSvg(
+  scenario: ScenarioState,
+  result: SimulationResult,
+  summary: ReturnType<typeof summarizeDaySimulation>,
+) {
+  const challenge = challenges[scenario.challenge];
+  const mix = [
+    { label: "Solaire", value: scenario.solar, color: sharePalette.solar },
+    { label: "Éolien", value: scenario.wind, color: sharePalette.wind },
+    { label: "Hydraulique", value: scenario.hydro, color: sharePalette.hydro },
+    { label: "Nucléaire", value: scenario.nuclear, color: sharePalette.nuclear },
+    { label: "Stockage", value: scenario.storage, color: sharePalette.storage },
+    { label: "Gaz", value: scenario.gas, color: sharePalette.gas },
+  ];
+  const statusColor = summary.status === "secure" ? sharePalette.green : summary.status === "tense" ? sharePalette.gas : sharePalette.danger;
+  const barRows = mix.map((item, index) => {
+    const y = 304 + index * 42;
+    const width = Math.max(8, Math.min(100, item.value) * 2.2);
+
+    return `
+      <text x="724" y="${y + 14}" fill="${sharePalette.muted}" font-size="20" font-weight="700">${escapeXml(item.label)}</text>
+      <rect x="860" y="${y}" width="230" height="18" rx="9" fill="#e7ebf2" />
+      <rect x="860" y="${y}" width="${width}" height="18" rx="9" fill="${item.color}" />
+      <text x="1120" y="${y + 15}" fill="${sharePalette.ink}" font-size="19" font-weight="800" text-anchor="end">${item.value}</text>
+    `;
+  }).join("");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+  <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#12182d"/>
+        <stop offset="48%" stop-color="#232a61"/>
+        <stop offset="100%" stop-color="#101421"/>
+      </linearGradient>
+      <linearGradient id="score" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#6bc2ea"/>
+        <stop offset="55%" stop-color="#7c4fd6"/>
+        <stop offset="100%" stop-color="#f6c443"/>
+      </linearGradient>
+      <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
+        <path d="M 42 0 L 0 0 0 42" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+      </pattern>
+    </defs>
+    <rect width="1200" height="630" fill="url(#bg)" />
+    <rect width="1200" height="630" fill="url(#grid)" opacity="0.72" />
+    <circle cx="1036" cy="94" r="210" fill="#f6c443" opacity="0.13" />
+    <circle cx="214" cy="526" r="240" fill="#5ab8df" opacity="0.12" />
+
+    <rect x="54" y="48" width="1092" height="534" rx="30" fill="rgba(255,255,255,0.94)" />
+    <rect x="82" y="76" width="442" height="478" rx="24" fill="#111827" />
+    <path d="M183 360 C253 292 301 236 375 210 C437 188 469 226 506 281" fill="none" stroke="url(#score)" stroke-width="7" stroke-linecap="round" stroke-dasharray="12 15"/>
+    <path d="M152 225 C232 242 304 274 399 260 C448 252 479 226 515 196" fill="none" stroke="#6bc2ea" stroke-width="5" stroke-linecap="round" opacity="0.72"/>
+    <path d="M286 132 401 154 464 218 440 329 480 405 388 462 290 438 200 463 145 380 176 296 138 222 208 158Z" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.42)" stroke-width="2"/>
+    <circle cx="207" cy="159" r="${12 + scenario.wind * 0.11}" fill="${sharePalette.wind}" />
+    <circle cx="402" cy="154" r="${12 + scenario.nuclear * 0.1}" fill="${sharePalette.nuclear}" />
+    <circle cx="463" cy="320" r="${12 + scenario.solar * 0.12}" fill="${sharePalette.solar}" />
+    <circle cx="290" cy="438" r="${12 + scenario.hydro * 0.25}" fill="${sharePalette.hydro}" />
+    <circle cx="366" cy="345" r="${12 + scenario.storage * 0.1}" fill="${sharePalette.storage}" />
+    <text x="112" y="128" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="800">Wattopia 2050</text>
+    <text x="112" y="164" fill="rgba(255,255,255,0.72)" font-family="Arial, sans-serif" font-size="17" font-weight="600">Peux-tu alimenter la France sans blackout ?</text>
+    <rect x="112" y="482" width="318" height="42" rx="21" fill="rgba(255,255,255,0.12)" />
+    <text x="132" y="509" fill="white" font-family="Arial, sans-serif" font-size="17" font-weight="800">${escapeXml(challenge.label)}</text>
+
+    <text x="590" y="118" fill="${sharePalette.muted}" font-family="Arial, sans-serif" font-size="22" font-weight="800">CARTE DU SCÉNARIO</text>
+    <text x="590" y="176" fill="${sharePalette.ink}" font-family="Arial, sans-serif" font-size="46" font-weight="900">${escapeXml(result.verdict)}</text>
+    <text x="590" y="216" fill="${sharePalette.muted}" font-family="Arial, sans-serif" font-size="20" font-weight="600">Stress test 24h · modèle simplifié pour hackathon</text>
+
+    <circle cx="662" cy="376" r="116" fill="url(#score)" />
+    <circle cx="662" cy="376" r="88" fill="white" />
+    <text x="662" y="372" fill="${sharePalette.primary}" font-family="Arial, sans-serif" font-size="74" font-weight="900" text-anchor="middle">${result.score}</text>
+    <text x="662" y="414" fill="${sharePalette.muted}" font-family="Arial, sans-serif" font-size="24" font-weight="800" text-anchor="middle">/100</text>
+
+    <rect x="724" y="254" width="396" height="280" rx="20" fill="#f7f8fb" />
+    <text x="724" y="226" fill="${sharePalette.ink}" font-family="Arial, sans-serif" font-size="23" font-weight="900">Mix choisi</text>
+    ${barRows}
+
+    <rect x="590" y="510" width="96" height="12" rx="6" fill="${statusColor}" />
+    <text x="590" y="552" fill="${sharePalette.ink}" font-family="Arial, sans-serif" font-size="22" font-weight="900">${summary.blackoutHours} h critiques · marge min. ${summary.minMargin >= 0 ? "+" : ""}${summary.minMargin} · risque max ${summary.maxRisk}%</text>
+    <text x="590" y="580" fill="${sharePalette.muted}" font-family="Arial, sans-serif" font-size="16" font-weight="700">sylvainwinning.github.io/wattopia-2050</text>
+  </svg>`;
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 800);
+}
+
+async function downloadScenarioCardImage(
+  scenario: ScenarioState,
+  result: SimulationResult,
+  summary: ReturnType<typeof summarizeDaySimulation>,
+) {
+  const svg = buildScenarioCardSvg(scenario, result, summary);
+  const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+  const imageUrl = URL.createObjectURL(svgBlob);
+  const image = new Image();
+  const loaded = new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error("Image non générée"));
+  });
+
+  image.src = imageUrl;
+  try {
+    await loaded;
+  } catch {
+    URL.revokeObjectURL(imageUrl);
+    downloadBlob(svgBlob, "wattopia-2050-scenario.svg");
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 1200;
+  canvas.height = 630;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    URL.revokeObjectURL(imageUrl);
+    downloadBlob(svgBlob, "wattopia-2050-scenario.svg");
+    return;
+  }
+
+  context.drawImage(image, 0, 0);
+  URL.revokeObjectURL(imageUrl);
+
+  const pngBlob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), "image/png", 0.94);
+  });
+
+  downloadBlob(pngBlob ?? svgBlob, pngBlob ? "wattopia-2050-scenario.png" : "wattopia-2050-scenario.svg");
+}
 
 function MetricCard({
   label,
@@ -566,11 +728,15 @@ function ScenarioPassport({
   result,
   summary,
   onCopy,
+  onDownload,
+  downloading,
 }: {
   scenario: ScenarioState;
   result: SimulationResult;
   summary: ReturnType<typeof summarizeDaySimulation>;
   onCopy: () => void;
+  onDownload: () => void;
+  downloading: boolean;
 }) {
   const mix = [
     { label: "Solaire", value: scenario.solar, color: energyColors.solar },
@@ -606,10 +772,16 @@ function ScenarioPassport({
       <div className="passport-footer">
         <span>{summary.blackoutHours} h critiques</span>
         <span>marge min. {summary.minMargin}</span>
-        <button className="primary-button compact" type="button" onClick={onCopy}>
-          <Copy size={16} />
-          Copier
-        </button>
+        <div className="passport-actions">
+          <button className="ghost-button compact" type="button" onClick={onDownload} disabled={downloading}>
+            <Download size={16} />
+            {downloading ? "Préparation..." : "Télécharger l’image"}
+          </button>
+          <button className="primary-button compact" type="button" onClick={onCopy}>
+            <Copy size={16} />
+            Copier
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -723,6 +895,7 @@ function SimulatorSection({
   const dayPoints = useMemo(() => buildDaySimulation(scenario), [scenario]);
   const daySummary = useMemo(() => summarizeDaySimulation(dayPoints), [dayPoints]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isDownloadingCard, setIsDownloadingCard] = useState(false);
   const [activeHour, setActiveHour] = useState(19);
   const activePoint = dayPoints[activeHour] ?? dayPoints[0];
 
@@ -740,6 +913,14 @@ function SimulatorSection({
     setScenario({ ...scenario, [key]: value });
   };
   const setChallenge = (challenge: ChallengeId) => setScenario({ ...scenario, challenge });
+  const handleDownloadCard = async () => {
+    setIsDownloadingCard(true);
+    try {
+      await downloadScenarioCardImage(scenario, result, daySummary);
+    } finally {
+      setIsDownloadingCard(false);
+    }
+  };
 
   return (
     <section id="simulateur" className="section-shell simulator-shell">
@@ -851,7 +1032,14 @@ function SimulatorSection({
 
       <div className="simulation-deck">
         <DayTimeline points={dayPoints} activeHour={activeHour} />
-        <ScenarioPassport scenario={scenario} result={result} summary={daySummary} onCopy={onCopy} />
+        <ScenarioPassport
+          scenario={scenario}
+          result={result}
+          summary={daySummary}
+          onCopy={onCopy}
+          onDownload={handleDownloadCard}
+          downloading={isDownloadingCard}
+        />
       </div>
 
       <div className="simulator-grid upgraded">

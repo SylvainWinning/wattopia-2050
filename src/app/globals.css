@@ -188,6 +188,13 @@ a {
   background: var(--surface);
 }
 
+.primary-button:disabled,
+.ghost-button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+  transform: none;
+}
+
 .hero-section {
   position: relative;
   display: grid;
@@ -1038,10 +1045,12 @@ a {
   grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
   gap: 16px;
   margin-bottom: 16px;
+  min-width: 0;
 }
 
 .timeline-panel,
 .scenario-passport {
+  min-width: 0;
   padding: 18px;
 }
 
@@ -1239,6 +1248,13 @@ a {
   font-size: 0.78rem;
   font-weight: 720;
   padding: 8px 10px;
+}
+
+.passport-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .simulator-grid.upgraded {
@@ -1681,6 +1697,11 @@ a {
 
   .hero-actions .secondary-button {
     display: none;
+  }
+
+  .passport-actions,
+  .passport-actions > * {
+    width: 100%;
   }
 
   .energy-map,

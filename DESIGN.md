@@ -25,7 +25,7 @@ Use Geist Sans from Next as the main UI typeface. Headings are confident and com
 
 ## Components
 
-Primary components: sticky header, hero control-room visual, live data cards, cockpit overview, today-vs-2050 comparator, scenario sliders, cinematic challenge cards, dynamic France energy map, 24h simulation timeline, score gauge, metric meters, scenario passport, advice list, source links.
+Primary components: sticky header, hero control-room visual, live data cards, cockpit overview, today-vs-2050 comparator, scenario sliders, cinematic challenge cards, dynamic France energy map, 24h simulation timeline, score gauge, metric meters, scenario passport with share-link and PNG export actions, advice list, source links.
 
 ## Motion
 
