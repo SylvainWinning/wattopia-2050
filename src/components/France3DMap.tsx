@@ -14,7 +14,7 @@ type France3DMapProps = {
 };
 
 const labelOffsets: Record<string, readonly [number, number]> = {
-  lille: [3.4, 0.2],
+  lille: [3.2, 0.8],
   paris: [2.4, -1.2],
   strasbourg: [-8.4, 1.6],
   nantes: [2.2, -1.2],
@@ -120,13 +120,14 @@ function EnergyArc({
   const fromState = state.cityStates[from.id];
   const toState = state.cityStates[to.id];
   const weak = fromState === "off" || toState === "off" ? "off" : fromState === "fragile" || toState === "fragile" ? "fragile" : "live";
+  const isNorthLink = from.id === "lille" || to.id === "lille";
   const curve = useMemo(() => {
-    const start = toScenePoint(from.x, from.y, 0.78);
-    const end = toScenePoint(to.x, to.y, 0.78);
+    const start = toScenePoint(from.x, from.y, isNorthLink ? 0.58 : 0.78);
+    const end = toScenePoint(to.x, to.y, isNorthLink ? 0.58 : 0.78);
     const mid = start.clone().lerp(end, 0.5);
-    mid.z += 0.7 + start.distanceTo(end) * 0.08;
+    mid.z += isNorthLink ? 0.22 + start.distanceTo(end) * 0.025 : 0.7 + start.distanceTo(end) * 0.08;
     return new THREE.QuadraticBezierCurve3(start, mid, end);
-  }, [from, to]);
+  }, [from, to, isNorthLink]);
   const geometry = useMemo(() => new THREE.TubeGeometry(curve, 28, weak === "live" ? 0.017 : 0.012, 6, false), [curve, weak]);
   const color = weak === "off" ? "#ff4d5a" : weak === "fragile" ? "#f7b733" : "#35d7ff";
 
@@ -160,8 +161,9 @@ function FlowDot({ curve, color, phase, speed }: { curve: THREE.QuadraticBezierC
 function CityNode({ city, state, active }: { city: GridCity; state: CityState; active: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
   const color = cityColor(state);
-  const point = toScenePoint(city.x, city.y, 0.63);
-  const towerHeight = state === "off" ? 0.08 : state === "fragile" ? 0.22 : state === "priority" ? 0.42 : 0.34;
+  const point = toScenePoint(city.x, city.y, city.id === "lille" ? 0.54 : 0.63);
+  const baseTowerHeight = state === "off" ? 0.08 : state === "fragile" ? 0.22 : state === "priority" ? 0.42 : 0.34;
+  const towerHeight = city.id === "lille" ? baseTowerHeight * 0.54 : baseTowerHeight;
 
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
@@ -181,7 +183,7 @@ function CityNode({ city, state, active }: { city: GridCity; state: CityState; a
       </mesh>
       {active && (
         <mesh rotation={[0, 0, 0]} renderOrder={18}>
-          <torusGeometry args={[0.32, 0.012, 8, 48]} />
+          <torusGeometry args={[city.id === "lille" ? 0.24 : 0.32, 0.012, 8, 48]} />
           <meshBasicMaterial color="#ffd166" transparent opacity={0.88} depthTest={false} />
         </mesh>
       )}

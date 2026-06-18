@@ -231,7 +231,7 @@ function metricsFromSnapshot(mode: MissionMode, snapshot?: LiveMixSnapshot | nul
 }
 
 export const gridCities: readonly GridCity[] = [
-  { id: "lille", name: "Lille", x: 54.4, y: 7.4, threshold: 54, load: 68, reserve: 38 },
+  { id: "lille", name: "Lille", x: 54.2, y: 13.2, threshold: 54, load: 68, reserve: 38 },
   { id: "paris", name: "Paris", x: 49.8, y: 24.6, threshold: 40, load: 92, reserve: 52, critical: true },
   { id: "strasbourg", name: "Strasbourg", x: 85.2, y: 27.3, threshold: 64, load: 58, reserve: 30 },
   { id: "nantes", name: "Nantes", x: 24.2, y: 40.4, threshold: 60, load: 54, reserve: 44 },
