@@ -30,7 +30,7 @@ A dark, premium control-room opening: BLACKOUT, France partially lit, animated g
 
 ### 2. Mission Engine
 
-The main game is a 5-decision mission made of crisis scenes. Mission France is complete and primary. Paris 19h42 and 2050, nuit sans vent use the same engine with different starting tension, events and narrative framing.
+The main game is a 5-decision mission made of crisis scenes. Mission France is complete and primary. Paris 19h42 and 2050, nuit sans vent use the same engine with different starting tension, events, narrative framing and dedicated 5-scene arcs.
 
 Each scene names an hour, a threatened city corridor, an operator message and three tactical choices. Choices can protect or pressure cities, so the map reacts like a simplified cascading grid rather than a static dashboard.
 

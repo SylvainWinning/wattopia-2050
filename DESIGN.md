@@ -48,7 +48,7 @@ Use Geist Sans for all UI. BLACKOUT can use a large compact heading, but letter 
 - Mode selector for Mission France, Paris 19h42, and 2050 nuit sans vent.
 - Game HUD with clock, threat level, order progression, combo label, rank and XP.
 - France map with a more realistic mainland silhouette, Corsica, city states and animated energy lines.
-- Five-decision mission engine with crisis choices and metric meters.
+- Five-decision mission engine with dedicated crisis-scene arcs for Mission France, Paris 19h42 and 2050 nuit sans vent.
 - Bonus objectives, tactical tags and impact burst after each decision.
 - Narrative/radio log with deterministic events.
 - Final verdict with grade, achievements, cascade replay and share action.

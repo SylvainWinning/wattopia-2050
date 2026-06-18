@@ -10,6 +10,7 @@ L'expérience utilise un instantané public RTE éCO2mix via ODRÉ quand il est 
 
 - Hero immersif BLACKOUT avec carte de France plus réaliste, villes lumineuses et jauge de risque.
 - Trois modes sur le même moteur : Mission France, Paris 19h42, 2050 nuit sans vent.
+- Paris et 2050 ont chacun un arc dédié de 5 scènes avec horaires, messages opérateur et choix tactiques propres.
 - Mission jouable en 5 décisions sous forme de scènes de crise horaires.
 - Choix contextualisés : batteries, gaz de secours, sobriété, imports, services essentiels, industrie, hydraulique.
 - Cascade simplifiée par ville : chaque arbitrage protège ou fragilise des zones visibles.
@@ -67,7 +68,7 @@ https://sylvainwinning.github.io/wattopia-2050/
 - Simulation volontairement simplifiée pour hackathon, non officielle et non prédictive.
 - Score normalisé 0-100, pas une métrique RTE.
 - Données temps réel dépendantes de la disponibilité ODRÉ et des champs exploitables.
-- Les scénarios Paris et 2050 utilisent le même moteur que Mission France avec des conditions initiales et événements dédiés.
+- Les scénarios Paris et 2050 restent volontairement simplifiés, mais disposent maintenant de scènes et arbitrages dédiés.
 
 ## Pitch jury 30 secondes
 
@@ -78,5 +79,5 @@ BLACKOUT est une expérience interactive qui transforme les données réelles du
 - Ajouter une animation de blackout plus cinématique au verdict.
 - Générer une carte résultat PNG dédiée au partage social.
 - Ajouter un mode duel entre deux stratégies.
-- Créer des scènes dédiées complètes pour Paris 19h42 et 2050.
+- Ajouter des variantes de scènes pour augmenter encore la rejouabilité.
 - Ajouter des scénarios régionaux plus fins si des données régionales sont intégrées.
