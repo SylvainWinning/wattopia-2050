@@ -8,13 +8,14 @@ L'expérience utilise un instantané public RTE éCO2mix via ODRÉ quand il est 
 
 ## Expérience
 
-- Hero immersif BLACKOUT avec carte de France stylisée, villes lumineuses et jauge de risque.
+- Hero immersif BLACKOUT avec carte de France plus réaliste, villes lumineuses et jauge de risque.
 - Trois modes sur le même moteur : Mission France, Paris 19h42, 2050 nuit sans vent.
-- Mission jouable en 5 décisions maximum.
-- Actions à compromis : batteries, gaz de secours, sobriété, imports, services essentiels, industrie, hydraulique.
+- Mission jouable en 5 décisions sous forme de scènes de crise horaires.
+- Choix contextualisés : batteries, gaz de secours, sobriété, imports, services essentiels, industrie, hydraulique.
+- Cascade simplifiée par ville : chaque arbitrage protège ou fragilise des zones visibles.
 - Jauges stabilité, risque blackout, CO2, budget et confiance citoyenne.
-- Événements narratifs déterministes.
-- Verdict final avec score, conseils pédagogiques et bouton "Copier mon résultat".
+- Messages radio opérateur et événements narratifs déterministes.
+- Verdict final avec score, profil opérateur, villes fragiles/coupées, conseils pédagogiques et bouton "Copier mon résultat".
 - Section courte "Ce que BLACKOUT montre" et sources RTE/ODRÉ.
 
 ## Lancer en local
@@ -37,19 +38,8 @@ http://localhost:3000?demo=1
 ```bash
 npm run lint
 npm run typecheck
-npm run build
 npm run build:github
 ```
-
-## Publication Vercel
-
-- Root directory : `wattopia-2050`
-- Framework : Next.js
-- Build command : `npm run build`
-- Output : laisser Vercel détecter Next.js avec `output: "export"` ou configurer `out` si nécessaire.
-- Variables d'environnement : aucune.
-
-Ne pas utiliser `npm run build:github` sur Vercel, car ce script ajoute le `basePath` GitHub Pages.
 
 ## Publication GitHub Pages
 
@@ -68,6 +58,7 @@ https://sylvainwinning.github.io/wattopia-2050/
 - RTE éCO2mix : https://www.rte-france.com/donnees-publications/eco2mix-donnees-temps-reel
 - ODRÉ eco2mix-national-tr : https://odre.opendatasoft.com/explore/dataset/eco2mix-national-tr/
 - RTE Futurs énergétiques 2050 : https://www.rte-france.com/donnees-publications/etudes-prospectives/futurs-energetique-2050
+- Natural Earth : https://www.naturalearthdata.com/
 
 ## Limites connues
 
@@ -85,5 +76,4 @@ BLACKOUT est une expérience interactive qui transforme les données réelles du
 - Ajouter une animation de blackout plus cinématique au verdict.
 - Générer une carte résultat PNG dédiée au partage social.
 - Ajouter un mode duel entre deux stratégies.
-- Brancher une vraie URL Vercel dans les métadonnées après déploiement.
 - Ajouter des scénarios régionaux plus fins si des données régionales sont intégrées.

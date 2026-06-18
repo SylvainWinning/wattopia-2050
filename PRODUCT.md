@@ -28,11 +28,13 @@ A dark, premium control-room opening: BLACKOUT, France partially lit, animated g
 
 ### 2. Mission Engine
 
-The main game is a 5-decision mission. Mission France is complete and primary. Paris 19h42 and 2050, nuit sans vent use the same engine with different starting tension, events and narrative framing.
+The main game is a 5-decision mission made of crisis scenes. Mission France is complete and primary. Paris 19h42 and 2050, nuit sans vent use the same engine with different starting tension, events and narrative framing.
+
+Each scene names an hour, a threatened city corridor, an operator message and three tactical choices. Choices can protect or pressure cities, so the map reacts like a simplified cascading grid rather than a static dashboard.
 
 ### 3. Final Verdict
 
-The result shows whether the blackout was avoided, partial, or national. The map state, score, best strategic point, biggest compromise, tips and share action make the scenario easy to present to a jury.
+The result shows whether the blackout was avoided, partial, or national. The map state, score, operator profile, fragile/off cities, best strategic point, biggest compromise, tips and share action make the scenario easy to present to a jury.
 
 ## Brand Personality
 
@@ -59,7 +61,7 @@ The experience can use RTE Futurs énergétiques 2050 as public context and insp
 
 ## Deployment Constraint
 
-The project should remain compatible with both Vercel static deployment and GitHub Pages static export. Vercel uses `npm run build`; GitHub Pages uses `npm run build:github`.
+The project should remain compatible with GitHub Pages static export. GitHub Pages uses `npm run build:github` and does not require environment variables.
 
 ## Accessibility & Inclusion
 

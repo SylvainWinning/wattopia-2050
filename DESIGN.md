@@ -14,11 +14,11 @@ The first viewport carries the brand: BLACKOUT, "Empêche la France de s'éteind
 
 ### Mission
 
-The mission scene places the map and narrative log beside action cards. It should not feel like a settings dashboard. Each action card exposes a tradeoff, and each click changes stability, CO2, budget, citizen trust, blackout risk and lights on.
+The mission scene places the map and narrative log beside a crisis panel. It should not feel like a settings dashboard. Each scene has an hour, an operator radio message, a threatened city corridor and three tactical choices. Each click changes stability, CO2, budget, citizen trust, blackout risk, lights on and city states.
 
 ### Verdict
 
-The verdict is the payoff: the map state, score, result title, best decision angle, biggest compromise, tips and copy action. It must work as a jury slide without extra explanation.
+The verdict is the payoff: the map state, score, result title, operator profile, fragile/off cities, best decision angle, biggest compromise, tips and copy action. It must work as a jury slide without extra explanation.
 
 ## Color Palette
 
@@ -39,16 +39,16 @@ Use electric blue for control and primary action, amber/red only for tension, gr
 
 ## Typography
 
-Use Geist Sans for all UI. BLACKOUT can use a large compact heading with letter-spacing no tighter than `-0.035em`. Product labels, meters and action cards stay familiar and readable.
+Use Geist Sans for all UI. BLACKOUT can use a large compact heading, but letter spacing stays at `0` for readability across small screens. Product labels, meters and action cards stay familiar and readable.
 
 ## Components
 
 - Sticky header with compact brand, navigation, and one CTA.
 - Intro hero with source badge, launch CTA, France grid and risk console.
 - Mode selector for Mission France, Paris 19h42, and 2050 nuit sans vent.
-- France grid map with city states and animated energy lines.
-- Five-decision mission engine with action cards and metric meters.
-- Narrative log with deterministic events.
+- France map with a more realistic mainland silhouette, Corsica, city states and animated energy lines.
+- Five-decision mission engine with crisis choices and metric meters.
+- Narrative/radio log with deterministic events.
 - Final verdict with share action.
 - Live data panel with RTE/ODRÉ/fallback state.
 - Education section and source footer.

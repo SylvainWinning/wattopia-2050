@@ -30,12 +30,12 @@ import {
   actionById,
   buildMissionFromSnapshot,
   buildShareText,
-  getCityState,
   gridCities,
-  missionActions,
+  gridEdges,
   missionModes,
   simulateMission,
   type ActionId,
+  type CrisisChoice,
   type MetricEffect,
   type MissionAction,
   type MissionMetrics,
@@ -66,18 +66,6 @@ const actionIcons: Record<MissionAction["icon"], LucideIcon> = {
 };
 
 const modeIds: readonly MissionModeId[] = ["france", "paris", "future2050"];
-
-const linePairs = [
-  ["lille", "paris"],
-  ["paris", "nantes"],
-  ["paris", "strasbourg"],
-  ["paris", "lyon"],
-  ["nantes", "bordeaux"],
-  ["bordeaux", "toulouse"],
-  ["lyon", "marseille"],
-  ["lyon", "strasbourg"],
-  ["toulouse", "marseille"],
-] as const;
 
 const formatNumber = (value: number | null): string =>
   value === null ? "n.d." : new Intl.NumberFormat("fr-FR").format(Math.round(value));
@@ -122,6 +110,10 @@ function effectEntries(effect: MetricEffect) {
       label: metricLabels[key],
       value,
     }));
+}
+
+function actionForChoice(choice: CrisisChoice): MissionAction {
+  return actionById(choice.id);
 }
 
 function classifyRisk(metrics: MissionMetrics) {
@@ -169,6 +161,7 @@ function FranceGridMap({
 }) {
   const tone = classifyRisk(state.metrics);
   const cityById = new Map(gridCities.map((city) => [city.id, city]));
+  const activeCity = state.activeScene?.cityId;
 
   return (
     <div className={clsx("france-grid-map", `map-${tone}`, compact && "compact")}>
@@ -184,18 +177,22 @@ function FranceGridMap({
         </defs>
         <path
           className="france-shape"
-          d="M49 6 L65 12 L82 29 L78 48 L86 65 L72 84 L54 91 L38 84 L22 88 L13 72 L18 54 L10 38 L20 20 L36 13 Z"
+          d="M49.2 5.8 C54.8 7.1 58.4 8.8 63.6 11.7 C67.6 13.9 70.5 18.1 73.5 21.7 C77.7 26.8 82.4 28.9 84.7 34.6 C87.1 40.3 84.3 46.4 84.9 51.6 C85.4 56.4 90.4 62.3 86.5 67.9 C82.8 73.2 77.5 75.8 75.6 82.3 C74.4 86.4 69.7 90.3 64.2 90.7 C57.8 91.3 53.4 87.2 47.8 86.9 C42.5 86.6 38.1 90.7 32.7 88.6 C27.3 86.6 24.8 81.8 20.8 78.8 C15.9 75.1 12.1 71.7 13.7 65.8 C15.4 59.7 18.7 56.1 16.2 49.8 C13.9 44.1 8.7 40.5 10.8 34.5 C12.7 29 18.6 27.1 20.9 22.3 C23.6 16.7 27.7 12.8 33.6 13 C39.1 13.2 43.5 4.5 49.2 5.8 Z"
         />
-        <path className="corsica-mark" d="M77 80 C82 83 82 90 78 94 C74 90 74 84 77 80 Z" />
-        {linePairs.map(([fromId, toId]) => {
-          const from = cityById.get(fromId);
-          const to = cityById.get(toId);
+        <path className="corsica-mark" d="M78.7 78.2 C82.6 80.3 83.7 85.7 81.4 90.8 C80.2 93.4 77.6 96.4 75.9 94.1 C74.3 91.9 75.1 87.7 74.5 84.6 C73.9 81.4 75.4 76.4 78.7 78.2 Z" />
+        <path className="border-trace" d="M20.9 22.3 C31 30 35 38 24 47 M84.9 51.6 C75 53 69 58 64.2 90.7 M13.7 65.8 C24 62 32 65 43 79" />
+        {gridEdges.map((edge) => {
+          const from = cityById.get(edge.from);
+          const to = cityById.get(edge.to);
           if (!from || !to) return null;
+          const fromState = state.cityStates[from.id];
+          const toState = state.cityStates[to.id];
+          const weak = fromState === "off" || toState === "off" ? "off" : fromState === "fragile" || toState === "fragile" ? "fragile" : "live";
 
           return (
             <motion.line
-              key={`${fromId}-${toId}`}
-              className="grid-line"
+              key={`${edge.from}-${edge.to}-${edge.corridor}`}
+              className={clsx("grid-line", `grid-${weak}`, `corridor-${edge.corridor}`)}
               x1={from.x}
               y1={from.y}
               x2={to.x}
@@ -207,21 +204,21 @@ function FranceGridMap({
           );
         })}
         {gridCities.map((city) => {
-          const cityState = getCityState(state.metrics, city);
+          const cityState = state.cityStates[city.id] ?? "fragile";
           const radius = city.id === "paris" ? 3.7 : 2.8;
 
           return (
-            <g key={city.id} className={clsx("city-node", `city-${cityState}`)}>
+            <g key={city.id} className={clsx("city-node", `city-${cityState}`, activeCity === city.id && "city-active")}>
               <motion.circle
                 cx={city.x}
                 cy={city.y}
                 r={radius + 2}
                 initial={false}
                 animate={{
-                  opacity: cityState === "off" ? 0.1 : cityState === "fragile" ? [0.35, 0.8, 0.35] : 0.58,
-                  scale: cityState === "fragile" ? [0.92, 1.12, 0.92] : 1,
+                  opacity: cityState === "off" ? 0.1 : cityState === "fragile" ? [0.35, 0.8, 0.35] : cityState === "priority" ? [0.5, 0.95, 0.5] : 0.58,
+                  scale: cityState === "fragile" || cityState === "priority" ? [0.92, 1.13, 0.92] : 1,
                 }}
-                transition={{ duration: 1.2, repeat: cityState === "fragile" ? Infinity : 0 }}
+                transition={{ duration: cityState === "priority" ? 1.55 : 1.2, repeat: cityState === "fragile" || cityState === "priority" ? Infinity : 0 }}
               />
               <circle cx={city.x} cy={city.y} r={radius} />
               {!compact && (
@@ -246,12 +243,14 @@ function Hero({
   snapshot,
   loading,
   onStart,
+  onDemo,
   onRefresh,
 }: {
   state: MissionState;
   snapshot: LiveMixSnapshot | null;
   loading: boolean;
   onStart: () => void;
+  onDemo: () => void;
   onRefresh: () => void;
 }) {
   const badge = sourceStatus(snapshot, loading);
@@ -278,9 +277,9 @@ function Hero({
             <Zap size={18} />
             Prendre le contrôle
           </button>
-          <a className="secondary-action" href="#mission">
-            Voir la mission
-          </a>
+          <button type="button" className="secondary-action button-reset" onClick={onDemo}>
+            Démo jury 90s
+          </button>
         </div>
         <p className="data-note">{buildMissionFromSnapshot(snapshot)}</p>
       </div>
@@ -327,23 +326,24 @@ function MissionSelector({
   );
 }
 
-function ActionCard({
-  action,
+function CrisisChoiceCard({
+  choice,
   selected,
   disabled,
   onChoose,
 }: {
-  action: MissionAction;
+  choice: CrisisChoice;
   selected: boolean;
   disabled: boolean;
   onChoose: () => void;
 }) {
+  const action = actionForChoice(choice);
   const Icon = actionIcons[action.icon];
 
   return (
     <motion.button
       type="button"
-      className={clsx("action-card", selected && "selected")}
+      className={clsx("action-card crisis-choice-card", selected && "selected")}
       onClick={onChoose}
       disabled={disabled}
       whileTap={{ scale: disabled ? 1 : 0.985 }}
@@ -352,12 +352,12 @@ function ActionCard({
         <Icon size={20} />
       </span>
       <span className="action-body">
-        <strong>{action.title}</strong>
-        <span>{action.description}</span>
-        <em>{action.tradeoff}</em>
+        <strong>{choice.title}</strong>
+        <span>{choice.description}</span>
+        <em>{choice.tactical}</em>
       </span>
       <span className="effect-list" aria-label="Effets">
-        {effectEntries(action.effect).slice(0, 4).map(({ key, label, value }) => (
+        {effectEntries(choice.effect).slice(0, 4).map(({ key, label, value }) => (
           <span key={key} className={value >= 0 ? "positive" : "negative"} title={label}>
             {value > 0 ? "+" : ""}
             {value}
@@ -365,6 +365,61 @@ function ActionCard({
         ))}
       </span>
     </motion.button>
+  );
+}
+
+function CrisisScenePanel({
+  state,
+  onChoose,
+}: {
+  state: MissionState;
+  onChoose: (actionId: ActionId) => void;
+}) {
+  const scene = state.activeScene;
+  const step = state.steps.at(-1);
+
+  if (!scene) {
+    return (
+      <div className="crisis-panel resolved">
+        <span>Mission verrouillée</span>
+        <h3>Les 5 décisions sont prises.</h3>
+        <p>Le réseau compile la cascade finale. Le verdict est prêt.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="crisis-panel">
+      <div className="crisis-kicker">
+        <span>{scene.hour}</span>
+        <strong>{scene.title}</strong>
+      </div>
+      <p className="crisis-alert">{scene.alert}</p>
+      <div className="operator-line">
+        <RadioTower size={17} />
+        <span>{scene.operator}</span>
+      </div>
+      {step && (
+        <p className="last-order">
+          Dernier ordre: <strong>{step.choice.title}</strong>
+        </p>
+      )}
+      <div className="actions-grid">
+        {scene.choices.map((choice) => {
+          const selected = state.steps.some((selectedStep) => selectedStep.choice === choice);
+
+          return (
+            <CrisisChoiceCard
+              key={`${scene.hour}-${choice.id}-${choice.title}`}
+              choice={choice}
+              selected={selected}
+              disabled={false}
+              onChoose={() => onChoose(choice.id)}
+            />
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -394,13 +449,21 @@ function NarrativeLog({ state }: { state: MissionState }) {
           ? latest.narration
           : "Le centre de contrôle attend ta première décision. Chaque choix modifiera la carte, les jauges et la confiance citoyenne."}
       </p>
+      <div className="radio-stack">
+        {(state.operatorMessages.length ? state.operatorMessages.slice(-3) : ["Centre national: attente de ton premier arbitrage."]).map((message) => (
+          <p key={message} className="radio-message">
+            <RadioTower size={14} />
+            {message}
+          </p>
+        ))}
+      </div>
       <ol>
         {Array.from({ length: MAX_DECISIONS }, (_, index) => {
           const step = state.steps[index];
 
           return (
             <li key={index} className={step ? "done" : "pending"}>
-              {step ? step.action.shortTitle : `Décision ${index + 1}`}
+              {step ? step.choice.title : `Décision ${index + 1}`}
             </li>
           );
         })}
@@ -443,22 +506,7 @@ function MissionExperience({
             <p>{state.mode.objective}</p>
           </div>
           <MissionMeters metrics={state.metrics} />
-          <div className="actions-grid">
-            {missionActions.map((action) => {
-              const selected = state.selectedActions.some((selectedAction) => selectedAction.id === action.id);
-              const disabled = selected || isComplete;
-
-              return (
-                <ActionCard
-                  key={action.id}
-                  action={action}
-                  selected={selected}
-                  disabled={disabled}
-                  onChoose={() => onChoose(action.id)}
-                />
-              );
-            })}
-          </div>
+          <CrisisScenePanel state={state} onChoose={onChoose} />
           {isComplete && phase !== "result" && (
             <button type="button" className="primary-action wide" onClick={onFinish}>
               Révéler le verdict
@@ -479,6 +527,9 @@ function FinalVerdict({
   onCopy: () => void;
   onReplay: () => void;
 }) {
+  const fragileCities = gridCities.filter((city) => state.cityStates[city.id] === "fragile").map((city) => city.name);
+  const offCities = gridCities.filter((city) => state.cityStates[city.id] === "off").map((city) => city.name);
+
   return (
     <section id="resultat" className={clsx("result-section", `result-${state.result.kind}`)}>
       <div className="result-visual">
@@ -491,6 +542,17 @@ function FinalVerdict({
         <div className="score-lockup">
           <strong>{state.result.score}</strong>
           <span>/100</span>
+        </div>
+        <div className="profile-report">
+          <span>Profil opérateur</span>
+          <strong>{state.strategyProfile}</strong>
+          <p>
+            {offCities.length === 0
+              ? fragileCities.length === 0
+                ? "Toutes les grandes villes de la mission sont allumées."
+                : `Zones encore fragiles: ${fragileCities.join(", ")}.`
+              : `Zones coupées: ${offCities.join(", ")}.`}
+          </p>
         </div>
         <div className="result-insights">
           <p>
@@ -631,6 +693,9 @@ function SourcesFooter() {
         <a href="https://www.rte-france.com/donnees-publications/etudes-prospectives/futurs-energetique-2050" target="_blank" rel="noreferrer">
           RTE Futurs énergétiques 2050
         </a>
+        <a href="https://www.naturalearthdata.com/" target="_blank" rel="noreferrer">
+          Natural Earth
+        </a>
       </nav>
     </footer>
   );
@@ -685,6 +750,14 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const startJuryDemo = () => {
+    setModeId("france");
+    setSelectedActions([]);
+    setPhase("mission");
+    window.history.replaceState(null, "", `${window.location.pathname}?demo=1`);
+    document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const selectMode = (nextModeId: MissionModeId) => {
     setModeId(nextModeId);
     setSelectedActions([]);
@@ -692,7 +765,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   };
 
   const chooseAction = (actionId: ActionId) => {
-    if (selectedActions.includes(actionId) || selectedActions.length >= MAX_DECISIONS) return;
+    if (selectedActions.length >= MAX_DECISIONS) return;
     const nextActions = [...selectedActions, actionId];
     setSelectedActions(nextActions);
     setPhase("mission");
@@ -785,6 +858,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
         loading={loading}
         onRefresh={loadSnapshot}
         onStart={startMission}
+        onDemo={startJuryDemo}
       />
 
       <MissionSelector modeId={modeId} onSelect={selectMode} />
