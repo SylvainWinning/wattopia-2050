@@ -108,23 +108,6 @@ function parseActions(raw: string | null): ActionId[] {
     .slice(0, MAX_DECISIONS);
 }
 
-function getInitialMode(): MissionModeId {
-  if (typeof window === "undefined") return "france";
-  return parseMode(new URLSearchParams(window.location.search).get("mode"));
-}
-
-function getInitialActions(): ActionId[] {
-  if (typeof window === "undefined") return [];
-  return parseActions(new URLSearchParams(window.location.search).get("actions"));
-}
-
-function getInitialPhase(): Phase {
-  if (typeof window === "undefined") return "intro";
-  const params = new URLSearchParams(window.location.search);
-  const actions = parseActions(params.get("actions"));
-  return actions.length >= MAX_DECISIONS || params.get("result") ? "result" : "intro";
-}
-
 function sourceStatus(snapshot: LiveMixSnapshot | null, loading: boolean) {
   if (loading) return "Synchronisation ODRÉ...";
   if (!snapshot) return "Chargement du réseau...";
@@ -656,9 +639,9 @@ function SourcesFooter() {
 export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: LiveMixSnapshot }) {
   const [snapshot, setSnapshot] = useState<LiveMixSnapshot | null>(initialSnapshot);
   const [loading, setLoading] = useState(false);
-  const [modeId, setModeId] = useState<MissionModeId>(getInitialMode);
-  const [selectedActions, setSelectedActions] = useState<ActionId[]>(getInitialActions);
-  const [phase, setPhase] = useState<Phase>(getInitialPhase);
+  const [modeId, setModeId] = useState<MissionModeId>("france");
+  const [selectedActions, setSelectedActions] = useState<ActionId[]>([]);
+  const [phase, setPhase] = useState<Phase>("intro");
   const [toast, setToast] = useState("Résultat copié");
   const [shareFallbackText, setShareFallbackText] = useState("");
 
@@ -677,11 +660,24 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   }, []);
 
   useEffect(() => {
+    const restoreTimer = window.setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      const restoredMode = parseMode(params.get("mode"));
+      const restoredActions = parseActions(params.get("actions"));
+      setModeId(restoredMode);
+      setSelectedActions(restoredActions);
+      if (restoredActions.length >= MAX_DECISIONS || params.get("result")) {
+        setPhase("result");
+      }
+    }, 0);
     const refreshTimer = window.setTimeout(() => {
       void loadSnapshot();
     }, 0);
 
-    return () => window.clearTimeout(refreshTimer);
+    return () => {
+      window.clearTimeout(restoreTimer);
+      window.clearTimeout(refreshTimer);
+    };
   }, [loadSnapshot]);
 
   const startMission = () => {
