@@ -384,6 +384,7 @@ a {
 }
 
 .france-map-stage.three-ready .france-map-fallback {
+  visibility: hidden;
   opacity: 0;
 }
 
