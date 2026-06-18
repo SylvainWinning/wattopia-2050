@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://wattopia-2050.vercel.app"),
+  metadataBase: new URL("https://sylvainwinning.github.io/wattopia-2050/"),
   title: "Wattopia 2050 | Simulateur du mix électrique français",
   description:
     "Construis le mix énergétique de la France en 2050, évite le blackout et explore les compromis entre renouvelables, nucléaire, stockage, sobriété et CO₂.",

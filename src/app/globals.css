@@ -299,7 +299,7 @@ a {
   stroke-dasharray: 10 16;
   stroke-linecap: round;
   stroke-width: 4;
-  filter: url("#softGlow");
+  opacity: 0.92;
   animation: grid-flow 5s linear infinite;
 }
 
@@ -587,11 +587,212 @@ a {
   padding-top: clamp(42px, 7vw, 70px);
 }
 
+.cockpit-shell {
+  padding-top: clamp(24px, 5vw, 56px);
+}
+
+.cockpit-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.cockpit-header h2 {
+  max-width: 780px;
+  font-size: clamp(1.85rem, 3.8vw, 3.25rem);
+  font-weight: 805;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-wrap: balance;
+}
+
+.cockpit-grid {
+  display: grid;
+  grid-template-columns: minmax(290px, 1.5fr) repeat(4, minmax(145px, 1fr));
+  gap: 12px;
+}
+
+.cockpit-main,
+.control-stat,
+.compare-card,
+.timeline-panel,
+.scenario-passport,
+.france-control-map {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+}
+
+.cockpit-main {
+  min-height: 168px;
+  padding: 20px;
+  background:
+    linear-gradient(135deg, oklch(0.18 0.035 260), oklch(0.25 0.08 260));
+  color: white;
+}
+
+.radar-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: oklch(1 0 0 / 0.12);
+  color: oklch(1 0 0 / 0.78);
+  font-size: 0.82rem;
+  font-weight: 740;
+  padding: 8px 10px;
+}
+
+.cockpit-main > strong {
+  display: block;
+  margin-top: 18px;
+  font-size: clamp(1.55rem, 2.8vw, 2.4rem);
+  font-weight: 790;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+
+.cockpit-main p {
+  max-width: 62ch;
+  margin-top: 10px;
+  color: oklch(1 0 0 / 0.74);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.control-stat {
+  min-height: 168px;
+  padding: 18px;
+}
+
+.control-stat span,
+.control-stat small,
+.control-stat strong {
+  display: block;
+}
+
+.control-stat span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 740;
+}
+
+.control-stat strong {
+  margin-top: 20px;
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  font-weight: 820;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.control-stat small {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 620;
+  line-height: 1.35;
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.compare-card {
+  padding: 18px;
+}
+
+.compare-card.future {
+  background: oklch(0.985 0.016 260);
+}
+
+.compare-card h3 {
+  font-size: 1.18rem;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.compare-card p {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.compare-bars,
+.passport-bars {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.compare-bars span,
+.passport-bars div {
+  display: grid;
+  grid-template-columns: minmax(78px, 0.42fr) minmax(110px, 1fr) minmax(54px, auto);
+  gap: 10px;
+  align-items: center;
+}
+
+.compare-bars i,
+.passport-bars span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 690;
+}
+
+.compare-bars b,
+.passport-bars i {
+  display: block;
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: oklch(0.92 0.012 260);
+}
+
+.compare-bars em,
+.passport-bars b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.compare-bars strong,
+.passport-bars strong {
+  color: var(--ink);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 760;
+  text-align: right;
+}
+
+.simulator-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.mission-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
 .challenge-bar {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 16px;
+}
+
+.challenge-bar.cinematic {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .challenge-button {
@@ -608,11 +809,32 @@ a {
     transform 160ms ease;
 }
 
+.challenge-bar.cinematic .challenge-button {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  min-height: 128px;
+  gap: 8px;
+}
+
+.challenge-button svg {
+  color: var(--primary);
+}
+
 .challenge-button:hover,
 .challenge-button.active {
   border-color: oklch(0.45 0.15 260 / 0.42);
   background: oklch(0.97 0.025 260);
   transform: translateY(-1px);
+}
+
+.challenge-button.severity-crisis.active,
+.challenge-button.severity-crisis:hover {
+  border-color: oklch(0.55 0.18 28 / 0.42);
+  background: oklch(0.97 0.025 28);
+}
+
+.challenge-button.severity-crisis svg {
+  color: oklch(0.55 0.18 28);
 }
 
 .challenge-button span,
@@ -629,6 +851,402 @@ a {
   color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.35;
+}
+
+.control-room-grid {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.98fr) minmax(0, 1.02fr);
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.france-control-map {
+  position: relative;
+  min-height: 580px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 38%, oklch(1 0 0 / 0.18), transparent 34%),
+    linear-gradient(145deg, oklch(0.17 0.04 260), oklch(0.24 0.08 260));
+  color: white;
+}
+
+.france-control-map::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(oklch(1 0 0 / 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(1 0 0 / 0.055) 1px, transparent 1px);
+  background-size: 34px 34px;
+  content: "";
+  mask-image: radial-gradient(circle at center, black 0 58%, transparent 88%);
+}
+
+.france-control-map.danger {
+  background:
+    radial-gradient(circle at 40% 45%, oklch(0.55 0.18 28 / 0.26), transparent 38%),
+    linear-gradient(145deg, oklch(0.17 0.04 260), oklch(0.25 0.07 28));
+}
+
+.france-control-map > svg {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 580px;
+}
+
+.map-status-strip,
+.map-readout {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid oklch(1 0 0 / 0.16);
+  border-radius: 999px;
+  background: oklch(1 0 0 / 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.map-status-strip {
+  top: 16px;
+  left: 16px;
+  gap: 10px;
+  padding: 9px 12px;
+}
+
+.map-status-strip span,
+.map-readout span,
+.map-readout small {
+  color: oklch(1 0 0 / 0.72);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.map-status-strip strong {
+  color: white;
+  font-size: 0.8rem;
+}
+
+.map-readout {
+  right: 16px;
+  bottom: 16px;
+  gap: 11px;
+  padding: 10px 13px;
+}
+
+.map-readout strong {
+  color: white;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 1.4rem;
+}
+
+.control-france {
+  fill: oklch(1 0 0 / 0.08);
+  stroke: oklch(1 0 0 / 0.42);
+  stroke-width: 2;
+}
+
+.control-region {
+  fill: none;
+  stroke: oklch(1 0 0 / 0.14);
+  stroke-width: 1.5;
+}
+
+.control-flow {
+  fill: none;
+  stroke: url("#controlFlow");
+  stroke-dasharray: 13 17;
+  stroke-linecap: round;
+  stroke-width: 4;
+  opacity: 0.94;
+  animation: grid-flow 4.8s linear infinite;
+}
+
+.flow-b {
+  animation-duration: 6.4s;
+}
+
+.flow-c {
+  animation-duration: 7.2s;
+}
+
+.flow-d {
+  animation-duration: 5.5s;
+}
+
+.control-node circle:first-child {
+  opacity: 0.88;
+  transition: r 180ms ease;
+}
+
+.control-node circle:nth-child(2) {
+  fill: white;
+}
+
+.control-node text {
+  fill: oklch(1 0 0 / 0.8);
+  font-size: 12px;
+  font-weight: 720;
+  text-anchor: middle;
+}
+
+.blackout-zone path {
+  fill: oklch(0.55 0.18 28 / 0.28);
+  stroke: oklch(0.68 0.19 35);
+  stroke-width: 2;
+}
+
+.blackout-zone text {
+  fill: white;
+  font-size: 15px;
+  font-weight: 760;
+}
+
+.control-city rect {
+  fill: oklch(1 0 0 / 0.78);
+}
+
+.command-verdict {
+  min-height: 580px;
+}
+
+.hour-scrubber {
+  display: grid;
+  grid-template-columns: auto minmax(160px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 18px;
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 14px;
+}
+
+.hour-scrubber label {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 720;
+}
+
+.hour-scrubber strong {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-weight: 820;
+}
+
+.simulation-deck {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.timeline-panel,
+.scenario-passport {
+  padding: 18px;
+}
+
+.timeline-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 10px;
+}
+
+.timeline-head h3,
+.scenario-passport h3 {
+  font-size: 1.35rem;
+  font-weight: 780;
+  letter-spacing: -0.025em;
+}
+
+.timeline-head p,
+.scenario-passport p {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.hour-badge {
+  display: grid;
+  min-width: 86px;
+  border-radius: 12px;
+  background: oklch(0.97 0.025 260);
+  color: var(--primary-strong);
+  padding: 11px;
+  text-align: center;
+}
+
+.hour-badge.danger {
+  background: oklch(0.97 0.025 28);
+  color: oklch(0.46 0.14 28);
+}
+
+.hour-badge span {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.hour-badge strong {
+  margin-top: 3px;
+  font-size: 1.05rem;
+}
+
+.timeline-chart {
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.timeline-chart svg {
+  display: block;
+  min-width: 620px;
+  width: 100%;
+  height: auto;
+}
+
+.timeline-grid {
+  stroke: oklch(0.89 0.018 260);
+  stroke-width: 1;
+}
+
+.timeline-label {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  text-anchor: middle;
+}
+
+.margin-bar {
+  fill: oklch(0.62 0.14 145 / 0.18);
+}
+
+.margin-bar.danger {
+  fill: oklch(0.55 0.18 28 / 0.28);
+}
+
+.timeline-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.timeline-line.supply {
+  stroke: url("#supplyGradient");
+}
+
+.timeline-line.demand {
+  stroke: oklch(0.18 0.035 260 / 0.72);
+}
+
+.active-hour-line {
+  stroke: var(--primary);
+  stroke-dasharray: 5 7;
+  stroke-width: 2;
+}
+
+.active-dot {
+  stroke: white;
+  stroke-width: 3;
+}
+
+.active-dot.supply {
+  fill: oklch(0.62 0.14 145);
+}
+
+.active-dot.demand {
+  fill: var(--ink);
+}
+
+.timeline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 12px;
+}
+
+.timeline-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 680;
+}
+
+.timeline-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.timeline-legend .supply {
+  background: oklch(0.62 0.14 145);
+}
+
+.timeline-legend .demand {
+  background: var(--ink);
+}
+
+.timeline-legend .danger {
+  background: oklch(0.55 0.18 28);
+}
+
+.scenario-passport {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  background:
+    linear-gradient(140deg, white, oklch(0.97 0.025 260));
+}
+
+.passport-score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.passport-score strong {
+  color: var(--primary);
+  font-size: 4.2rem;
+  font-weight: 830;
+  letter-spacing: -0.055em;
+  line-height: 0.86;
+}
+
+.passport-score span {
+  color: var(--muted);
+  font-weight: 760;
+}
+
+.passport-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.passport-footer span {
+  border-radius: 999px;
+  background: white;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 720;
+  padding: 8px 10px;
+}
+
+.simulator-grid.upgraded {
+  grid-template-columns: minmax(340px, 0.9fr) minmax(0, 1.1fr);
+}
+
+.explanation-panel {
+  align-self: stretch;
 }
 
 .simulator-grid {
@@ -879,7 +1497,9 @@ a {
 @media (max-width: 980px) {
   .hero-section,
   .live-grid,
-  .simulator-grid {
+  .simulator-grid,
+  .control-room-grid,
+  .simulation-deck {
     grid-template-columns: 1fr;
   }
 
@@ -899,6 +1519,28 @@ a {
 
   .live-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cockpit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cockpit-main {
+    grid-column: 1 / -1;
+  }
+
+  .mission-strip,
+  .challenge-bar.cinematic {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .command-verdict,
+  .france-control-map {
+    min-height: auto;
+  }
+
+  .france-control-map > svg {
+    height: 500px;
   }
 }
 
@@ -962,6 +1604,7 @@ a {
   }
 
   .section-heading,
+  .cockpit-header,
   .site-footer {
     align-items: stretch;
     flex-direction: column;
@@ -969,7 +1612,45 @@ a {
 
   .live-cards,
   .challenge-bar,
-  .result-stats {
+  .challenge-bar.cinematic,
+  .result-stats,
+  .mission-strip,
+  .compare-grid,
+  .cockpit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .simulator-actions {
+    justify-content: stretch;
+  }
+
+  .simulator-actions > * {
+    flex: 1 1 170px;
+  }
+
+  .france-control-map > svg {
+    height: 430px;
+  }
+
+  .map-status-strip {
+    right: 14px;
+    justify-content: center;
+  }
+
+  .map-readout {
+    left: 14px;
+    justify-content: center;
+  }
+
+  .timeline-head {
+    flex-direction: column;
+  }
+
+  .hour-badge {
+    width: 100%;
+  }
+
+  .hour-scrubber {
     grid-template-columns: 1fr;
   }
 
@@ -1008,8 +1689,21 @@ a {
     height: 245px;
   }
 
+  .france-control-map > svg {
+    height: 360px;
+  }
+
   .metric-card {
     min-height: 140px;
+  }
+
+  .cockpit-main,
+  .control-stat {
+    min-height: 138px;
+  }
+
+  .passport-score strong {
+    font-size: 3.25rem;
   }
 }
 

@@ -2,6 +2,15 @@
 
 Mini-application web de hackathon : “Peux-tu alimenter la France en 2050 sans blackout ?”
 
+## Expérience
+
+- Cockpit “centre de pilotage” avec statut réseau, CO₂, marge minimale et risque max sur 24h
+- Carte énergétique stylisée de la France, réactive au scénario choisi
+- Simulation 24h accélérée avec courbes demande / production / marge
+- Scénarios de crise : nuit sans vent, pic hivernal, vague de froid, réacteurs indisponibles, importations limitées
+- Carte de scénario partageable avec score, verdict, mix et heures critiques
+- Snapshot temps réel du mix électrique français via RTE éCO2mix / ODRÉ
+
 ## Lancer en local
 
 ```bash

@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import {
+  Activity,
+  AlertTriangle,
   BatteryCharging,
   Cable,
   ChevronDown,
@@ -14,10 +16,14 @@ import {
   Leaf,
   Lightbulb,
   Loader2,
+  MapPinned,
+  Pause,
+  Play,
   RadioTower,
   RefreshCw,
   Share2,
   ShieldCheck,
+  Snowflake,
   SunMedium,
   Waves,
   Wind,
@@ -25,10 +31,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import clsx from "clsx";
+import { buildDaySimulation, summarizeDaySimulation, type DaySimulationPoint } from "@/lib/day-simulation";
 import { fetchLiveMixSnapshot } from "@/lib/fetch-live-mix";
 import type { LiveMixSnapshot } from "@/lib/live-mix";
 import {
   type ChallengeId,
+  type SimulationResult,
   type ScenarioState,
   challenges,
   defaultScenario,
@@ -45,6 +53,16 @@ const energyColors = {
   gas: "oklch(0.67 0.16 48)",
   fossil: "oklch(0.55 0.18 28)",
   bio: "oklch(0.62 0.14 145)",
+};
+
+const challengeIcons: Record<ChallengeId, LucideIcon> = {
+  normal: ShieldCheck,
+  nightWindless: Wind,
+  winterPeak: Snowflake,
+  solarDay: SunMedium,
+  coldWave: AlertTriangle,
+  reactorOutage: Factory,
+  importLimit: MapPinned,
 };
 
 const formatMw = (value: number | null): string =>
@@ -351,6 +369,347 @@ function LiveMixSection({
   );
 }
 
+function ControlStat({
+  label,
+  value,
+  detail,
+  tone = "var(--primary)",
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  tone?: string;
+}) {
+  return (
+    <div className="control-stat">
+      <span>{label}</span>
+      <strong style={{ color: tone }}>{value}</strong>
+      <small>{detail}</small>
+    </div>
+  );
+}
+
+function DayTimeline({
+  points,
+  activeHour,
+}: {
+  points: DaySimulationPoint[];
+  activeHour: number;
+}) {
+  const maxValue = Math.max(...points.flatMap((point) => [point.demand, point.supply]), 100);
+  const chartWidth = 720;
+  const chartHeight = 238;
+  const xFor = (hour: number) => (hour / 23) * chartWidth;
+  const yFor = (value: number) => chartHeight - (value / maxValue) * (chartHeight - 22) - 10;
+  const pathFor = (key: "demand" | "supply") =>
+    points.map((point, index) => `${index === 0 ? "M" : "L"} ${xFor(point.hour).toFixed(1)} ${yFor(point[key]).toFixed(1)}`).join(" ");
+  const marginBars = points.map((point) => {
+    const x = xFor(point.hour) - 5;
+    const zero = yFor(point.demand);
+    const supply = yFor(point.supply);
+    return {
+      ...point,
+      x,
+      y: Math.min(zero, supply),
+      height: Math.max(3, Math.abs(zero - supply)),
+      danger: point.margin < 0,
+    };
+  });
+  const activePoint = points[activeHour] ?? points[0];
+
+  return (
+    <div className="timeline-panel">
+      <div className="timeline-head">
+        <div>
+          <h3>Simulation 24h accélérée</h3>
+          <p>Demande, production et marge réseau heure par heure.</p>
+        </div>
+        <div className={clsx("hour-badge", activePoint.margin < 0 && "danger")}>
+          <span>{activePoint.label}</span>
+          <strong>{activePoint.margin >= 0 ? "+" : ""}{activePoint.margin} pts</strong>
+        </div>
+      </div>
+      <div className="timeline-chart">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-label="Courbes demande et production sur 24 heures">
+          <defs>
+            <linearGradient id="supplyGradient" x1="0" x2="1">
+              <stop offset="0%" stopColor="oklch(0.72 0.12 218)" />
+              <stop offset="55%" stopColor="oklch(0.62 0.14 145)" />
+              <stop offset="100%" stopColor="oklch(0.78 0.17 82)" />
+            </linearGradient>
+          </defs>
+          {[0, 6, 12, 18, 23].map((hour) => (
+            <g key={hour}>
+              <line className="timeline-grid" x1={xFor(hour)} x2={xFor(hour)} y1="0" y2={chartHeight} />
+              <text className="timeline-label" x={xFor(hour)} y={chartHeight - 2}>
+                {String(hour).padStart(2, "0")}h
+              </text>
+            </g>
+          ))}
+          {marginBars.map((bar) => (
+            <rect
+              className={clsx("margin-bar", bar.danger && "danger")}
+              key={bar.hour}
+              x={bar.x}
+              y={bar.y}
+              width="10"
+              height={bar.height}
+              rx="4"
+            />
+          ))}
+          <path className="timeline-line demand" d={pathFor("demand")} />
+          <path className="timeline-line supply" d={pathFor("supply")} />
+          <line className="active-hour-line" x1={xFor(activeHour)} x2={xFor(activeHour)} y1="0" y2={chartHeight - 18} />
+          <circle className="active-dot demand" cx={xFor(activeHour)} cy={yFor(activePoint.demand)} r="6" />
+          <circle className="active-dot supply" cx={xFor(activeHour)} cy={yFor(activePoint.supply)} r="6" />
+        </svg>
+      </div>
+      <div className="timeline-legend">
+        <span><i className="supply" /> Production disponible</span>
+        <span><i className="demand" /> Demande</span>
+        <span><i className="danger" /> Marge négative</span>
+      </div>
+    </div>
+  );
+}
+
+function FranceScenarioMap({
+  scenario,
+  result,
+  activePoint,
+}: {
+  scenario: ScenarioState;
+  result: SimulationResult;
+  activePoint: DaySimulationPoint;
+}) {
+  const gridTone = result.blackoutRisk > 65 ? "danger" : result.stability > 72 ? "stable" : "tense";
+  const nodeScale = {
+    solar: 12 + scenario.solar * 0.16,
+    wind: 12 + scenario.wind * 0.14,
+    nuclear: 12 + scenario.nuclear * 0.12,
+    hydro: 12 + scenario.hydro * 0.34,
+    storage: 12 + scenario.storage * 0.13,
+    gas: 10 + scenario.gas * 0.26,
+  };
+
+  return (
+    <div className={clsx("france-control-map", gridTone)}>
+      <div className="map-status-strip">
+        <span>{challenges[scenario.challenge].label}</span>
+        <strong>{activePoint.eventLabel ?? "Réseau piloté"}</strong>
+      </div>
+      <svg viewBox="0 0 720 620" role="img" aria-label="Carte énergétique stylisée de la France">
+        <defs>
+          <filter id="controlGlow">
+            <feGaussianBlur stdDeviation="5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <linearGradient id="controlFlow" x1="0" x2="1">
+            <stop offset="0%" stopColor={energyColors.wind} />
+            <stop offset="48%" stopColor={energyColors.nuclear} />
+            <stop offset="100%" stopColor={energyColors.solar} />
+          </linearGradient>
+        </defs>
+        <path
+          className="control-france"
+          d="M319 56 451 82 523 155 604 219 574 333 627 419 512 495 397 525 300 488 197 503 122 406 160 300 117 214 202 127Z"
+        />
+        <path className="control-region" d="M319 56 332 225 202 127" />
+        <path className="control-region" d="M332 225 523 155 604 219" />
+        <path className="control-region" d="M332 225 397 525 197 503" />
+        <path className="control-region" d="M332 225 574 333 512 495 397 525" />
+        <path className="control-flow flow-a" d="M184 407 C252 331 290 250 359 221 C454 182 525 224 594 307" />
+        <path className="control-flow flow-b" d="M203 137 C276 205 346 265 406 349 C454 415 507 452 585 424" />
+        <path className="control-flow flow-c" d="M297 486 C322 383 317 284 382 202 C420 153 468 118 540 125" />
+        <path className="control-flow flow-d" d="M150 285 C264 292 354 315 457 289 C520 273 552 236 604 212" />
+        {[
+          { key: "wind", x: 208, y: 132, color: energyColors.wind, label: "Éolien", r: nodeScale.wind },
+          { key: "nuclear", x: 463, y: 91, color: energyColors.nuclear, label: "Nucléaire", r: nodeScale.nuclear },
+          { key: "solar", x: 586, y: 311, color: energyColors.solar, label: "Solaire", r: nodeScale.solar },
+          { key: "hydro", x: 302, y: 488, color: energyColors.hydro, label: "Hydraulique", r: nodeScale.hydro },
+          { key: "storage", x: 421, y: 358, color: "oklch(0.53 0.15 182)", label: "Stockage", r: nodeScale.storage },
+          { key: "gas", x: 532, y: 157, color: energyColors.gas, label: "Gaz", r: nodeScale.gas },
+        ].map((node) => (
+          <g className="control-node" key={node.key} transform={`translate(${node.x} ${node.y})`}>
+            <circle r={node.r} fill={node.color} />
+            <circle r="5" />
+            <text y={node.r + 22}>{node.label}</text>
+          </g>
+        ))}
+        {result.blackoutRisk > 58 ? (
+          <g className="blackout-zone">
+            <path d="M122 406 197 503 300 488 332 225 160 300Z" />
+            <text x="198" y="404">Zone sous tension</text>
+          </g>
+        ) : null}
+        <g className="control-city" transform="translate(300 395)">
+          <rect x="0" y="22" width="22" height="50" rx="5" />
+          <rect x="34" y="0" width="30" height="72" rx="6" />
+          <rect x="77" y="16" width="22" height="56" rx="5" />
+          <rect x="112" y="30" width="36" height="42" rx="6" />
+        </g>
+      </svg>
+      <div className="map-readout">
+        <span>Marge active</span>
+        <strong>{activePoint.margin >= 0 ? "+" : ""}{activePoint.margin}</strong>
+        <small>risque {activePoint.blackoutRisk}%</small>
+      </div>
+    </div>
+  );
+}
+
+function ScenarioPassport({
+  scenario,
+  result,
+  summary,
+  onCopy,
+}: {
+  scenario: ScenarioState;
+  result: SimulationResult;
+  summary: ReturnType<typeof summarizeDaySimulation>;
+  onCopy: () => void;
+}) {
+  const mix = [
+    { label: "Solaire", value: scenario.solar, color: energyColors.solar },
+    { label: "Éolien", value: scenario.wind, color: energyColors.wind },
+    { label: "Hydro", value: scenario.hydro, color: energyColors.hydro },
+    { label: "Nucléaire", value: scenario.nuclear, color: energyColors.nuclear },
+    { label: "Stockage", value: scenario.storage, color: "oklch(0.53 0.15 182)" },
+    { label: "Gaz", value: scenario.gas, color: energyColors.gas },
+  ];
+
+  return (
+    <div className="scenario-passport">
+      <div>
+        <p className="scenario-label">Carte du scénario</p>
+        <h3>{result.verdict}</h3>
+        <p>Un résumé prêt à partager : score, stress test 24h et grands choix de mix.</p>
+      </div>
+      <div className="passport-score">
+        <strong>{result.score}</strong>
+        <span>/100</span>
+      </div>
+      <div className="passport-bars">
+        {mix.map((item) => (
+          <div key={item.label}>
+            <span>{item.label}</span>
+            <i>
+              <b style={{ width: `${Math.min(100, item.value)}%`, background: item.color }} />
+            </i>
+            <strong>{item.value}</strong>
+          </div>
+        ))}
+      </div>
+      <div className="passport-footer">
+        <span>{summary.blackoutHours} h critiques</span>
+        <span>marge min. {summary.minMargin}</span>
+        <button className="primary-button compact" type="button" onClick={onCopy}>
+          <Copy size={16} />
+          Copier
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ControlRoomOverview({
+  snapshot,
+  scenario,
+}: {
+  snapshot: LiveMixSnapshot | null;
+  scenario: ScenarioState;
+}) {
+  const result = useMemo(() => simulateScenario(scenario), [scenario]);
+  const dayPoints = useMemo(() => buildDaySimulation(scenario), [scenario]);
+  const summary = useMemo(() => summarizeDaySimulation(dayPoints), [dayPoints]);
+  const currentLowCarbon = snapshot
+    ? (snapshot.nuclear ?? 0) + (snapshot.wind ?? 0) + (snapshot.solar ?? 0) + (snapshot.hydro ?? 0) + (snapshot.bioenergy ?? 0)
+    : 0;
+  const currentThermal = snapshot ? (snapshot.gas ?? 0) + (snapshot.oil ?? 0) + (snapshot.coal ?? 0) : 0;
+  const currentTotal = Math.max(1, currentLowCarbon + currentThermal);
+  const activeChallenge = challenges[scenario.challenge];
+
+  return (
+    <section id="cockpit" className="section-shell cockpit-shell">
+      <div className="cockpit-header">
+        <div>
+          <p className="scenario-label">Centre de pilotage public</p>
+          <h2>Un réseau, deux réalités : maintenant et ton 2050.</h2>
+        </div>
+        <span className={clsx("data-pill", snapshot?.isFallback && "fallback")}>
+          {snapshot?.sourceLabel ?? "Connexion aux données..."}
+        </span>
+      </div>
+
+      <div className="cockpit-grid">
+        <div className="cockpit-main">
+          <div className="radar-title">
+            <Activity size={18} />
+            <span>{activeChallenge.label}</span>
+          </div>
+          <strong>{result.verdict}</strong>
+          <p>
+            La marge minimale simulée atteint {summary.minMargin >= 0 ? "+" : ""}{summary.minMargin} points à {summary.worstHour.label}. Le scénario traverse {summary.blackoutHours} heure{summary.blackoutHours > 1 ? "s" : ""} critique{summary.blackoutHours > 1 ? "s" : ""}.
+          </p>
+        </div>
+        <ControlStat label="Score 2050" value={`${result.score}/100`} detail="verdict dynamique" tone="var(--primary)" />
+        <ControlStat label="CO₂ 2050" value={`${result.emissions} g/kWh`} detail="estimation simplifiée" tone={result.emissions > 80 ? energyColors.fossil : "oklch(0.62 0.14 145)"} />
+        <ControlStat label="Bas-carbone actuel" value={`${Math.round((currentLowCarbon / currentTotal) * 100)}%`} detail="mix RTE instantané" tone={energyColors.nuclear} />
+        <ControlStat label="Risque max 24h" value={`${summary.maxRisk}%`} detail="stress test simulé" tone={summary.maxRisk > 70 ? energyColors.fossil : energyColors.wind} />
+      </div>
+
+      <div className="compare-grid">
+        <div className="compare-card">
+          <h3>Maintenant</h3>
+          <p>{snapshot ? formatDate(snapshot.timestamp) : "Donnée en chargement"}</p>
+          <div className="compare-bars">
+            {[
+              { label: "Nucléaire", value: snapshot?.nuclear ?? 0, color: energyColors.nuclear },
+              { label: "Éolien", value: snapshot?.wind ?? 0, color: energyColors.wind },
+              { label: "Solaire", value: snapshot?.solar ?? 0, color: energyColors.solar },
+              { label: "Hydraulique", value: snapshot?.hydro ?? 0, color: energyColors.hydro },
+              { label: "Thermique", value: currentThermal, color: energyColors.gas },
+            ].map((item) => (
+              <span key={item.label}>
+                <i>{item.label}</i>
+                <b>
+                  <em style={{ width: `${Math.min(100, (item.value / currentTotal) * 100)}%`, background: item.color }} />
+                </b>
+                <strong>{formatCompact(item.value)}</strong>
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="compare-card future">
+          <h3>Ton 2050</h3>
+          <p>{activeChallenge.short} · modèle volontairement simplifié</p>
+          <div className="compare-bars">
+            {[
+              { label: "Solaire", value: scenario.solar, color: energyColors.solar },
+              { label: "Éolien", value: scenario.wind, color: energyColors.wind },
+              { label: "Hydraulique", value: scenario.hydro, color: energyColors.hydro },
+              { label: "Nucléaire", value: scenario.nuclear, color: energyColors.nuclear },
+              { label: "Stockage", value: scenario.storage, color: "oklch(0.53 0.15 182)" },
+              { label: "Gaz", value: scenario.gas, color: energyColors.gas },
+            ].map((item) => (
+              <span key={item.label}>
+                <i>{item.label}</i>
+                <b>
+                  <em style={{ width: `${Math.min(100, item.value)}%`, background: item.color }} />
+                </b>
+                <strong>{item.value}</strong>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SimulatorSection({
   scenario,
   setScenario,
@@ -361,6 +720,22 @@ function SimulatorSection({
   onCopy: () => void;
 }) {
   const result = useMemo(() => simulateScenario(scenario), [scenario]);
+  const dayPoints = useMemo(() => buildDaySimulation(scenario), [scenario]);
+  const daySummary = useMemo(() => summarizeDaySimulation(dayPoints), [dayPoints]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [activeHour, setActiveHour] = useState(19);
+  const activePoint = dayPoints[activeHour] ?? dayPoints[0];
+
+  useEffect(() => {
+    if (!isPlaying) return undefined;
+
+    const interval = window.setInterval(() => {
+      setActiveHour((hour) => (hour + 1) % 24);
+    }, 720);
+
+    return () => window.clearInterval(interval);
+  }, [isPlaying]);
+
   const update = (key: keyof Omit<ScenarioState, "challenge">, value: number) => {
     setScenario({ ...scenario, [key]: value });
   };
@@ -370,44 +745,61 @@ function SimulatorSection({
     <section id="simulateur" className="section-shell simulator-shell">
       <div className="section-heading">
         <div>
-          <h2>Construis ton mix 2050</h2>
-          <p>Déplace les curseurs, lance un stress test météo, puis partage ton scénario par URL.</p>
+          <h2>Salle de contrôle 2050</h2>
+          <p>Déplace les curseurs, déclenche une crise, puis regarde le réseau tenir ou décrocher heure par heure.</p>
         </div>
-        <button className="primary-button compact" type="button" onClick={onCopy}>
-          <Copy size={17} />
-          Copier mon scénario
-        </button>
+        <div className="simulator-actions">
+          <button className="ghost-button" type="button" onClick={() => setIsPlaying((playing) => !playing)}>
+            {isPlaying ? <Pause size={17} /> : <Play size={17} />}
+            {isPlaying ? "Pause 24h" : "Lancer 24h"}
+          </button>
+          <button className="primary-button compact" type="button" onClick={onCopy}>
+            <Copy size={17} />
+            Copier mon scénario
+          </button>
+        </div>
       </div>
 
-      <div className="challenge-bar" aria-label="Challenges rapides">
+      <div className="mission-strip">
+        <ControlStat
+          label="Statut réseau"
+          value={daySummary.status === "secure" ? "Stable" : daySummary.status === "tense" ? "Sous tension" : "Critique"}
+          detail={`${daySummary.blackoutHours} h critiques sur 24`}
+          tone={daySummary.status === "secure" ? "oklch(0.62 0.14 145)" : daySummary.status === "tense" ? energyColors.gas : energyColors.fossil}
+        />
+        <ControlStat label="Marge minimale" value={`${daySummary.minMargin >= 0 ? "+" : ""}${daySummary.minMargin}`} detail={`${daySummary.worstHour.label}, pire heure`} tone={daySummary.minMargin < 0 ? energyColors.fossil : "var(--primary)"} />
+        <ControlStat label="Stockage final" value={`${daySummary.finalStorage}%`} detail="réserve simulée après 24h" tone="oklch(0.53 0.15 182)" />
+        <ControlStat label="Risque max" value={`${daySummary.maxRisk}%`} detail="risque de blackout simulé" tone={daySummary.maxRisk > 70 ? energyColors.fossil : energyColors.wind} />
+      </div>
+
+      <div className="challenge-bar cinematic" aria-label="Challenges rapides">
         {(Object.keys(challenges) as ChallengeId[])
           .filter((id) => id !== "normal")
-          .map((id) => (
-            <button
-              className={clsx("challenge-button", scenario.challenge === id && "active")}
-              key={id}
-              type="button"
-              onClick={() => setChallenge(scenario.challenge === id ? "normal" : id)}
-            >
-              <span>{challenges[id].short}</span>
-              <small>{challenges[id].description}</small>
-            </button>
-          ))}
+          .map((id) => {
+            const Icon = challengeIcons[id];
+            return (
+              <button
+                className={clsx("challenge-button", `severity-${challenges[id].severity}`, scenario.challenge === id && "active")}
+                key={id}
+                type="button"
+                onClick={() => {
+                  setChallenge(scenario.challenge === id ? "normal" : id);
+                  setActiveHour(id === "solarDay" ? 13 : 19);
+                }}
+              >
+                <Icon size={19} />
+                <span>{challenges[id].short}</span>
+                <small>{challenges[id].description}</small>
+              </button>
+            );
+          })}
       </div>
 
-      <div className="simulator-grid">
-        <div className="controls-panel">
-          <SliderControl label="Solaire" icon={SunMedium} value={scenario.solar} helper="Fort le jour, variable le soir" accent={energyColors.solar} onChange={(value) => update("solar", value)} />
-          <SliderControl label="Éolien" icon={Wind} value={scenario.wind} helper="Puissant mais météo-dépendant" accent={energyColors.wind} onChange={(value) => update("wind", value)} />
-          <SliderControl label="Hydraulique" icon={Waves} value={scenario.hydro} max={30} helper="Très stable, potentiel plafonné" accent={energyColors.hydro} onChange={(value) => update("hydro", value)} />
-          <SliderControl label="Nucléaire" icon={Factory} value={scenario.nuclear} helper="Pilotable et bas-carbone" accent={energyColors.nuclear} onChange={(value) => update("nuclear", value)} />
-          <SliderControl label="Stockage" icon={BatteryCharging} value={scenario.storage} helper="Absorbe les creux et surplus" accent="oklch(0.53 0.15 182)" onChange={(value) => update("storage", value)} />
-          <SliderControl label="Sobriété énergétique" icon={Lightbulb} value={scenario.sobriety} max={45} helper="Réduit la pression sur la demande" accent="oklch(0.62 0.14 145)" onChange={(value) => update("sobriety", value)} />
-          <SliderControl label="Gaz de secours" icon={Flame} value={scenario.gas} max={35} helper="Sécurise, mais émet du CO₂" accent={energyColors.gas} onChange={(value) => update("gas", value)} />
-        </div>
+      <div className="control-room-grid">
+        <FranceScenarioMap scenario={scenario} result={result} activePoint={activePoint} />
 
-        <div className="verdict-panel">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="verdict-panel command-verdict">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <p className="scenario-label">{challenges[scenario.challenge].label}</p>
               <h3>{result.verdict}</h3>
@@ -438,6 +830,42 @@ function SimulatorSection({
             </div>
           </div>
 
+          <div className="hour-scrubber">
+            <label htmlFor="active-hour">Heure simulée</label>
+            <input
+              id="active-hour"
+              className="range"
+              type="range"
+              min="0"
+              max="23"
+              value={activeHour}
+              aria-label="Heure simulée"
+              style={{ "--range-color": activePoint.margin < 0 ? energyColors.fossil : "var(--primary)" } as CSSProperties}
+              onChange={(event) => setActiveHour(Number(event.currentTarget.value))}
+              onInput={(event) => setActiveHour(Number(event.currentTarget.value))}
+            />
+            <strong>{activePoint.label}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div className="simulation-deck">
+        <DayTimeline points={dayPoints} activeHour={activeHour} />
+        <ScenarioPassport scenario={scenario} result={result} summary={daySummary} onCopy={onCopy} />
+      </div>
+
+      <div className="simulator-grid upgraded">
+        <div className="controls-panel">
+          <SliderControl label="Solaire" icon={SunMedium} value={scenario.solar} helper="Fort le jour, variable le soir" accent={energyColors.solar} onChange={(value) => update("solar", value)} />
+          <SliderControl label="Éolien" icon={Wind} value={scenario.wind} helper="Puissant mais météo-dépendant" accent={energyColors.wind} onChange={(value) => update("wind", value)} />
+          <SliderControl label="Hydraulique" icon={Waves} value={scenario.hydro} max={30} helper="Très stable, potentiel plafonné" accent={energyColors.hydro} onChange={(value) => update("hydro", value)} />
+          <SliderControl label="Nucléaire" icon={Factory} value={scenario.nuclear} helper="Pilotable et bas-carbone" accent={energyColors.nuclear} onChange={(value) => update("nuclear", value)} />
+          <SliderControl label="Stockage" icon={BatteryCharging} value={scenario.storage} helper="Absorbe les creux et surplus" accent="oklch(0.53 0.15 182)" onChange={(value) => update("storage", value)} />
+          <SliderControl label="Sobriété énergétique" icon={Lightbulb} value={scenario.sobriety} max={45} helper="Réduit la pression sur la demande" accent="oklch(0.62 0.14 145)" onChange={(value) => update("sobriety", value)} />
+          <SliderControl label="Gaz de secours" icon={Flame} value={scenario.gas} max={35} helper="Sécurise, mais émet du CO₂" accent={energyColors.gas} onChange={(value) => update("gas", value)} />
+        </div>
+
+        <div className="verdict-panel explanation-panel">
           <div className="advice-box">
             <h4>Conseils automatiques</h4>
             <ul>
@@ -530,6 +958,7 @@ export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: Live
           </span>
         </a>
         <nav className="hidden items-center gap-1 md:flex" aria-label="Navigation principale">
+          <a href="#cockpit">Cockpit</a>
           <a href="#maintenant">Maintenant</a>
           <a href="#simulateur">Simulateur</a>
           <a href="#methode">Méthode</a>
@@ -543,10 +972,10 @@ export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: Live
 
       <section id="top" className="hero-section">
         <div className="hero-copy">
-          <motion.h1 initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <motion.h1 initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             Wattopia 2050
           </motion.h1>
-          <motion.p className="hero-subtitle" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.06 }}>
+          <motion.p className="hero-subtitle" initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.06 }}>
             Construis le mix énergétique de la France et évite le blackout.
           </motion.p>
           <p className="hero-proof">Basé sur des données réelles du réseau électrique français.</p>
@@ -566,17 +995,18 @@ export default function WattopiaApp({ initialSnapshot }: { initialSnapshot: Live
             </span>
             <span>
               <Cable size={16} />
-              Scénarios partageables
+              Simulation 24h
             </span>
             <span>
               <CloudSun size={16} />
-              Stress tests météo
+              Stress tests de crise
             </span>
           </div>
         </div>
         <EnergyMap />
       </section>
 
+      <ControlRoomOverview snapshot={snapshot} scenario={scenario} />
       <LiveMixSection snapshot={snapshot} loading={loading} onRefresh={loadSnapshot} />
       <SimulatorSection scenario={scenario} setScenario={setScenario} onCopy={copyScenario} />
 

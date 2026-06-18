@@ -1,4 +1,11 @@
-export type ChallengeId = "normal" | "nightWindless" | "winterPeak" | "solarDay";
+export type ChallengeId =
+  | "normal"
+  | "nightWindless"
+  | "winterPeak"
+  | "solarDay"
+  | "coldWave"
+  | "reactorOutage"
+  | "importLimit";
 
 export type ScenarioState = {
   solar: number;
@@ -46,6 +53,7 @@ export const challenges: Record<
     windFactor: number;
     demandFactor: number;
     storageNeed: number;
+    severity: "standard" | "stress" | "crisis";
   }
 > = {
   normal: {
@@ -56,6 +64,7 @@ export const challenges: Record<
     windFactor: 1,
     demandFactor: 1,
     storageNeed: 0,
+    severity: "standard",
   },
   nightWindless: {
     label: "Nuit sans vent",
@@ -65,6 +74,7 @@ export const challenges: Record<
     windFactor: 0.28,
     demandFactor: 1.04,
     storageNeed: 22,
+    severity: "stress",
   },
   winterPeak: {
     label: "Pic de consommation hivernal",
@@ -74,6 +84,7 @@ export const challenges: Record<
     windFactor: 0.75,
     demandFactor: 1.24,
     storageNeed: 10,
+    severity: "stress",
   },
   solarDay: {
     label: "Journée solaire idéale",
@@ -83,6 +94,37 @@ export const challenges: Record<
     windFactor: 0.86,
     demandFactor: 0.96,
     storageNeed: 16,
+    severity: "standard",
+  },
+  coldWave: {
+    label: "Vague de froid à 19h",
+    short: "Vague de froid",
+    description: "Demande très forte en soirée, solaire absent.",
+    solarFactor: 0.28,
+    windFactor: 0.66,
+    demandFactor: 1.38,
+    storageNeed: 24,
+    severity: "crisis",
+  },
+  reactorOutage: {
+    label: "Panne de 4 réacteurs",
+    short: "Réacteurs indisponibles",
+    description: "Socle pilotable réduit, besoin de flexibilité.",
+    solarFactor: 0.92,
+    windFactor: 0.86,
+    demandFactor: 1.08,
+    storageNeed: 18,
+    severity: "crisis",
+  },
+  importLimit: {
+    label: "Importations limitées",
+    short: "Imports limités",
+    description: "Moins d'aide extérieure, autonomie prioritaire.",
+    solarFactor: 0.82,
+    windFactor: 0.78,
+    demandFactor: 1.14,
+    storageNeed: 20,
+    severity: "crisis",
   },
 };
 
@@ -132,11 +174,13 @@ export function simulateScenario(scenario: ScenarioState): SimulationResult {
   const challenge = challenges[scenario.challenge];
   const effectiveSolar = scenario.solar * challenge.solarFactor;
   const effectiveWind = scenario.wind * challenge.windFactor;
+  const nuclearAvailability = scenario.challenge === "reactorOutage" ? 0.72 : 1;
+  const importStress = scenario.challenge === "importLimit" ? 13 : 0;
   const effectiveDemand = 100 * challenge.demandFactor * (1 - scenario.sobriety / 180);
   const renewableShare = clamp(effectiveSolar + effectiveWind + scenario.hydro, 0, 100);
   const lowCarbonSupply =
-    effectiveSolar * 0.92 + effectiveWind * 0.93 + scenario.hydro * 1.05 + scenario.nuclear * 0.95;
-  const backupSupply = scenario.gas * 0.72 + scenario.storage * 0.42;
+    effectiveSolar * 0.92 + effectiveWind * 0.93 + scenario.hydro * 1.05 + scenario.nuclear * nuclearAvailability * 0.95;
+  const backupSupply = scenario.gas * 0.72 + scenario.storage * 0.42 - importStress;
   const grossSupply = lowCarbonSupply + backupSupply;
   const supplyBalance = clamp(100 - Math.abs(effectiveDemand - grossSupply) * 0.86);
 
@@ -147,13 +191,14 @@ export function simulateScenario(scenario: ScenarioState): SimulationResult {
   const storageFit = clamp(scenario.storage - challenge.storageNeed + renewableShare * 0.18);
   const stableBase =
     28 +
-    scenario.nuclear * 0.42 +
+    scenario.nuclear * nuclearAvailability * 0.42 +
     scenario.hydro * 0.76 +
     storageFit * 0.34 +
     scenario.gas * 0.22 +
     scenario.sobriety * 0.2 -
     intermittency * 0.52 -
-    (challenge.demandFactor - 1) * 45;
+    (challenge.demandFactor - 1) * 45 -
+    importStress * 0.6;
   const stability = clamp(stableBase);
 
   const emissions = clamp(

@@ -2,7 +2,7 @@
 
 ## Visual Theme
 
-Wattopia 2050 uses a clean product-interface register: white canvas, cobalt control-room accents, energy colors for data, and restrained motion. The visual metaphor is a future French grid control room: clear, luminous, and calm.
+Wattopia 2050 uses a clean product-interface register: white canvas, cobalt control-room accents, energy colors for data, and restrained motion. The visual metaphor is a future French grid control room: clear, luminous, calm, and visibly alive when a crisis scenario is triggered.
 
 ## Color Palette
 
@@ -25,8 +25,8 @@ Use Geist Sans from Next as the main UI typeface. Headings are confident and com
 
 ## Components
 
-Primary components: sticky header, hero control-room visual, live data cards, chart panel, scenario sliders, challenge segmented buttons, score gauge, metric meters, advice list, source links.
+Primary components: sticky header, hero control-room visual, live data cards, cockpit overview, today-vs-2050 comparator, scenario sliders, cinematic challenge cards, dynamic France energy map, 24h simulation timeline, score gauge, metric meters, scenario passport, advice list, source links.
 
 ## Motion
 
-Motion is stateful and subtle: energy line flow, node pulse, score transitions, button feedback, and section entrance. Respect `prefers-reduced-motion`.
+Motion is stateful and purposeful: energy line flow, node pulse, hour-by-hour simulation playback, score transitions, button feedback, and crisis-state changes. Avoid stacking expensive filters; respect `prefers-reduced-motion`.
