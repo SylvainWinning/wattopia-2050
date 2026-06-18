@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import {
   Activity,
   AlertTriangle,
-  Award,
   BatteryCharging,
   Cable,
   CheckCircle2,
@@ -166,20 +165,6 @@ function classifyRisk(metrics: MissionMetrics) {
   return "secure";
 }
 
-function missionClock(state: MissionState) {
-  const secondsRemaining = Math.max(0, 300 - state.selectedActions.length * 52);
-  const minutes = Math.floor(secondsRemaining / 60);
-  const seconds = String(secondsRemaining % 60).padStart(2, "0");
-  return `${minutes}:${seconds}`;
-}
-
-function threatLabel(metrics: MissionMetrics) {
-  if (metrics.blackoutRisk >= 78) return "ALERTE ROUGE";
-  if (metrics.blackoutRisk >= 58) return "RÉSEAU INSTABLE";
-  if (metrics.blackoutRisk >= 34) return "MARGE TENDUE";
-  return "CONTRÔLE REPRIS";
-}
-
 function rankName(rank: MissionState["gameRank"]) {
   return {
     S: "Légendaire",
@@ -231,36 +216,6 @@ function MissionMotionLayer({ state, compact = false }: { state: MissionState; c
   );
 }
 
-function MetricMeter({
-  label,
-  value,
-  inverse = false,
-}: {
-  label: string;
-  value: number;
-  inverse?: boolean;
-}) {
-  const danger = inverse ? value > 66 : value < 42;
-  const tense = inverse ? value > 40 : value < 68;
-
-  return (
-    <div className="metric-meter">
-      <div className="metric-meter-head">
-        <span>{label}</span>
-        <strong>{value}</strong>
-      </div>
-      <div className="metric-track" aria-hidden="true">
-        <motion.span
-          className={clsx("metric-fill", danger ? "danger" : tense ? "tense" : "secure")}
-          initial={false}
-          animate={{ width: `${value}%` }}
-          transition={{ duration: 0.22, ease: "easeOut" }}
-        />
-      </div>
-    </div>
-  );
-}
-
 function FranceGridMap({
   state,
   compact = false,
@@ -289,14 +244,14 @@ function FranceGridMap({
         </defs>
         <path
           className="france-shape"
-          d="M48.7 4.9 L54.4 7.2 L59.9 7.7 L64.8 11.1 L68.4 16.6 L73.7 18.4 L75.6 23.2 L80.8 26.5 L82.3 31.8 L87.2 34.7 L85.9 40.5 L88.5 46.5 L85.7 51.6 L88.1 57.7 L84.4 63.1 L85.9 68.7 L80.5 72.2 L77.1 78.5 L72.2 80.1 L70.2 86.3 L63.5 90.5 L56.9 88.9 L50.4 91.9 L44.8 88.5 L38.1 89.4 L33.7 84.5 L27.6 83.2 L24.8 77.8 L18.7 75.8 L16.8 70.1 L11.8 66.7 L14.8 59.9 L12.9 54.2 L16.9 48.8 L12.1 43.1 L9.2 36.1 L13.8 30.6 L18.4 27.2 L19.9 20.8 L26.1 18.2 L30.9 12.7 L37.8 14.4 L43.1 9.4 Z"
+          d="M45.6 5.8 L52.2 6.8 L58.9 10.6 L62.7 17.1 L68.1 20.5 L74.7 21.8 L78.8 27.5 L82.2 35.6 L87.3 41.4 L83.4 47.9 L86.6 55.7 L81.2 62.2 L78.8 70.1 L72.4 73.9 L70.6 81.5 L63.7 83.8 L58.8 88.8 L50.7 85.8 L43.7 89.4 L35.2 87.2 L29.7 82.9 L21.1 81.4 L17.6 74.2 L10.9 70.1 L13.4 61.7 L10.3 55.1 L15.6 48.2 L9.8 40.4 L7.8 32.8 L14.8 27.3 L19.6 21.4 L21.8 15.1 L29.3 14.3 L35.8 10.8 L40.9 12.7 Z"
         />
-        <path className="corsica-mark" d="M79.3 77.1 L82.1 80.8 L82.6 86.1 L80.4 92.5 L76.7 96.1 L74.5 92.3 L75.2 86.9 L73.9 82.4 L76.2 78.1 Z" />
+        <path className="corsica-mark" d="M78.8 75.7 L82.1 79.8 L82.7 86.7 L79.8 95.2 L75.8 97.4 L73.4 91.6 L74.4 84.9 L73.5 79.2 L76.2 76.4 Z" />
         <path
           className="region-boundaries"
           d="M22 28 C31 33 37 31 45 36 M45 36 C55 32 63 33 74 26 M45 36 C43 47 44 57 38 68 M45 36 C55 44 61 52 62 64 M62 64 C68 62 77 64 84 58 M38 68 C48 70 54 75 58 89 M25 77 C31 70 36 64 38 55 M18 49 C28 51 36 52 45 48 M68 17 C64 25 62 33 63 43"
         />
-        <path className="border-trace" d="M19.9 20.8 C30.8 27.2 33.8 38.1 23.2 48.7 M85.7 51.6 C75.8 53.1 70.8 61.2 70.2 86.3 M11.8 66.7 C24.2 62.7 33.8 66.3 44.8 88.5" />
+        <path className="border-trace" d="M21.8 15.1 C30.8 25.2 31.8 36.1 22.2 45.7 M83.4 47.9 C76.8 54.1 72.4 63.2 70.6 81.5 M10.9 70.1 C23.2 64.7 33.8 69.3 43.7 89.4" />
         {activeCityData && !compact && (
           <g className="target-reticle">
             <motion.circle
@@ -530,7 +485,7 @@ function MissionSelector({
       <div className="play-rules">
         <div>
           <span>Comment gagner</span>
-          <strong>5 tours. 5 choix à chaque tour. Certains sont des pièges.</strong>
+          <strong>5 tours. 8 choix à chaque tour. Certains sont des pièges.</strong>
           <p>Ton job est simple : garde les villes allumées, baisse le risque blackout, et évite les fausses bonnes idées qui sacrifient CO2, budget ou confiance.</p>
         </div>
         <ol aria-label="Règles rapides">
@@ -572,57 +527,6 @@ function MissionSelector({
         })}
       </div>
     </section>
-  );
-}
-
-function MissionHud({ state }: { state: MissionState }) {
-  const progress = (state.selectedActions.length / MAX_DECISIONS) * 100;
-  const comboActive = state.selectedActions.length >= 2 && state.comboLabel !== "Premier ordre";
-
-  return (
-    <div className={clsx("game-hud", `hud-${classifyRisk(state.metrics)}`)}>
-      <div className="hud-cell hud-clock">
-        <span>
-          <TimerReset size={15} />
-          Temps crise
-        </span>
-        <strong>{missionClock(state)}</strong>
-      </div>
-      <div className="hud-cell hud-threat">
-        <span>
-          <AlertTriangle size={15} />
-          Niveau menace
-        </span>
-        <strong>{threatLabel(state.metrics)}</strong>
-        <FrequencyTrace metrics={state.metrics} />
-      </div>
-      <div className="hud-progress" aria-label={`${state.selectedActions.length} décisions prises sur ${MAX_DECISIONS}`}>
-        <div>
-          <span>Ordres envoyés</span>
-          <strong>
-            {state.selectedActions.length}/{MAX_DECISIONS}
-          </strong>
-        </div>
-        <div className="hud-progress-track">
-          <motion.span initial={false} animate={{ width: `${progress}%` }} transition={{ duration: 0.22 }} />
-        </div>
-      </div>
-      <div className={clsx("hud-cell hud-combo", comboActive && "combo-active")}>
-        <span>
-          <Sparkles size={15} />
-          Combo
-        </span>
-        <strong>{state.comboLabel}</strong>
-      </div>
-      <div className="hud-cell hud-rank">
-        <span>
-          <Award size={15} />
-          Grade
-        </span>
-        <strong>{state.gameRank}</strong>
-        <em>{state.commandPoints} XP</em>
-      </div>
-    </div>
   );
 }
 
@@ -753,7 +657,7 @@ function CrisisChoiceCard({
       </span>
       <span className="action-body">
         <strong>{choice.title}</strong>
-        <span>{choice.description}</span>
+        <span className="choice-description">{choice.description}</span>
         <em>À savoir : {choice.tactical}</em>
         {choice.lesson && <em className="trap-lesson">{choice.lesson}</em>}
       </span>
@@ -786,7 +690,64 @@ function CrisisChoiceCard({
   );
 }
 
-function CrisisScenePanel({
+function ArcadeMetric({
+  label,
+  value,
+  inverse = false,
+}: {
+  label: string;
+  value: number;
+  inverse?: boolean;
+}) {
+  const tone = inverse ? (value > 65 ? "danger" : value > 34 ? "tense" : "secure") : value > 68 ? "secure" : value > 42 ? "tense" : "danger";
+
+  return (
+    <div className={clsx("arcade-metric", `metric-${tone}`)}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <em>
+        <i style={{ width: `${value}%` }} />
+      </em>
+    </div>
+  );
+}
+
+function ArcadeStatusBar({ state, currentTurn }: { state: MissionState; currentTurn: number }) {
+  return (
+    <div className={clsx("arcade-status", `status-${classifyRisk(state.metrics)}`)}>
+      <div className="arcade-turn">
+        <span>Tour</span>
+        <strong>
+          {currentTurn}/{MAX_DECISIONS}
+        </strong>
+      </div>
+      <ArcadeMetric label="Risque" value={state.metrics.blackoutRisk} inverse />
+      <ArcadeMetric label="Stabilité" value={state.metrics.stability} />
+      <ArcadeMetric label="Confiance" value={state.metrics.citizenTrust} />
+      <div className="arcade-side-stats">
+        <span>CO2 {state.metrics.co2Score}</span>
+        <span>Budget {state.metrics.budget}</span>
+      </div>
+    </div>
+  );
+}
+
+function MissionSecondaryPanel({ state }: { state: MissionState }) {
+  return (
+    <details className="mission-secondary">
+      <summary>
+        <span>Brief & objectifs</span>
+        <strong>{state.comboLabel}</strong>
+      </summary>
+      <div className="secondary-grid">
+        <BonusObjectives state={state} />
+        <NarrativeLog state={state} />
+      </div>
+    </details>
+  );
+}
+
+function ArcadeChoiceDeck({
   state,
   inputLocked,
   onChoose,
@@ -800,39 +761,30 @@ function CrisisScenePanel({
 
   if (!scene) {
     return (
-      <div className="crisis-panel resolved">
+      <div className="arcade-choice-deck resolved">
         <span>Mission verrouillée</span>
         <h3>Les 5 décisions sont prises.</h3>
-        <p>Le réseau compile la cascade finale. Le verdict est prêt.</p>
+        <p>Le réseau compile le verdict final.</p>
       </div>
     );
   }
 
   return (
-    <div className={clsx("crisis-panel", `crisis-${classifyRisk(state.metrics)}`, state.mode.id === "paris" && "crisis-paris", state.mode.id === "future2050" && "crisis-2050")}>
-      <div className="blackout-alert-strip" aria-hidden="true">
-        <span>BLACKOUT RISK</span>
-        <em />
+    <div className={clsx("arcade-choice-deck", `deck-${classifyRisk(state.metrics)}`)}>
+      <div className="arcade-alert">
+        <div>
+          <span>{scene.hour}</span>
+          <h3>{scene.title}</h3>
+        </div>
+        <strong>{CHOICES_PER_TURN} choix</strong>
       </div>
-      <div className="turn-brief">
-        <strong>Tour {state.selectedActions.length + 1} sur {MAX_DECISIONS}</strong>
-        <span>{CHOICES_PER_TURN} ordres possibles. Un seul part au dispatch: bons réflexes, arbitrages durs et pièges se mélangent.</span>
-      </div>
-      <div className="crisis-kicker">
-        <span>{scene.hour}</span>
-        <strong>{scene.title}</strong>
-      </div>
-      <p className="crisis-alert">{scene.alert}</p>
-      <div className="operator-line">
-        <RadioTower size={17} />
-        <span>{scene.operator}</span>
-      </div>
-      {step && (
-        <p className="last-order">
-          Dernier ordre: <strong>{step.choice.title}</strong>
-        </p>
-      )}
-      <div className="actions-grid">
+      <p className="arcade-alert-text">{scene.alert}</p>
+      <p className="arcade-operator">
+        <RadioTower size={15} />
+        {scene.operator}
+      </p>
+      {step && <ImpactBurst state={state} />}
+      <div className="arcade-actions-grid">
         {scene.choices.map((choice, index) => {
           const selected = state.steps.some((selectedStep) => selectedStep.choice === choice);
 
@@ -848,18 +800,6 @@ function CrisisScenePanel({
           );
         })}
       </div>
-    </div>
-  );
-}
-
-function MissionMeters({ metrics }: { metrics: MissionMetrics }) {
-  return (
-    <div className="meters-panel">
-      <MetricMeter label="Stabilité" value={metrics.stability} />
-      <MetricMeter label="Blackout" value={metrics.blackoutRisk} inverse />
-      <MetricMeter label="CO2" value={metrics.co2Score} />
-      <MetricMeter label="Budget" value={metrics.budget} />
-      <MetricMeter label="Citoyens" value={metrics.citizenTrust} />
     </div>
   );
 }
@@ -918,36 +858,28 @@ function MissionExperience({
   const currentTurn = Math.min(state.selectedActions.length + 1, MAX_DECISIONS);
 
   return (
-    <section id="mission" className="mission-shell">
-      <div className="section-heading">
-        <span>Mission active · tour {currentTurn}/{MAX_DECISIONS}</span>
-        <h2>{state.mode.title}</h2>
-        <p>Objectif clair : choisis 5 ordres pour empêcher la carte de France de s&apos;éteindre. À chaque tour, {CHOICES_PER_TURN} options apparaissent : certains ordres sauvent le réseau, d&apos;autres coûtent très cher, et quelques pièges semblent rassurants au mauvais moment.</p>
-      </div>
-      <MissionHud state={state} />
-      <div className="mission-layout">
-        <div className="mission-visual">
-          <FranceHybridMap state={state} enable3D={phase === "mission"} />
-          <NarrativeLog state={state} />
+    <section id="mission" className="mission-shell mission-arcade">
+      <div className="arcade-heading">
+        <div>
+          <span>Mission active</span>
+          <h2>{state.mode.title}</h2>
         </div>
-        <div className="mission-controls">
-          <div className="decision-header">
-            <div>
-              <span>À jouer</span>
-              <strong>{state.decisionsRemaining}</strong>
-              <em>ordres</em>
-            </div>
-            <p>
-              <strong>{state.mode.objective}</strong>
-              <span>Lis l&apos;alerte, choisis une carte, puis regarde immédiatement les villes, jauges et pièges réagir.</span>
-            </p>
+        <p>Choisis 5 ordres. La carte et les jauges réagissent tout de suite.</p>
+      </div>
+      <ArcadeStatusBar state={state} currentTurn={currentTurn} />
+      <div className="arcade-layout">
+        <div className="arcade-map-panel">
+          <FranceHybridMap state={state} enable3D={phase === "mission"} />
+          <div className="arcade-map-caption">
+            <strong>{state.metrics.lightsOn}% du réseau allumé</strong>
+            <span>{state.decisionsRemaining} ordre{state.decisionsRemaining > 1 ? "s" : ""} restant{state.decisionsRemaining > 1 ? "s" : ""}</span>
           </div>
-          <BonusObjectives state={state} />
-          <ImpactBurst state={state} />
-          <MissionMeters metrics={state.metrics} />
-          <CrisisScenePanel state={state} inputLocked={inputLocked} onChoose={onChoose} />
+        </div>
+        <div className="arcade-command-panel">
+          <ArcadeChoiceDeck state={state} inputLocked={inputLocked} onChoose={onChoose} />
+          <MissionSecondaryPanel state={state} />
           {isComplete && phase !== "result" && (
-            <button type="button" className="primary-action wide" onClick={onFinish}>
+            <button type="button" className="primary-action wide arcade-verdict-button" onClick={onFinish}>
               Révéler le verdict
             </button>
           )}

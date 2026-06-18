@@ -197,14 +197,14 @@ const applyEffect = (metrics: MissionMetrics, effect: MetricEffect): MissionMetr
 };
 
 export const gridCities: readonly GridCity[] = [
-  { id: "lille", name: "Lille", x: 47, y: 15, threshold: 54, load: 68, reserve: 38 },
-  { id: "paris", name: "Paris", x: 45, y: 31, threshold: 40, load: 92, reserve: 52, critical: true },
-  { id: "strasbourg", name: "Strasbourg", x: 75, y: 35, threshold: 64, load: 58, reserve: 30 },
-  { id: "nantes", name: "Nantes", x: 24, y: 47, threshold: 60, load: 54, reserve: 44 },
-  { id: "bordeaux", name: "Bordeaux", x: 31, y: 67, threshold: 58, load: 56, reserve: 42 },
-  { id: "lyon", name: "Lyon", x: 61, y: 59, threshold: 48, load: 78, reserve: 50, critical: true },
-  { id: "toulouse", name: "Toulouse", x: 43, y: 79, threshold: 62, load: 60, reserve: 36 },
-  { id: "marseille", name: "Marseille", x: 66, y: 83, threshold: 56, load: 66, reserve: 34 },
+  { id: "lille", name: "Lille", x: 50, y: 12, threshold: 54, load: 68, reserve: 38 },
+  { id: "paris", name: "Paris", x: 48, y: 30, threshold: 40, load: 92, reserve: 52, critical: true },
+  { id: "strasbourg", name: "Strasbourg", x: 78, y: 31, threshold: 64, load: 58, reserve: 30 },
+  { id: "nantes", name: "Nantes", x: 25, y: 43, threshold: 60, load: 54, reserve: 44 },
+  { id: "bordeaux", name: "Bordeaux", x: 32, y: 63, threshold: 58, load: 56, reserve: 42 },
+  { id: "lyon", name: "Lyon", x: 63, y: 55, threshold: 48, load: 78, reserve: 50, critical: true },
+  { id: "toulouse", name: "Toulouse", x: 43, y: 77, threshold: 62, load: 60, reserve: 36 },
+  { id: "marseille", name: "Marseille", x: 66, y: 82, threshold: 56, load: 66, reserve: 34 },
 ];
 
 export const gridEdges: readonly GridEdge[] = [

@@ -1862,8 +1862,8 @@ a {
 }
 
 .tag-pressure {
-  color: var(--orange);
-  background: oklch(0.72 0.17 42 / 0.12);
+  color: var(--amber);
+  background: oklch(0.82 0.15 76 / 0.11);
 }
 
 .effect-list span {
@@ -1881,8 +1881,8 @@ a {
 }
 
 .effect-list .negative {
-  color: var(--orange);
-  background: oklch(0.72 0.17 42 / 0.12);
+  color: var(--amber);
+  background: oklch(0.82 0.15 76 / 0.11);
 }
 
 .choice-cta {
@@ -1898,6 +1898,408 @@ a {
   background: var(--electric);
   font-size: 0.78rem;
   font-weight: 860;
+}
+
+.mission-arcade {
+  padding: clamp(22px, 3.2vw, 40px) 0;
+}
+
+.arcade-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.arcade-heading span {
+  color: var(--cyan);
+  font-size: 0.78rem;
+  font-weight: 820;
+}
+
+.arcade-heading h2 {
+  margin: 5px 0 0;
+  color: white;
+  font-size: 2.25rem;
+  font-weight: 860;
+  line-height: 1;
+}
+
+.arcade-heading p {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.arcade-status {
+  display: grid;
+  grid-template-columns: 96px repeat(3, minmax(130px, 1fr)) minmax(150px, 0.7fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border: 1px solid oklch(0.75 0.15 225 / 0.18);
+  border-radius: 14px;
+  background: oklch(0.08 0.03 255 / 0.78);
+}
+
+.arcade-turn,
+.arcade-metric,
+.arcade-side-stats {
+  min-width: 0;
+  border-radius: 10px;
+  background: oklch(1 0 0 / 0.055);
+}
+
+.arcade-turn {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  color: oklch(0.08 0.03 252);
+  background: var(--electric);
+}
+
+.arcade-turn span,
+.arcade-metric span {
+  font-size: 0.72rem;
+  font-weight: 820;
+}
+
+.arcade-turn strong {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.arcade-metric {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 10px;
+  align-items: center;
+  padding: 9px 10px;
+}
+
+.arcade-metric span {
+  color: var(--muted);
+}
+
+.arcade-metric strong {
+  color: white;
+  font-size: 1.02rem;
+}
+
+.arcade-metric em {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  height: 5px;
+  border-radius: 999px;
+  background: oklch(1 0 0 / 0.11);
+}
+
+.arcade-metric i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--cyan);
+}
+
+.arcade-metric.metric-secure i {
+  background: var(--green);
+}
+
+.arcade-metric.metric-tense i {
+  background: var(--amber);
+}
+
+.arcade-metric.metric-danger i {
+  background: var(--red);
+}
+
+.arcade-side-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 9px 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 760;
+}
+
+.arcade-layout {
+  display: grid;
+  grid-template-columns: minmax(390px, 0.88fr) minmax(0, 1.12fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.arcade-map-panel,
+.arcade-command-panel,
+.arcade-choice-deck {
+  min-width: 0;
+  border: 1px solid oklch(1 0 0 / 0.1);
+  border-radius: 16px;
+  background: oklch(0.09 0.032 255 / 0.66);
+}
+
+.arcade-map-panel {
+  overflow: hidden;
+  position: sticky;
+  top: 82px;
+  align-self: start;
+}
+
+.arcade-map-panel .france-grid-map {
+  height: min(58vh, 540px);
+  min-height: 430px;
+  border-radius: 15px 15px 0 0;
+  box-shadow: none;
+}
+
+.arcade-map-panel .france-3d-label {
+  font-size: 0.68rem;
+  opacity: 0.9;
+}
+
+.arcade-map-panel .hologram-readout,
+.arcade-map-panel .map-readout {
+  right: 12px;
+  bottom: 12px;
+}
+
+.arcade-map-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--muted);
+}
+
+.arcade-map-caption strong {
+  color: white;
+  font-size: 0.95rem;
+}
+
+.arcade-map-caption span {
+  color: var(--cyan);
+  font-size: 0.82rem;
+  font-weight: 780;
+}
+
+.arcade-command-panel {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.arcade-choice-deck {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  background:
+    linear-gradient(135deg, oklch(0.75 0.15 225 / 0.08), transparent 34%),
+    oklch(0.08 0.03 255 / 0.78);
+}
+
+.arcade-choice-deck.resolved {
+  min-height: 220px;
+  align-content: center;
+}
+
+.arcade-alert {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.arcade-alert span {
+  color: var(--cyan);
+  font-size: 0.78rem;
+  font-weight: 820;
+}
+
+.arcade-alert h3 {
+  margin: 2px 0 0;
+  color: white;
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+
+.arcade-alert strong {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: oklch(0.08 0.03 252);
+  background: var(--electric);
+  font-size: 0.78rem;
+}
+
+.arcade-alert-text,
+.arcade-operator {
+  margin: 0;
+  line-height: 1.38;
+}
+
+.arcade-alert-text {
+  color: white;
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.arcade-operator {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 9px 10px;
+  border-radius: 9px;
+  color: var(--muted);
+  background: oklch(1 0 0 / 0.055);
+  font-size: 0.82rem;
+}
+
+.arcade-operator svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--cyan);
+}
+
+.arcade-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.arcade-actions-grid .action-card {
+  min-height: 118px;
+  gap: 7px;
+  padding: 10px;
+  border-color: oklch(1 0 0 / 0.09);
+  background: oklch(0.12 0.035 255 / 0.78);
+}
+
+.arcade-actions-grid .choice-topline {
+  gap: 6px;
+}
+
+.arcade-actions-grid .choice-number,
+.arcade-actions-grid .risk-pill {
+  padding: 3px 6px;
+  font-size: 0.66rem;
+}
+
+.arcade-actions-grid .action-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.arcade-actions-grid .action-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.arcade-actions-grid .action-body {
+  gap: 3px;
+}
+
+.arcade-actions-grid .action-body strong {
+  font-size: 0.88rem;
+  line-height: 1.18;
+}
+
+.arcade-actions-grid .choice-description,
+.arcade-actions-grid .trap-lesson,
+.arcade-actions-grid .tactical-tags {
+  display: none;
+}
+
+.arcade-actions-grid .action-body em {
+  color: var(--muted);
+  font-size: 0.73rem;
+  line-height: 1.25;
+}
+
+.arcade-actions-grid .effect-list {
+  gap: 4px;
+}
+
+.arcade-actions-grid .effect-list span {
+  padding: 3px 6px;
+  font-size: 0.64rem;
+}
+
+.arcade-actions-grid .effect-list .negative {
+  color: var(--amber);
+  background: oklch(0.82 0.15 76 / 0.11);
+}
+
+.arcade-actions-grid .choice-cta {
+  min-height: 29px;
+  font-size: 0.72rem;
+}
+
+.arcade-actions-grid .action-card.risky-choice {
+  border-color: oklch(0.82 0.15 76 / 0.28);
+  background: oklch(0.14 0.04 252 / 0.82);
+}
+
+.mission-secondary {
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+  background: oklch(1 0 0 / 0.045);
+}
+
+.mission-secondary summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 0 12px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.mission-secondary summary strong {
+  color: var(--cyan);
+}
+
+.secondary-grid {
+  display: grid;
+  gap: 10px;
+  padding: 0 10px 10px;
+}
+
+.mission-secondary .bonus-objectives,
+.mission-secondary .narrative-panel {
+  margin: 0;
+}
+
+.mission-secondary .bonus-objectives ul {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mission-secondary .bonus-objectives li {
+  min-height: auto;
+}
+
+.mission-secondary .narrative-panel {
+  padding: 12px;
+}
+
+.mission-secondary .radio-stack,
+.mission-secondary .narrative-panel p,
+.mission-secondary .narrative-panel > div {
+  display: none;
+}
+
+.arcade-verdict-button {
+  min-height: 44px;
 }
 
 .result-section {
@@ -2608,9 +3010,24 @@ a {
 @media (max-width: 1120px) {
   .blackout-hero,
   .mission-layout,
+  .arcade-layout,
   .result-section,
   .live-data-panel {
     grid-template-columns: 1fr;
+  }
+
+  .arcade-map-panel {
+    position: relative;
+    top: auto;
+  }
+
+  .arcade-status {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .arcade-turn,
+  .arcade-side-stats {
+    min-height: 58px;
   }
 
   .game-hud {
@@ -2688,8 +3105,41 @@ a {
   }
 
   .france-grid-map,
+  .arcade-map-panel .france-grid-map,
   .mission-visual .france-grid-map {
     height: 310px;
+    min-height: 310px;
+  }
+
+  .arcade-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .arcade-heading h2 {
+    font-size: 1.9rem;
+  }
+
+  .arcade-heading p {
+    max-width: none;
+    text-align: left;
+  }
+
+  .arcade-status {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .arcade-side-stats {
+    grid-column: 1 / -1;
+  }
+
+  .arcade-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mission-secondary .bonus-objectives ul {
+    grid-template-columns: 1fr;
   }
 
   .play-rules {
@@ -2789,8 +3239,38 @@ a {
   }
 
   .france-grid-map,
+  .arcade-map-panel .france-grid-map,
   .mission-visual .france-grid-map {
     height: 250px;
+    min-height: 250px;
+  }
+
+  .mission-arcade {
+    padding-top: 18px;
+  }
+
+  .arcade-status {
+    grid-template-columns: 1fr;
+  }
+
+  .arcade-turn {
+    min-height: 52px;
+  }
+
+  .arcade-command-panel,
+  .arcade-choice-deck {
+    padding: 10px;
+  }
+
+  .arcade-map-caption,
+  .arcade-alert,
+  .arcade-side-stats {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .arcade-alert strong {
+    width: fit-content;
   }
 
   .hero-actions .secondary-action {
