@@ -1,6 +1,7 @@
 import type { LiveMixSnapshot } from "./live-mix";
 
 export const MAX_DECISIONS = 5;
+export const CHOICES_PER_TURN = 8;
 
 export type MissionModeId = "france" | "paris" | "future2050";
 
@@ -274,16 +275,109 @@ const trapChoiceBank: readonly CrisisChoice[] = [
   },
 ];
 
+const supportChoiceBank: readonly CrisisChoice[] = [
+  {
+    id: "batteries",
+    title: "Activer un buffer batterie",
+    description: "Décharger un stock court sur les zones qui clignotent le plus.",
+    tactical: "Très rapide, mais il faut garder une réserve pour la fin.",
+    protect: ["paris", "lille"],
+    effect: { stability: 19, co2Score: 5, budget: -12, citizenTrust: 2, blackoutRisk: -17, lightsOn: 11 },
+  },
+  {
+    id: "gas",
+    title: "Appeler le gaz pilotable",
+    description: "Créer de la marge immédiate avec une production qui répond vite.",
+    tactical: "Le réseau respire, le score carbone encaisse.",
+    protect: ["paris", "lyon"],
+    effect: { stability: 24, co2Score: -24, budget: -14, citizenTrust: -5, blackoutRisk: -21, lightsOn: 13 },
+  },
+  {
+    id: "domestic",
+    title: "Décaler les usages flexibles",
+    description: "Reporter recharge, cuisson et chauffage non critiques après le pic.",
+    tactical: "Très propre, mais l'effort se voit dans les foyers.",
+    protect: ["nantes", "bordeaux"],
+    pressure: ["paris"],
+    effect: { stability: 14, co2Score: 9, budget: 5, citizenTrust: -9, blackoutRisk: -13, lightsOn: 8 },
+  },
+  {
+    id: "imports",
+    title: "Importer une marge courte",
+    description: "Solliciter les interconnexions pour tenir le prochain quart d'heure.",
+    tactical: "Utile tout de suite, cher et dépendant des voisins.",
+    protect: ["strasbourg", "paris"],
+    effect: { stability: 17, co2Score: -5, budget: -18, citizenTrust: -4, blackoutRisk: -14, lightsOn: 10 },
+  },
+  {
+    id: "priority",
+    title: "Basculer en services vitaux",
+    description: "Protéger hôpitaux, eau, télécoms et transports avant le confort.",
+    tactical: "Très accepté, mais certaines zones restent fragiles.",
+    protect: ["paris", "lyon", "marseille"],
+    pressure: ["nantes"],
+    effect: { stability: 8, co2Score: 0, budget: -6, citizenTrust: 18, blackoutRisk: -8, lightsOn: 5 },
+  },
+  {
+    id: "industry",
+    title: "Effacer un bloc industriel",
+    description: "Demander aux gros sites de baisser instantanément leur demande.",
+    tactical: "Soulage fort, mais le coût économique est visible.",
+    protect: ["lyon", "strasbourg"],
+    pressure: ["toulouse"],
+    effect: { stability: 20, co2Score: 10, budget: -20, citizenTrust: -8, blackoutRisk: -16, lightsOn: 9 },
+  },
+  {
+    id: "sobriety",
+    title: "Déclencher une alerte sobriété",
+    description: "Demander un effort national court, clair et daté.",
+    tactical: "Peu coûteux, propre, mais jamais garanti.",
+    protect: ["lille", "nantes"],
+    effect: { stability: 12, co2Score: 10, budget: 8, citizenTrust: -4, blackoutRisk: -11, lightsOn: 7 },
+  },
+  {
+    id: "hydro",
+    title: "Libérer la réserve hydraulique",
+    description: "Injecter l'énergie disponible dans les vallées et barrages.",
+    tactical: "Bas-carbone et précieux, mais limité.",
+    protect: ["lyon", "marseille", "toulouse"],
+    effect: { stability: 16, co2Score: 12, budget: -8, citizenTrust: 5, blackoutRisk: -14, lightsOn: 9 },
+  },
+];
+
+function rotatedChoices(bank: readonly CrisisChoice[], offset: number): CrisisChoice[] {
+  return [...bank.slice(offset % bank.length), ...bank.slice(0, offset % bank.length)];
+}
+
 function extraChoicesForScene(sceneIndex: number, modeId: MissionModeId): readonly CrisisChoice[] {
   const offset = modeId === "france" ? 0 : modeId === "paris" ? 1 : 2;
-  const first = trapChoiceBank[(sceneIndex + offset) % trapChoiceBank.length];
-  const second = trapChoiceBank[(sceneIndex + offset + 2) % trapChoiceBank.length];
-  return [first, second];
+  const safeChoices = rotatedChoices(supportChoiceBank, sceneIndex + offset);
+  const traps = rotatedChoices(trapChoiceBank, sceneIndex + offset);
+
+  return [
+    safeChoices[0],
+    traps[0],
+    safeChoices[1],
+    safeChoices[2],
+    traps[1],
+    safeChoices[3],
+    safeChoices[4],
+    traps[2],
+    ...safeChoices.slice(5),
+    ...traps.slice(3),
+  ];
 }
 
 function sceneWithExtraChoices(sceneValue: CrisisScene, sceneIndex: number, modeId: MissionModeId): CrisisScene {
   const existingIds = new Set(sceneValue.choices.map((choice) => choice.id));
-  const extraChoices = extraChoicesForScene(sceneIndex, modeId).filter((choice) => !existingIds.has(choice.id));
+  const extraChoices: CrisisChoice[] = [];
+
+  for (const choice of extraChoicesForScene(sceneIndex, modeId)) {
+    if (existingIds.has(choice.id)) continue;
+    existingIds.add(choice.id);
+    extraChoices.push(choice);
+    if (sceneValue.choices.length + extraChoices.length >= CHOICES_PER_TURN) break;
+  }
 
   return {
     ...sceneValue,

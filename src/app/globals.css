@@ -1496,8 +1496,8 @@ a {
 
 .actions-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 9px;
 }
 
 .action-card {
@@ -1509,9 +1509,9 @@ a {
     "effects"
     "tactical"
     "cta";
-  gap: 10px;
-  min-height: 148px;
-  padding: 14px;
+  gap: 9px;
+  min-height: 144px;
+  padding: 12px;
   border: 1px solid oklch(1 0 0 / 0.1);
   border-radius: 12px;
   color: var(--ink);
@@ -1739,7 +1739,7 @@ a {
 }
 
 .crisis-choice-card {
-  min-height: 166px;
+  min-height: 158px;
 }
 
 .action-card:not(:disabled):hover {
@@ -1781,7 +1781,7 @@ a {
 
 .choice-number {
   border-radius: 999px;
-  padding: 5px 8px;
+  padding: 4px 7px;
   color: var(--cyan);
   background: oklch(0.79 0.13 196 / 0.11);
   font-size: 0.72rem;
@@ -1790,7 +1790,7 @@ a {
 
 .risk-pill {
   border-radius: 999px;
-  padding: 5px 8px;
+  padding: 4px 7px;
   color: var(--amber);
   background: oklch(0.82 0.15 76 / 0.12);
   font-size: 0.72rem;
@@ -1799,8 +1799,8 @@ a {
 
 .action-icon {
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   place-items: center;
   border-radius: 10px;
   color: var(--electric);
@@ -1816,13 +1816,13 @@ a {
 
 .action-body strong {
   color: white;
-  font-size: 1rem;
+  font-size: 0.94rem;
 }
 
 .action-body span,
 .action-body em {
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   font-style: normal;
   line-height: 1.38;
 }
@@ -1851,8 +1851,8 @@ a {
 
 .tactical-tags span {
   border-radius: 999px;
-  padding: 5px 8px;
-  font-size: 0.72rem;
+  padding: 4px 7px;
+  font-size: 0.68rem;
   font-weight: 800;
 }
 
@@ -1868,9 +1868,9 @@ a {
 
 .effect-list span {
   border-radius: 999px;
-  padding: 5px 8px;
+  padding: 4px 7px;
   text-align: center;
-  font-size: 0.73rem;
+  font-size: 0.69rem;
   font-weight: 800;
   line-height: 1.15;
 }
@@ -1891,12 +1891,12 @@ a {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 38px;
+  min-height: 34px;
   margin-top: auto;
   border-radius: 9px;
   color: oklch(0.08 0.03 252);
   background: var(--electric);
-  font-size: 0.83rem;
+  font-size: 0.78rem;
   font-weight: 860;
 }
 

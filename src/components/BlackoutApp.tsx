@@ -33,6 +33,7 @@ import { fetchLiveMixSnapshot } from "@/lib/fetch-live-mix";
 import type { LiveMixSnapshot } from "@/lib/live-mix";
 import {
   MAX_DECISIONS,
+  CHOICES_PER_TURN,
   actionById,
   buildMissionFromSnapshot,
   buildShareText,
@@ -815,7 +816,7 @@ function CrisisScenePanel({
       </div>
       <div className="turn-brief">
         <strong>Tour {state.selectedActions.length + 1} sur {MAX_DECISIONS}</strong>
-        <span>Choisis 1 ordre. Les lumières, les jauges et le score bougent immédiatement.</span>
+        <span>{CHOICES_PER_TURN} ordres possibles. Un seul part au dispatch: bons réflexes, arbitrages durs et pièges se mélangent.</span>
       </div>
       <div className="crisis-kicker">
         <span>{scene.hour}</span>
@@ -921,7 +922,7 @@ function MissionExperience({
       <div className="section-heading">
         <span>Mission active · tour {currentTurn}/{MAX_DECISIONS}</span>
         <h2>{state.mode.title}</h2>
-        <p>Objectif clair : choisis 5 ordres pour empêcher la carte de France de s&apos;éteindre. À chaque tour, 5 options apparaissent : certaines sauvent le réseau, d&apos;autres sont des pièges.</p>
+        <p>Objectif clair : choisis 5 ordres pour empêcher la carte de France de s&apos;éteindre. À chaque tour, {CHOICES_PER_TURN} options apparaissent : certains ordres sauvent le réseau, d&apos;autres coûtent très cher, et quelques pièges semblent rassurants au mauvais moment.</p>
       </div>
       <MissionHud state={state} />
       <div className="mission-layout">
