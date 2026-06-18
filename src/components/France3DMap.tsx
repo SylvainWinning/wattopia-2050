@@ -24,6 +24,22 @@ const labelOffsets: Record<string, readonly [number, number]> = {
   marseille: [-8.6, -3.2],
 };
 
+const mapPalette = {
+  void: "#050914",
+  night: "#07101d",
+  energyBlue: "#0a8fd8",
+  transitionMint: "#33d8be",
+  softCyan: "#9beeea",
+  lowCarbonWhite: "#e6fbff",
+  ultramarine: "#162a58",
+  deepTeal: "#123b45",
+  stableBody: "#123f56",
+  tenseBody: "#173348",
+  dangerBody: "#1a2538",
+  amber: "#f4b64a",
+  danger: "#ff5b63",
+};
+
 function toScenePoint(x: number, y: number, z = 0) {
   return new THREE.Vector3((x - 50) / 8.8, (50 - y) / 8.8, z);
 }
@@ -40,10 +56,10 @@ function shapeFrom(points: readonly MapPoint[]) {
 }
 
 function cityColor(state: CityState) {
-  if (state === "off") return "#ff4d5a";
-  if (state === "fragile") return "#f7b733";
-  if (state === "priority") return "#d7f7ff";
-  return "#34d6ff";
+  if (state === "off") return mapPalette.danger;
+  if (state === "fragile") return mapPalette.amber;
+  if (state === "priority") return mapPalette.lowCarbonWhite;
+  return mapPalette.transitionMint;
 }
 
 function classifyRisk(state: MissionState) {
@@ -63,7 +79,7 @@ function FranceMesh({ tone }: { tone: string }) {
       corsicaCap: new THREE.ShapeGeometry(shapeFrom(franceCorsicaPoints)),
       boundaries: franceRegionLines.map((line) => {
         const geometry = new THREE.BufferGeometry().setFromPoints(line.map(([x, y]) => toScenePoint(x, y, 0.72)));
-        const material = new THREE.LineBasicMaterial({ color: "#9be8ff", transparent: true, opacity: 0.18, depthTest: false });
+        const material = new THREE.LineBasicMaterial({ color: mapPalette.softCyan, transparent: true, opacity: 0.18, depthTest: false });
         const boundary = new THREE.Line(geometry, material);
         boundary.renderOrder = 8;
         return boundary;
@@ -77,27 +93,27 @@ function FranceMesh({ tone }: { tone: string }) {
     groupRef.current.position.z = Math.sin(clock.elapsedTime * 0.7) * 0.025;
   });
 
-  const color = tone === "danger" ? "#1e263b" : tone === "tense" ? "#172d42" : "#12344a";
+  const color = tone === "danger" ? mapPalette.dangerBody : tone === "tense" ? mapPalette.tenseBody : mapPalette.stableBody;
 
   return (
     <group ref={groupRef} rotation={[-0.28, 0.08, 0.02]} position={[0, 0, -0.08]}>
       <mesh geometry={mainland} position={[0.06, -0.08, -0.3]}>
-        <meshStandardMaterial color="#050915" roughness={0.8} metalness={0.08} transparent opacity={0.66} />
+        <meshStandardMaterial color={mapPalette.void} roughness={0.8} metalness={0.08} transparent opacity={0.66} />
       </mesh>
       <mesh geometry={corsica} position={[0.06, -0.08, -0.28]}>
-        <meshStandardMaterial color="#050915" roughness={0.8} metalness={0.08} transparent opacity={0.58} />
+        <meshStandardMaterial color={mapPalette.void} roughness={0.8} metalness={0.08} transparent opacity={0.58} />
       </mesh>
       <mesh geometry={mainland}>
-        <meshStandardMaterial color={color} emissive="#0a8fbf" emissiveIntensity={tone === "danger" ? 0.1 : 0.18} roughness={0.32} metalness={0.48} transparent opacity={0.92} />
+        <meshStandardMaterial color={color} emissive={mapPalette.energyBlue} emissiveIntensity={tone === "danger" ? 0.1 : 0.2} roughness={0.32} metalness={0.48} transparent opacity={0.92} />
       </mesh>
       <mesh geometry={corsica} position={[0, 0, 0.02]}>
-        <meshStandardMaterial color={color} emissive="#0a8fbf" emissiveIntensity={0.14} roughness={0.34} metalness={0.42} transparent opacity={0.88} />
+        <meshStandardMaterial color={color} emissive={mapPalette.energyBlue} emissiveIntensity={0.16} roughness={0.34} metalness={0.42} transparent opacity={0.88} />
       </mesh>
       <mesh geometry={mainlandCap} position={[0, 0, 0.365]}>
-        <meshBasicMaterial color="#6ee7ff" transparent opacity={0.08} />
+        <meshBasicMaterial color={mapPalette.transitionMint} transparent opacity={0.08} />
       </mesh>
       <mesh geometry={corsicaCap} position={[0, 0, 0.385]}>
-        <meshBasicMaterial color="#6ee7ff" transparent opacity={0.07} />
+        <meshBasicMaterial color={mapPalette.transitionMint} transparent opacity={0.07} />
       </mesh>
       {boundaries.map((boundary, index) => (
         <primitive key={index} object={boundary} />
@@ -129,7 +145,7 @@ function EnergyArc({
     return new THREE.QuadraticBezierCurve3(start, mid, end);
   }, [from, to, isNorthLink]);
   const geometry = useMemo(() => new THREE.TubeGeometry(curve, 28, weak === "live" ? 0.017 : 0.012, 6, false), [curve, weak]);
-  const color = weak === "off" ? "#ff4d5a" : weak === "fragile" ? "#f7b733" : "#35d7ff";
+  const color = weak === "off" ? mapPalette.danger : weak === "fragile" ? mapPalette.amber : mapPalette.transitionMint;
 
   return (
     <group>
@@ -184,7 +200,7 @@ function CityNode({ city, state, active }: { city: GridCity; state: CityState; a
       {active && (
         <mesh rotation={[0, 0, 0]} renderOrder={18}>
           <torusGeometry args={[city.id === "lille" ? 0.24 : 0.32, 0.012, 8, 48]} />
-          <meshBasicMaterial color="#ffd166" transparent opacity={0.88} depthTest={false} />
+          <meshBasicMaterial color={mapPalette.amber} transparent opacity={0.88} depthTest={false} />
         </mesh>
       )}
     </group>
@@ -198,12 +214,12 @@ function HologramScene({ state }: { state: MissionState }) {
 
   return (
     <>
-      <color attach="background" args={["#020713"]} />
-      <fog attach="fog" args={["#020713", 8, 18]} />
+      <color attach="background" args={[mapPalette.night]} />
+      <fog attach="fog" args={[mapPalette.night, 8, 18]} />
       <ambientLight intensity={0.55} />
-      <directionalLight position={[-3, 6, 7]} intensity={2.2} color="#d6f7ff" />
-      <pointLight position={[0, 0, 4.2]} intensity={tone === "danger" ? 18 : 12} color={tone === "danger" ? "#ff4d5a" : "#35d7ff"} />
-      <pointLight position={[-4, -3, 2.4]} intensity={3.8} color="#1ea7ff" />
+      <directionalLight position={[-3, 6, 7]} intensity={2.2} color={mapPalette.lowCarbonWhite} />
+      <pointLight position={[0, 0, 4.2]} intensity={tone === "danger" ? 18 : 12} color={tone === "danger" ? mapPalette.danger : mapPalette.transitionMint} />
+      <pointLight position={[-4, -3, 2.4]} intensity={3.8} color={mapPalette.energyBlue} />
       <group position={[-0.1, -0.1, 0]} scale={0.72}>
         <FranceMesh tone={tone} />
         {gridEdges.map((edge, index) => {
