@@ -1,6 +1,6 @@
-import WattopiaApp from "@/components/WattopiaApp";
+import BlackoutApp from "@/components/BlackoutApp";
 import { withFallbackLabel } from "@/lib/live-mix";
 
 export default function Home() {
-  return <WattopiaApp initialSnapshot={withFallbackLabel("chargement initial")} />;
+  return <BlackoutApp initialSnapshot={withFallbackLabel("chargement initial")} />;
 }

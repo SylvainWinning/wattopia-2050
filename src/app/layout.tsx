@@ -14,12 +14,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sylvainwinning.github.io/wattopia-2050/"),
-  title: "Wattopia 2050 | Simulateur du mix électrique français",
+  title: "BLACKOUT | Empêche la France de s'éteindre",
   description:
-    "Construis le mix énergétique de la France en 2050, évite le blackout et explore les compromis entre renouvelables, nucléaire, stockage, sobriété et CO₂.",
+    "Une expérience web interactive où tu deviens opérateur du réseau électrique français pour éviter un blackout en 5 décisions.",
   openGraph: {
-    title: "Wattopia 2050",
-    description: "Peux-tu alimenter la France en 2050 sans blackout ?",
+    title: "BLACKOUT",
+    description: "Empêche la France de s'éteindre en 5 décisions.",
     type: "website",
     locale: "fr_FR",
   },

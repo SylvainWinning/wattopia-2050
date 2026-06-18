@@ -6,70 +6,61 @@ product
 
 ## Pitch
 
-"Stabilisez la France avant la coupure."
+BLACKOUT: "Empêche la France de s'éteindre."
 
-Wattopia 2050 doit se comprendre comme une scène de hackathon en trois actes : Mission Control pour prendre les commandes, Blackout Simulator pour voir les conséquences, Grand Débat pour comprendre que chaque mix énergétique est un compromis humain.
+BLACKOUT est une mini-expérience de hackathon où l'utilisateur devient opérateur du réseau électrique français. À partir d'un signal RTE éCO2mix quand il est disponible, il doit prendre 5 décisions pour éviter un blackout, stabiliser le réseau, limiter le CO2, préserver le budget et garder l'acceptabilité citoyenne.
 
 ## Users
 
-Hackathon judges, curious citizens, students, and energy-interested users who need to understand the tradeoffs of a 2050 French electricity mix quickly, visually, and without technical prerequisites. The experience should work for people who have no energy-sector background but can feel the tension of keeping a country powered.
+Hackathon judges, curious citizens, students, and energy-interested users who need to understand electricity tradeoffs quickly, visually, and without technical prerequisites. The experience should work in a 5-minute jury demo and be shareable by a single link.
 
 ## Product Purpose
 
-Wattopia 2050 is a French interactive mini-app where the user enters a public energy control room and tries to keep France stable in 2050 before a blackout. It starts from a live snapshot of the current French electricity mix, then lets users build and stress-test a simplified 2050 scenario with sliders, crises, a 24h simulation, and a shareable scenario passport.
+BLACKOUT turns energy-system complexity into a short playable crisis. The user sees France under stress, chooses a mission, takes 5 constrained decisions, watches the map and meters react, then receives a verdict and a shareable result.
 
-Success means the user understands the core compromises between low-carbon production, renewables, storage, sobriety, cost, and supply security in under a minute, then has a clear scenario to discuss with someone else.
+Success means the user understands in under 10 seconds that a blackout threatens France, that decisions are needed, and that every choice has visible consequences across stability, CO2, cost and social trust.
 
 ## Experience Model
 
-### 1. Mission Control
+### 1. Immersive Intro
 
-The first scene is the control room: a strong hero, live network status, France energy map, current mix snapshot, and clear mission framing. The user should immediately understand the job: stabilize the country, not merely move sliders.
+A dark, premium control-room opening: BLACKOUT, France partially lit, animated grid lines, risk gauge, and the CTA "Prendre le contrôle".
 
-### 2. Blackout Simulator
+### 2. Mission Engine
 
-The second scene makes consequences visual. Crisis cards, timeline playback, margin warnings, blackout hours, and risk signals should show what breaks when a scenario is too fragile. A blackout is not a generic error state; it is the dramatic consequence that makes the tradeoff memorable.
+The main game is a 5-decision mission. Mission France is complete and primary. Paris 19h42 and 2050, nuit sans vent use the same engine with different starting tension, events and narrative framing.
 
-### 3. Grand Débat
+### 3. Final Verdict
 
-The third scene turns the result into a human compromise. The scenario passport, advice, score explanation, and share actions should help users debate choices: more nuclear, more renewables, more storage, more sobriety, more gas backup, or more cost. The product should make disagreement legible rather than pretending there is one perfect answer.
-
-## Product Promise
-
-- In 5 seconds: the user understands the mission and the blackout stakes.
-- In 30 seconds: the user has changed the mix and seen a visible consequence.
-- In 60 seconds: the user can explain at least one energy compromise.
-- At the end: the user can copy or export a scenario and use it as a debate object.
+The result shows whether the blackout was avoided, partial, or national. The map state, score, best strategic point, biggest compromise, tips and share action make the scenario easy to present to a jury.
 
 ## Brand Personality
 
-Clear, intelligent, tense, and civic. The experience should feel premium and modern, like a public Mission Control for energy choices: serious enough to trust, dramatic enough to remember, playful enough to explore.
+Tense, civic, premium, clear, and energetic. The experience should feel like a public Mission Control for an energy crisis: serious enough to trust, dramatic enough to remember, simple enough to play immediately.
 
 ## Anti-references
 
-Avoid cold developer demos, dense expert-only dashboards, dark neon sci-fi interfaces, fake official RTE branding, generic SaaS card grids, exaggerated gamification, moralizing copy, and any copy that implies the score is scientifically official. Do not present the simplified model as a forecast or an official RTE result.
+Avoid expert-only dashboards, generic slider toys, fake official RTE branding, neon clutter, moralizing copy, fake scientific authority, and any claim that the score is an official forecast.
 
 ## Design Principles
 
-- Make the mission visible before the model.
-- Make the tradeoff visible before explaining it.
-- Show consequences through the Blackout Simulator, not through abstract warnings alone.
-- Treat the Grand Débat as the payoff: every result should be discussable.
-- Reward exploration with immediate feedback.
+- Make the blackout threat visible before explaining the model.
+- Make each decision change the map and meters immediately.
+- Prioritize Mission France, polish and clarity over simulation complexity.
 - Keep the model honest and clearly simplified.
-- Use a few strong visual signals rather than decorative clutter.
-- Let live public data anchor the experience in reality.
+- Use live public data as an anchor, but make fallback mode first-class.
+- Make the final result easy to copy, pitch and discuss.
 
 ## Data & Trust
 
-The app uses RTE éCO2mix data through the ODRÉ / OpenDataSoft `eco2mix-national-tr` dataset when available. If the API is unavailable, incomplete, or the URL contains `?demo=1`, the product must remain usable with a local fallback clearly labeled "Données de démonstration".
+The app uses RTE éCO2mix data through the ODRÉ / OpenDataSoft `eco2mix-national-tr` dataset when available. If the API is unavailable, incomplete, quota-limited, CORS-blocked, or the URL contains `?demo=1`, the product remains usable with a local fallback clearly labeled "Données de démonstration".
 
-The experience can use RTE Futurs énergétiques 2050 as public context and inspiration, but must avoid fake official branding or claims that Wattopia's score is scientifically authoritative.
+The experience can use RTE Futurs énergétiques 2050 as public context and inspiration, but must avoid fake official branding or claims that BLACKOUT's score is scientifically authoritative.
 
 ## Deployment Constraint
 
-The project should stay compatible with GitHub Pages static export. Documentation, routing, and future implementation choices should preserve `npm run build:github` and the public GitHub Pages delivery path.
+The project should remain compatible with both Vercel static deployment and GitHub Pages static export. Vercel uses `npm run build`; GitHub Pages uses `npm run build:github`.
 
 ## Accessibility & Inclusion
 
-Target readable French copy, strong color contrast, keyboard-usable controls, meaningful labels, reduced-motion support, and responsive layouts from small phones to desktop screens. The blackout drama must never depend only on color or motion; text labels and stable metrics should always communicate the state.
+Target readable French copy, strong contrast, keyboard-usable controls, meaningful labels, reduced-motion support, and responsive layouts from 320px phones to desktop. Blackout states must never depend only on color or motion; text labels and stable metrics must always communicate the state.

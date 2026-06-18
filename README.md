@@ -1,61 +1,89 @@
-# Wattopia 2050
+# BLACKOUT
 
-Mini-application web de hackathon : "Stabilisez la France avant la coupure."
+Empêche la France de s'éteindre.
 
-Wattopia 2050 transforme le mix électrique français en expérience Mission Control. L'utilisateur part d'un instantané RTE éCO2mix, construit un scénario 2050, lance des crises, puis voit si la France reste stable ou bascule vers des heures critiques.
+BLACKOUT est une mini-application web de hackathon sur le thème de l'énergie. L'utilisateur devient opérateur du réseau électrique français et prend 5 décisions pour éviter un blackout, stabiliser la carte de France, limiter le CO2, préserver le budget et garder la confiance citoyenne.
 
-## Pivot hackathon
-
-La refonte s'organise autour de trois scènes :
-
-1. **Mission Control** - une salle de contrôle claire et spectaculaire pour comprendre immédiatement la mission : garder la France alimentée.
-2. **Blackout Simulator** - une simulation visuelle des conséquences : risque, marge minimale, heures critiques, timeline 24h et verdict.
-3. **Grand Débat** - un objet de discussion humain : chaque scénario révèle un compromis entre CO₂, coût, sobriété, renouvelables, nucléaire, stockage et sécurité d'approvisionnement.
+L'expérience utilise un instantané public RTE éCO2mix via ODRÉ quand il est disponible. Si l'API ne répond pas ou si l'URL contient `?demo=1`, l'application bascule sur des données locales clairement marquées "Données de démonstration".
 
 ## Expérience
 
-- Cockpit Mission Control avec statut réseau, CO₂, marge minimale et risque max sur 24h
-- Carte énergétique stylisée de la France, réactive au scénario choisi
-- Simulation 24h accélérée avec courbes demande / production / marge
-- Scénarios de crise : nuit sans vent, pic hivernal, vague de froid, réacteurs indisponibles, importations limitées
-- Carte de scénario partageable pour le Grand Débat, avec score, verdict, mix et heures critiques, exportable en image PNG
-- Snapshot temps réel du mix électrique français via RTE éCO2mix / ODRÉ
-
-Le modèle est volontairement simplifié pour le hackathon. Il sert à rendre les compromis visibles et discutables, pas à produire une prévision officielle du réseau français.
+- Hero immersif BLACKOUT avec carte de France stylisée, villes lumineuses et jauge de risque.
+- Trois modes sur le même moteur : Mission France, Paris 19h42, 2050 nuit sans vent.
+- Mission jouable en 5 décisions maximum.
+- Actions à compromis : batteries, gaz de secours, sobriété, imports, services essentiels, industrie, hydraulique.
+- Jauges stabilité, risque blackout, CO2, budget et confiance citoyenne.
+- Événements narratifs déterministes.
+- Verdict final avec score, conseils pédagogiques et bouton "Copier mon résultat".
+- Section courte "Ce que BLACKOUT montre" et sources RTE/ODRÉ.
 
 ## Lancer en local
 
 ```bash
+npm install
 npm run dev
 ```
 
 Ouvrir [http://localhost:3000](http://localhost:3000).
 
-## Scripts
+Forcer le fallback :
 
-- `npm run dev` : serveur local
-- `npm run lint` : vérification ESLint
-- `npm run build` : build de production
-- `npm run build:github` : export statique pour GitHub Pages
+```text
+http://localhost:3000?demo=1
+```
 
-## Données
+## Validation
 
-L'app interroge depuis le navigateur l'API ODRÉ / OpenDataSoft du dataset RTE `eco2mix-national-tr`.
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run build:github
+```
 
-Si l'API ne répond pas, si les champs sont incomplets, ou si l'URL contient `?demo=1`, l'app affiche un fallback local marqué “Données de démonstration”.
+## Publication Vercel
 
-Les sources affichées doivent rester explicites : RTE éCO2mix pour le snapshot temps réel, ODRÉ / OpenDataSoft pour l'accès API, et RTE Futurs énergétiques 2050 comme contexte public. Wattopia ne doit pas se présenter comme un outil officiel RTE.
+- Root directory : `wattopia-2050`
+- Framework : Next.js
+- Build command : `npm run build`
+- Output : laisser Vercel détecter Next.js avec `output: "export"` ou configurer `out` si nécessaire.
+- Variables d'environnement : aucune.
 
-## Publication
+Ne pas utiliser `npm run build:github` sur Vercel, car ce script ajoute le `basePath` GitHub Pages.
 
-La publication se fait automatiquement via GitHub Pages à chaque push sur `main`.
+## Publication GitHub Pages
 
-Lien public :
-
-[https://sylvainwinning.github.io/wattopia-2050/](https://sylvainwinning.github.io/wattopia-2050/)
-
-Pour tester l'export localement :
+Le repo conserve la compatibilité export statique GitHub Pages :
 
 ```bash
 npm run build:github
 ```
+
+Lien historique :
+
+https://sylvainwinning.github.io/wattopia-2050/
+
+## Sources
+
+- RTE éCO2mix : https://www.rte-france.com/donnees-publications/eco2mix-donnees-temps-reel
+- ODRÉ eco2mix-national-tr : https://odre.opendatasoft.com/explore/dataset/eco2mix-national-tr/
+- RTE Futurs énergétiques 2050 : https://www.rte-france.com/donnees-publications/etudes-prospectives/futurs-energetique-2050
+
+## Limites connues
+
+- Simulation volontairement simplifiée pour hackathon, non officielle et non prédictive.
+- Score normalisé 0-100, pas une métrique RTE.
+- Données temps réel dépendantes de la disponibilité ODRÉ et des champs exploitables.
+- Les scénarios Paris et 2050 utilisent le même moteur que Mission France avec des conditions initiales et événements dédiés.
+
+## Pitch jury 30 secondes
+
+BLACKOUT est une expérience interactive qui transforme les données réelles du réseau électrique français en mission de crise. L'utilisateur devient opérateur du réseau et doit éviter un blackout en prenant 5 décisions : activer du stockage, importer de l'électricité, réduire la demande ou lancer du gaz de secours. Chaque choix rallume ou fragilise la carte de France et montre les compromis entre stabilité, CO2, coût et acceptabilité. L'objectif est de rendre les enjeux énergétiques compréhensibles en quelques minutes, avec une expérience visuelle et partageable.
+
+## Idées d'amélioration
+
+- Ajouter une animation de blackout plus cinématique au verdict.
+- Générer une carte résultat PNG dédiée au partage social.
+- Ajouter un mode duel entre deux stratégies.
+- Brancher une vraie URL Vercel dans les métadonnées après déploiement.
+- Ajouter des scénarios régionaux plus fins si des données régionales sont intégrées.
