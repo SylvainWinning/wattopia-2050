@@ -16,6 +16,7 @@ L'expérience utilise un instantané public RTE éCO2mix via ODRÉ quand il est 
 - Cascade simplifiée par ville : chaque arbitrage protège ou fragilise des zones visibles.
 - HUD de mission façon cockpit : chrono, niveau de menace, progression, combo, grade et XP crise.
 - Objectifs bonus, tags tactiques, feedback d'impact après chaque ordre, trophées et replay de cascade.
+- Couche motion de mini-jeu : fréquence réseau, alerte blackout, villes qui se rallument, métro Paris, stockage 2050, combo/grade et verdict lumineux.
 - Jauges stabilité, risque blackout, CO2, budget et confiance citoyenne.
 - Messages radio opérateur et événements narratifs déterministes.
 - Verdict final avec score, grade, XP, profil opérateur, trophées, villes fragiles/coupées, conseils pédagogiques et bouton "Copier mon résultat".

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -151,6 +151,47 @@ function rankName(rank: MissionState["gameRank"]) {
   }[rank];
 }
 
+function FrequencyTrace({ metrics }: { metrics: MissionMetrics }) {
+  const tone = classifyRisk(metrics);
+  const drift = Math.max(0, Math.min(100, 100 - metrics.stability + metrics.blackoutRisk * 0.36));
+
+  return (
+    <div className={clsx("frequency-trace", `frequency-${tone}`)} style={{ "--drift": `${drift}%` } as CSSProperties} aria-hidden="true">
+      <svg viewBox="0 0 220 54">
+        <path className="frequency-baseline" d="M4 27 H216" />
+        <path className="frequency-wave" d="M4 27 C22 12 37 12 54 27 S88 42 105 27 S139 12 156 27 S190 42 216 27" />
+        <path className="frequency-spark" d="M118 27 L128 13 L137 35 L147 21" />
+      </svg>
+    </div>
+  );
+}
+
+function MissionMotionLayer({ state, compact = false }: { state: MissionState; compact?: boolean }) {
+  const showMetro = state.mode.id === "paris" && !compact;
+  const showBattery = state.mode.id === "future2050" && !compact;
+  const reserve = Math.max(8, Math.min(100, state.metrics.budget + state.metrics.stability * 0.28 - state.selectedActions.filter((action) => action.id === "batteries").length * 16));
+
+  return (
+    <div className="mission-motion-layer" aria-hidden="true">
+      {!compact && <FrequencyTrace metrics={state.metrics} />}
+      {showMetro && (
+        <div className="paris-metro-pulse">
+          <span />
+          <span />
+          <span />
+        </div>
+      )}
+      {showBattery && (
+        <div className="storage-core" style={{ "--reserve": `${reserve}%` } as CSSProperties}>
+          <span />
+          <span />
+          <span />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MetricMeter({
   label,
   value,
@@ -194,8 +235,9 @@ function FranceGridMap({
   const activeCityData = activeCity ? cityById.get(activeCity) : null;
 
   return (
-    <div className={clsx("france-grid-map", `map-${tone}`, compact && "compact")}>
+    <div className={clsx("france-grid-map", `map-${tone}`, `map-mode-${state.mode.id}`, compact && "compact")}>
       <div className="map-vignette" aria-hidden="true" />
+      <MissionMotionLayer state={state} compact={compact} />
       <svg viewBox="0 0 100 100" role="img" aria-label="Carte stylisée du réseau électrique français">
         <defs>
           <filter id="networkGlow" x="-30%" y="-30%" width="160%" height="160%">
@@ -256,6 +298,16 @@ function FranceGridMap({
 
           return (
             <g key={city.id} className={clsx("city-node", `city-${cityState}`, activeCity === city.id && "city-active")}>
+              <motion.circle
+                key={`${city.id}-${cityState}-${state.selectedActions.length}`}
+                className="city-relight-burst"
+                cx={city.x}
+                cy={city.y}
+                r={radius + 1.4}
+                initial={{ opacity: cityState === "off" ? 0.04 : 0.62, scale: 0.65 }}
+                animate={{ opacity: 0, scale: cityState === "on" || cityState === "priority" ? 2.35 : 1.45 }}
+                transition={{ duration: cityState === "on" || cityState === "priority" ? 0.72 : 0.46, ease: "easeOut" }}
+              />
               <motion.circle
                 cx={city.x}
                 cy={city.y}
@@ -341,7 +393,7 @@ function Hero({
           </span>
         </div>
         <div className="hero-actions">
-          <button type="button" className="primary-action" onClick={onStart}>
+          <button type="button" className="primary-action control-action" onClick={onStart}>
             <Zap size={18} />
             Prendre le contrôle
           </button>
@@ -401,6 +453,7 @@ function MissionSelector({
 
 function MissionHud({ state }: { state: MissionState }) {
   const progress = (state.selectedActions.length / MAX_DECISIONS) * 100;
+  const comboActive = state.selectedActions.length >= 2 && state.comboLabel !== "Premier ordre";
 
   return (
     <div className={clsx("game-hud", `hud-${classifyRisk(state.metrics)}`)}>
@@ -417,6 +470,7 @@ function MissionHud({ state }: { state: MissionState }) {
           Niveau menace
         </span>
         <strong>{threatLabel(state.metrics)}</strong>
+        <FrequencyTrace metrics={state.metrics} />
       </div>
       <div className="hud-progress" aria-label={`${state.selectedActions.length} décisions prises sur ${MAX_DECISIONS}`}>
         <div>
@@ -429,7 +483,7 @@ function MissionHud({ state }: { state: MissionState }) {
           <motion.span initial={false} animate={{ width: `${progress}%` }} transition={{ duration: 0.22 }} />
         </div>
       </div>
-      <div className="hud-cell hud-combo">
+      <div className={clsx("hud-cell hud-combo", comboActive && "combo-active")}>
         <span>
           <Sparkles size={15} />
           Combo
@@ -613,7 +667,11 @@ function CrisisScenePanel({
   }
 
   return (
-    <div className="crisis-panel">
+    <div className={clsx("crisis-panel", `crisis-${classifyRisk(state.metrics)}`, state.mode.id === "paris" && "crisis-paris", state.mode.id === "future2050" && "crisis-2050")}>
+      <div className="blackout-alert-strip" aria-hidden="true">
+        <span>BLACKOUT RISK</span>
+        <em />
+      </div>
       <div className="crisis-kicker">
         <span>{scene.hour}</span>
         <strong>{scene.title}</strong>
@@ -759,12 +817,14 @@ function FinalVerdict({
 
   return (
     <section id="resultat" className={clsx("result-section", `result-${state.result.kind}`)}>
+      <div className="result-aura" aria-hidden="true" />
       <div className="result-visual">
         <FranceGridMap state={state} compact />
       </div>
       <div className="result-copy">
         <span>Verdict final</span>
         <div className="final-grade">
+          <i aria-hidden="true" />
           <strong>{state.gameRank}</strong>
           <span>Grade {rankName(state.gameRank)}</span>
           <em>{state.commandPoints} XP crise</em>
@@ -1082,7 +1142,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   };
 
   return (
-    <main className="blackout-app">
+    <main className={clsx("blackout-app", `app-mode-${modeId}`, `app-phase-${phase}`)}>
       <header className="app-header">
         <a href="#top" className="brand-lockup" aria-label="BLACKOUT">
           <span>
@@ -1096,7 +1156,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
           <a href="#pedagogie">Pédagogie</a>
           <a href="#sources">Sources</a>
         </nav>
-        <button type="button" className="header-cta" onClick={startMission}>
+        <button type="button" className="header-cta control-action" onClick={startMission}>
           Prendre le contrôle
         </button>
       </header>

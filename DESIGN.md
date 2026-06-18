@@ -57,7 +57,7 @@ Use Geist Sans for all UI. BLACKOUT can use a large compact heading, but letter 
 
 ## Motion
 
-Motion communicates network state: line flow, fragile city pulse, meter transitions, button feedback and result reveal. Respect `prefers-reduced-motion`; no critical information should depend on animation.
+Motion communicates network state: line flow, frequency trace, blackout alert, city relight, Paris metro stress, 2050 storage pressure, combo/grade feedback, button arming and result reveal. Respect `prefers-reduced-motion`; no critical information should depend on animation.
 
 ## Copy & Tone
 
