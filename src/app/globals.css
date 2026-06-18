@@ -1,28 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  --bg: oklch(0.13 0.044 238);
-  --bg-deep: oklch(0.085 0.034 246);
-  --panel: oklch(0.17 0.044 240);
-  --panel-strong: oklch(0.22 0.058 236);
-  --ink: oklch(0.97 0.012 250);
-  --muted: oklch(0.77 0.035 250);
-  --faint: oklch(0.58 0.045 250);
-  --line: oklch(0.35 0.052 252);
-  --engie-blue: oklch(0.73 0.17 238);
-  --engie-blue-deep: oklch(0.43 0.14 241);
-  --engie-mint: oklch(0.78 0.13 178);
-  --engie-ray: linear-gradient(135deg, var(--engie-blue), var(--engie-mint));
-  --electric: var(--engie-blue);
-  --electric-strong: var(--engie-blue-deep);
+  --bg: oklch(0.975 0.006 240);
+  --bg-deep: oklch(0.94 0.018 236);
+  --panel: oklch(1 0 0);
+  --panel-strong: oklch(0.965 0.011 235);
+  --ink: oklch(0.25 0.095 268);
+  --muted: oklch(0.42 0.036 246);
+  --faint: oklch(0.57 0.032 244);
+  --line: oklch(0.86 0.018 242);
+  --blackout-blue: oklch(0.58 0.16 241);
+  --blackout-blue-deep: oklch(0.29 0.12 268);
+  --blackout-mint: oklch(0.74 0.13 176);
+  --blackout-ray: linear-gradient(135deg, var(--blackout-blue), var(--blackout-mint));
+  --electric: var(--blackout-blue);
+  --electric-strong: var(--blackout-blue-deep);
   --cyan: oklch(0.81 0.12 196);
   --green: oklch(0.76 0.15 160);
   --amber: oklch(0.82 0.15 76);
   --orange: var(--amber);
   --red: oklch(0.62 0.2 27);
   --violet: var(--cyan);
-  --shadow-tight: 0 8px 8px oklch(0.04 0.02 255 / 0.28);
-  --radius: 12px;
+  --blackout-white: oklch(1 0 0);
+  --blackout-paper: oklch(0.975 0.006 240);
+  --blackout-blue-bolt: oklch(0.58 0.16 241);
+  --blackout-ultramarine: oklch(0.29 0.12 268);
+  --blackout-sky: oklch(0.78 0.11 226);
+  --blackout-teal: oklch(0.74 0.13 176);
+  --blackout-border: oklch(0.86 0.018 242);
+  --blackout-shadow: 0 8px 8px oklch(0.29 0.12 268 / 0.08);
+  --shadow-tight: var(--blackout-shadow);
+  --radius: 8px;
   --motion-fast: 140ms;
   --motion-state: 220ms;
   --motion-reveal: 420ms;
@@ -134,7 +142,7 @@ a {
   height: 34px;
   place-items: center;
   border-radius: 10px;
-  background: var(--engie-ray);
+  background: var(--blackout-ray);
   color: oklch(0.08 0.03 252);
 }
 
@@ -175,7 +183,7 @@ a {
 .primary-action {
   padding: 0 16px;
   color: oklch(0.075 0.032 245);
-  background: var(--engie-ray);
+  background: var(--blackout-ray);
 }
 
 .header-cta:hover,
@@ -298,6 +306,10 @@ a {
   font-weight: 720;
 }
 
+.source-badge-short {
+  display: none;
+}
+
 .source-badge.fallback {
   color: var(--amber);
   background: oklch(0.82 0.15 76 / 0.13);
@@ -323,7 +335,7 @@ a {
   left: 0.02em;
   height: 7px;
   border-radius: 999px;
-  background: var(--engie-ray);
+  background: var(--blackout-ray);
   box-shadow: 0 0 26px oklch(0.78 0.13 178 / 0.4);
   content: "";
 }
@@ -635,7 +647,7 @@ a {
   right: 0;
   height: 3px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, var(--electric), var(--engie-mint), transparent);
+  background: linear-gradient(90deg, transparent, var(--electric), var(--blackout-mint), transparent);
   box-shadow: 0 0 18px oklch(0.73 0.17 238 / 0.38);
   animation: metro-run 1.7s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
@@ -1942,7 +1954,7 @@ a {
   margin-top: auto;
   border-radius: 9px;
   color: oklch(0.08 0.03 252);
-  background: var(--engie-ray);
+  background: var(--blackout-ray);
   font-size: 0.78rem;
   font-weight: 860;
 }
@@ -2042,7 +2054,7 @@ a {
   place-items: center;
   padding: 8px;
   color: oklch(0.08 0.03 252);
-  background: var(--engie-ray);
+  background: var(--blackout-ray);
 }
 
 .arcade-turn span,
@@ -2218,7 +2230,7 @@ a {
   border-radius: 999px;
   padding: 5px 9px;
   color: oklch(0.08 0.03 252);
-  background: var(--engie-ray);
+  background: var(--blackout-ray);
   font-size: 0.78rem;
 }
 
@@ -3301,6 +3313,357 @@ a {
   }
 }
 
+/* Sponsor-inspired visual direction: clean energy UI language with BLACKOUT crisis contrast. */
+body {
+  background:
+    radial-gradient(circle at 72% 5%, oklch(0.78 0.11 226 / 0.28), transparent 34rem),
+    radial-gradient(circle at 94% 34%, oklch(0.74 0.13 176 / 0.2), transparent 28rem),
+    linear-gradient(180deg, var(--blackout-white) 0 34rem, var(--blackout-paper) 34rem 100%);
+  color: var(--ink);
+}
+
+.blackout-app {
+  color: var(--ink);
+}
+
+.app-header {
+  min-height: 72px;
+  background: oklch(1 0 0 / 0.96);
+  border-bottom: 1px solid var(--blackout-border);
+  box-shadow: 0 2px 8px oklch(0.29 0.12 268 / 0.06);
+}
+
+.brand-lockup {
+  color: var(--blackout-ultramarine);
+}
+
+.brand-lockup span {
+  border-radius: 4px;
+  background: var(--blackout-blue-bolt);
+  color: white;
+}
+
+.app-header nav a {
+  color: oklch(0.34 0.055 256);
+}
+
+.app-header nav a:hover {
+  color: var(--blackout-blue-bolt);
+  background: oklch(0.58 0.16 241 / 0.07);
+}
+
+.header-cta,
+.primary-action,
+.choice-cta {
+  border-radius: 4px;
+  color: white;
+  background: var(--blackout-blue-bolt);
+}
+
+.header-cta:hover,
+.primary-action:hover,
+.choice-cta:hover {
+  background: oklch(0.52 0.15 244);
+}
+
+.secondary-action,
+.icon-button {
+  border: 1px solid var(--blackout-border);
+  border-radius: 4px;
+  color: var(--blackout-ultramarine);
+  background: white;
+}
+
+.control-action::before {
+  background: linear-gradient(105deg, transparent 0 30%, oklch(1 0 0 / 0.38) 44%, transparent 58% 100%);
+}
+
+.control-action::after {
+  box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.22);
+}
+
+.blackout-hero {
+  min-height: min(780px, calc(100svh - 72px));
+  padding-top: clamp(26px, 4vw, 54px);
+}
+
+.blackout-hero::before {
+  inset: 22px -2vw 44px 34%;
+  border-radius: 0 0 0 56px;
+  background:
+    radial-gradient(circle at 72% 22%, oklch(0.86 0.07 223 / 0.95), transparent 18rem),
+    linear-gradient(135deg, oklch(0.58 0.16 241), oklch(0.74 0.13 176));
+  box-shadow: none;
+}
+
+.hero-copy {
+  max-width: 620px;
+}
+
+.source-badge,
+.arcade-data-source {
+  border-color: oklch(0.58 0.16 241 / 0.18);
+  color: var(--blackout-blue-bolt);
+  background: white;
+}
+
+.source-badge.fallback,
+.arcade-data-source.fallback {
+  color: oklch(0.48 0.1 74);
+  background: oklch(0.985 0.024 86);
+  border-color: oklch(0.82 0.12 76 / 0.2);
+}
+
+.hero-copy h1 {
+  color: var(--blackout-ultramarine);
+  letter-spacing: -0.025em;
+}
+
+.hero-copy h1::before {
+  content: "ALERTE RÉSEAU";
+  display: block;
+  width: fit-content;
+  margin-bottom: 12px;
+  padding: 7px 10px;
+  border-radius: 4px;
+  color: oklch(0.52 0.15 244);
+  background: oklch(0.58 0.16 241 / 0.08);
+  border: 1px solid oklch(0.58 0.16 241 / 0.16);
+  font-size: clamp(0.72rem, 1.1vw, 0.82rem);
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+.hero-copy h1::after {
+  height: 5px;
+  background: linear-gradient(90deg, var(--blackout-blue-bolt), var(--blackout-teal));
+  box-shadow: none;
+}
+
+.hero-subtitle {
+  color: var(--blackout-blue-bolt);
+}
+
+.hero-text,
+.data-note,
+.section-heading p,
+.live-data-panel p,
+.education-card p,
+.result-copy p,
+.arcade-heading p {
+  color: var(--muted);
+}
+
+.hero-hud-strip span {
+  border-color: var(--blackout-border);
+  color: oklch(0.34 0.055 256);
+  background: white;
+}
+
+.hero-stage {
+  padding: 10px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: var(--blackout-shadow);
+}
+
+.hero-stage .france-grid-map,
+.hero-stage .france-3d-map {
+  border-radius: 6px;
+}
+
+.mode-choice,
+.action-card,
+.mission-secondary,
+.live-data-panel,
+.education-card,
+.result-section,
+.profile-report,
+.tips-list li,
+.achievement-board li,
+.cascade-replay li {
+  border-color: var(--blackout-border);
+  color: var(--muted);
+  background: white;
+  box-shadow: none;
+}
+
+.mode-choice span,
+.mode-choice:hover span,
+.mode-choice.active span,
+.action-body strong,
+.arcade-heading h2,
+.arcade-alert h3,
+.arcade-alert-text,
+.arcade-map-caption strong,
+.education-card h3,
+.result-copy h2,
+.data-grid strong,
+.sources-footer strong {
+  color: var(--blackout-ultramarine);
+}
+
+.mode-choice:hover,
+.mode-choice.active,
+.action-card:not(:disabled):hover,
+.action-card.selected {
+  transform: translateY(-1px);
+  border-color: oklch(0.58 0.16 241 / 0.32);
+  color: var(--ink);
+  background: oklch(0.98 0.01 235);
+}
+
+.mode-choice em,
+.choice-number,
+.arcade-actions-grid .choice-number,
+.effect-list .neutral {
+  color: var(--blackout-blue-bolt);
+  background: oklch(0.58 0.16 241 / 0.08);
+}
+
+.mode-choice.active em,
+.arcade-alert strong,
+.arcade-turn {
+  color: white;
+  background: var(--blackout-blue-bolt);
+}
+
+.mission-shell,
+.education-section {
+  padding-top: clamp(42px, 6vw, 76px);
+}
+
+.arcade-status {
+  border-color: var(--blackout-border);
+  background: white;
+  box-shadow: var(--blackout-shadow);
+}
+
+.arcade-metric,
+.arcade-side-stats {
+  background: oklch(0.965 0.011 235);
+}
+
+.arcade-metric span,
+.arcade-side-stats,
+.arcade-operator,
+.arcade-actions-grid .action-body em,
+.mission-secondary summary {
+  color: var(--muted);
+}
+
+.arcade-metric strong {
+  color: var(--blackout-ultramarine);
+}
+
+.arcade-metric em {
+  background: oklch(0.88 0.016 242);
+}
+
+.arcade-map-panel,
+.arcade-command-panel,
+.arcade-choice-deck {
+  border-color: var(--blackout-border);
+  background: linear-gradient(180deg, white, oklch(0.985 0.007 235));
+  box-shadow: var(--blackout-shadow);
+}
+
+.arcade-choice-deck {
+  background:
+    linear-gradient(135deg, oklch(0.58 0.16 241 / 0.06), transparent 28%),
+    white;
+}
+
+.arcade-operator {
+  background: oklch(0.965 0.011 235);
+}
+
+.arcade-actions-grid .action-card {
+  border-color: var(--blackout-border);
+  background: white;
+}
+
+.arcade-actions-grid .action-card.risky-choice,
+.action-card.risky-choice {
+  border-color: oklch(0.82 0.15 76 / 0.36);
+  background: oklch(0.985 0.018 82);
+}
+
+.arcade-actions-grid .choice-cta {
+  color: white;
+  background: var(--blackout-blue-bolt);
+}
+
+.arcade-map-caption,
+.mission-secondary,
+.mission-secondary summary {
+  background: white;
+}
+
+.arcade-map-caption span,
+.arcade-heading span,
+.arcade-alert span,
+.arcade-operator svg,
+.education-card svg,
+.score-lockup {
+  color: var(--blackout-blue-bolt);
+}
+
+.france-3d-map,
+.france-grid-map {
+  border: 1px solid oklch(0.58 0.16 241 / 0.16);
+  background:
+    radial-gradient(circle at 46% 46%, oklch(0.74 0.13 176 / 0.22), transparent 18rem),
+    linear-gradient(145deg, oklch(0.29 0.12 268), oklch(0.18 0.07 255));
+}
+
+.live-data-panel,
+.education-section,
+.result-section {
+  border-radius: 8px;
+}
+
+.data-grid div {
+  border: 1px solid var(--blackout-border);
+  background: oklch(0.965 0.011 235);
+}
+
+.sources-footer {
+  color: var(--muted);
+  border-top-color: var(--blackout-border);
+}
+
+.sources-footer a {
+  color: oklch(0.34 0.055 256);
+  background: white;
+  border: 1px solid var(--blackout-border);
+}
+
+.sources-footer a:hover {
+  color: var(--blackout-blue-bolt);
+  background: oklch(0.58 0.16 241 / 0.06);
+}
+
+.copy-toast {
+  color: white;
+  background: var(--blackout-blue-bolt);
+}
+
+.transition-easter-egg {
+  border-color: oklch(0.58 0.16 241 / 0.24);
+  background: white;
+  box-shadow: var(--blackout-shadow);
+}
+
+.transition-easter-egg strong {
+  color: var(--blackout-ultramarine);
+}
+
+.transition-easter-egg span,
+.transition-easter-egg em {
+  color: var(--blackout-blue-bolt);
+}
+
 @media (max-width: 1120px) {
   .blackout-hero,
   .mission-layout,
@@ -3526,18 +3889,22 @@ a {
     line-height: 1.1;
   }
 
-  .signal-row,
   .hero-actions,
   .result-actions {
     align-items: stretch;
     flex-direction: column;
   }
 
+  .signal-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    align-items: center;
+  }
+
   .hero-hud-strip span {
     flex: 1 1 auto;
   }
 
-  .source-badge,
   .hero-actions .primary-action,
   .hero-actions .secondary-action,
   .result-actions .primary-action,
@@ -3545,11 +3912,41 @@ a {
     width: 100%;
   }
 
+  .signal-row .source-badge {
+    width: auto;
+    min-width: 0;
+    overflow: hidden;
+    justify-content: flex-start;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .signal-row .source-badge svg {
+    flex: 0 0 auto;
+  }
+
+  .signal-row .icon-button {
+    width: 44px;
+    min-width: 44px;
+  }
+
+  .source-badge-full {
+    display: none;
+  }
+
+  .source-badge-short {
+    display: inline;
+  }
+
   .france-grid-map,
   .arcade-map-panel .france-grid-map,
   .mission-visual .france-grid-map {
-    height: 250px;
-    min-height: 250px;
+    height: 178px;
+    min-height: 178px;
+  }
+
+  .arcade-map-panel .france-3d-map {
+    min-height: 178px;
   }
 
   .mission-arcade {
@@ -3600,6 +3997,10 @@ a {
     padding: 10px;
   }
 
+  .arcade-choice-deck {
+    gap: 9px;
+  }
+
   .arcade-map-caption,
   .arcade-alert,
   .arcade-side-stats {
@@ -3609,6 +4010,20 @@ a {
 
   .arcade-alert strong {
     width: fit-content;
+  }
+
+  .arcade-alert h3 {
+    font-size: 1.08rem;
+  }
+
+  .arcade-alert-text {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.28;
+  }
+
+  .arcade-operator {
+    display: none;
   }
 
   .hero-actions .secondary-action {

@@ -499,7 +499,8 @@ function Hero({
         <div className="signal-row">
           <span className={clsx("source-badge", snapshot?.isFallback && "fallback")}>
             <Activity size={16} />
-            {badge}
+            <span className="source-badge-full">{badge}</span>
+            <span className="source-badge-short">{snapshot?.isFallback ? "Démo réseau" : loading ? "Sync RTE" : "RTE live"}</span>
           </span>
           <button type="button" className="icon-button" onClick={onRefresh} disabled={loading} aria-label="Rafraîchir les données">
             {loading ? <Loader2 size={17} className="spin" /> : <RefreshCw size={17} />}
@@ -956,7 +957,10 @@ function MissionExperience({
           <p>Choisis 5 ordres. La carte et les jauges réagissent tout de suite.</p>
           <span className={clsx("arcade-data-source", snapshot?.isFallback && "fallback")}>
             <Activity size={13} />
-            {loading ? "Synchronisation RTE..." : snapshot?.isFallback ? "Données de démonstration" : "RTE éCO2mix"}
+            <span className="source-badge-full">
+              {loading ? "Synchronisation RTE..." : snapshot?.isFallback ? "Données de démonstration" : "RTE éCO2mix"}
+            </span>
+            <span className="source-badge-short">{snapshot?.isFallback ? "Démo" : loading ? "Sync" : "RTE"}</span>
             {snapshotTime && <em>{snapshotTime}</em>}
           </span>
         </div>
@@ -1499,7 +1503,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
       <div id="transition-easter-egg" className="transition-easter-egg" aria-hidden="true">
         <span>
           <Sparkles size={16} />
-          Signal sponsor
+          Signal réseau
         </span>
         <strong>Mix flexible engagé</strong>
         <em>bleu + vert, réseau en équilibre</em>

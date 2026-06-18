@@ -25,17 +25,17 @@ const labelOffsets: Record<string, readonly [number, number]> = {
 };
 
 const mapPalette = {
-  void: "#050914",
-  night: "#07101d",
-  energyBlue: "#0a8fd8",
-  transitionMint: "#33d8be",
-  softCyan: "#9beeea",
-  lowCarbonWhite: "#e6fbff",
-  ultramarine: "#162a58",
-  deepTeal: "#123b45",
-  stableBody: "#123f56",
-  tenseBody: "#173348",
-  dangerBody: "#1a2538",
+  void: "#081129",
+  night: "#111b4c",
+  energyBlue: "#007bc5",
+  transitionMint: "#21c7ad",
+  softCyan: "#a9edf2",
+  lowCarbonWhite: "#f7fbff",
+  ultramarine: "#182663",
+  deepTeal: "#0b5f70",
+  stableBody: "#114f72",
+  tenseBody: "#21366f",
+  dangerBody: "#2b2d58",
   amber: "#f4b64a",
   danger: "#ff5b63",
 };
