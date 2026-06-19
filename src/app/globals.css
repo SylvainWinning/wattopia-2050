@@ -558,6 +558,11 @@ a {
   display: none;
 }
 
+.hero-stage .france-map-fallback .map-readout,
+.arcade-map-panel .france-map-fallback .map-readout {
+  display: none;
+}
+
 .france-grid-map {
   position: relative;
   overflow: hidden;
@@ -861,12 +866,14 @@ a {
 }
 
 .city-node text {
-  fill: var(--ink);
+  fill: white;
   font-size: 3px;
   font-weight: 760;
   paint-order: stroke;
-  stroke: oklch(0.08 0.03 255 / 0.84);
-  stroke-width: 0.5;
+  stroke: oklch(0.04 0.035 252 / 0.92);
+  stroke-linejoin: round;
+  stroke-width: 0.72;
+  filter: drop-shadow(0 1px 2px oklch(0.04 0.035 252 / 0.75));
 }
 
 .city-on {
@@ -877,12 +884,24 @@ a {
   color: var(--amber);
 }
 
+.city-fragile text {
+  fill: oklch(0.93 0.13 82);
+}
+
 .city-off {
   color: var(--red);
 }
 
+.city-off text {
+  fill: oklch(0.9 0.08 27);
+}
+
 .city-priority {
   color: var(--violet);
+}
+
+.city-priority text {
+  fill: oklch(0.95 0.06 190);
 }
 
 .city-active text {
@@ -2234,8 +2253,7 @@ a {
 
 .arcade-map-panel .hologram-readout,
 .arcade-map-panel .map-readout {
-  right: 12px;
-  bottom: 12px;
+  display: none;
 }
 
 .arcade-map-caption {
