@@ -14,6 +14,7 @@ type ToneStep = {
   duration: number;
   gain: number;
   type?: OscillatorType;
+  endFrequency?: number;
 };
 
 const cuePatterns: Record<BlackoutSoundCue, ToneStep[]> = {
@@ -48,9 +49,12 @@ const cuePatterns: Record<BlackoutSoundCue, ToneStep[]> = {
     { frequency: 130.81, at: 0.12, duration: 0.22, gain: 0.055, type: "triangle" },
   ],
   easter: [
-    { frequency: 493.88, at: 0, duration: 0.07, gain: 0.05, type: "sine" },
-    { frequency: 659.25, at: 0.06, duration: 0.09, gain: 0.06, type: "sine" },
-    { frequency: 987.77, at: 0.15, duration: 0.16, gain: 0.05, type: "triangle" },
+    { frequency: 196, at: 0, duration: 0.055, gain: 0.035, type: "triangle", endFrequency: 392 },
+    { frequency: 523.25, at: 0.025, duration: 0.07, gain: 0.04, type: "sine" },
+    { frequency: 659.25, at: 0.09, duration: 0.075, gain: 0.046, type: "triangle" },
+    { frequency: 783.99, at: 0.155, duration: 0.08, gain: 0.044, type: "sine" },
+    { frequency: 1046.5, at: 0.235, duration: 0.15, gain: 0.052, type: "triangle" },
+    { frequency: 1318.51, at: 0.31, duration: 0.16, gain: 0.032, type: "sine", endFrequency: 1567.98 },
   ],
 };
 
@@ -87,7 +91,9 @@ export class BlackoutAudioEngine {
 
       oscillator.type = step.type ?? "sine";
       oscillator.frequency.setValueAtTime(step.frequency, startAt);
-      if (cue === "blackout") {
+      if (step.endFrequency) {
+        oscillator.frequency.exponentialRampToValueAtTime(step.endFrequency, endAt);
+      } else if (cue === "blackout") {
         oscillator.frequency.exponentialRampToValueAtTime(Math.max(80, step.frequency * 0.72), endAt);
       }
 

@@ -1279,7 +1279,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     const easterNode = document.getElementById("transition-easter-egg");
     appNode?.classList.add("easter-transition");
     easterNode?.classList.add("visible");
-    playSound("easter", 0.42);
+    playSound("easter", 0.52);
     if (easterTimerRef.current) window.clearTimeout(easterTimerRef.current);
     easterTimerRef.current = window.setTimeout(() => {
       appNode?.classList.remove("easter-transition");
