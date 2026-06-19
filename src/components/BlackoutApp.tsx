@@ -966,7 +966,7 @@ function MissionExperience({
       <ArcadeStatusBar state={state} currentTurn={currentTurn} />
       <div className="arcade-layout">
         <div className="arcade-map-panel">
-          <FranceHybridMap state={state} enable3D={phase === "mission"} boostActive={boostActive} />
+          <FranceHybridMap state={state} enable3D boostActive={boostActive} />
           <div className="arcade-map-caption">
             <strong>{state.metrics.lightsOn}% du réseau allumé</strong>
             <span>{state.decisionsRemaining} ordre{state.decisionsRemaining > 1 ? "s" : ""} restant{state.decisionsRemaining > 1 ? "s" : ""}</span>
