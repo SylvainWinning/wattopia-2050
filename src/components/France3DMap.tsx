@@ -40,6 +40,20 @@ const mapPalette = {
   danger: "#ff5b63",
 };
 
+type BatteryStation = {
+  id: string;
+  x: number;
+  y: number;
+  rotation: number;
+  delay: number;
+};
+
+const batteryStations: readonly BatteryStation[] = [
+  { id: "marseille-buffer", x: 72.4, y: 75.4, rotation: -0.22, delay: 0 },
+  { id: "rhone-buffer", x: 63.8, y: 61.4, rotation: 0.32, delay: 0.18 },
+  { id: "occitanie-buffer", x: 48.4, y: 79.6, rotation: 0.14, delay: 0.34 },
+];
+
 function toScenePoint(x: number, y: number, z = 0) {
   return new THREE.Vector3((x - 50) / 8.8, (50 - y) / 8.8, z);
 }
@@ -207,6 +221,92 @@ function CityNode({ city, state, active }: { city: GridCity; state: CityState; a
   );
 }
 
+function BatteryModule({
+  station,
+  batteryCount,
+  latestBattery,
+}: {
+  station: BatteryStation;
+  batteryCount: number;
+  latestBattery: boolean;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const online = batteryCount > 0;
+  const cellsLit = online ? Math.max(1, 4 - Math.min(3, batteryCount - 1)) : 0;
+  const basePoint = toScenePoint(station.x, station.y, 1.04);
+  const activeColor = latestBattery ? mapPalette.transitionMint : mapPalette.energyBlue;
+
+  useFrame(({ clock }) => {
+    if (!groupRef.current) return;
+    const pulse = online ? 1 + Math.sin(clock.elapsedTime * 3.2 + station.delay * 8) * (latestBattery ? 0.085 : 0.035) : 1;
+    groupRef.current.scale.setScalar(pulse);
+    groupRef.current.position.z = basePoint.z + Math.sin(clock.elapsedTime * 2 + station.delay * 5) * (online ? 0.018 : 0.006);
+  });
+
+  return (
+    <group ref={groupRef} position={basePoint} rotation={[0.08, -0.18, station.rotation]} renderOrder={20}>
+      <mesh position={[0, 0, -0.025]} renderOrder={20}>
+        <boxGeometry args={[0.52, 0.25, 0.1]} />
+        <meshStandardMaterial
+          color={online ? "#0c4669" : "#142342"}
+          emissive={online ? mapPalette.deepTeal : mapPalette.void}
+          emissiveIntensity={online ? 0.45 : 0.06}
+          roughness={0.28}
+          metalness={0.62}
+          transparent
+          opacity={online ? 0.92 : 0.62}
+          depthTest={false}
+        />
+      </mesh>
+      <mesh position={[0.3, 0, -0.015]} renderOrder={21}>
+        <boxGeometry args={[0.07, 0.13, 0.11]} />
+        <meshStandardMaterial color={online ? activeColor : "#29405d"} emissive={online ? activeColor : "#13233b"} emissiveIntensity={online ? 1.2 : 0.18} roughness={0.28} metalness={0.5} depthTest={false} />
+      </mesh>
+      {Array.from({ length: 4 }).map((_, index) => {
+        const lit = index < cellsLit;
+        const x = -0.18 + index * 0.11;
+        return (
+          <mesh key={index} position={[x, 0, 0.06]} renderOrder={22}>
+            <boxGeometry args={[0.075, 0.18, 0.045]} />
+            <meshStandardMaterial
+              color={lit ? activeColor : "#162849"}
+              emissive={lit ? activeColor : "#061126"}
+              emissiveIntensity={lit ? (latestBattery ? 2.8 : 1.35) : 0.08}
+              roughness={0.22}
+              metalness={0.32}
+              transparent
+              opacity={lit ? 0.98 : 0.5}
+              depthTest={false}
+            />
+          </mesh>
+        );
+      })}
+      {online && (
+        <>
+          <mesh position={[0, 0, 0.09]} rotation={[0, 0, 0]} renderOrder={23}>
+            <torusGeometry args={[latestBattery ? 0.38 : 0.31, 0.009, 8, 56]} />
+            <meshBasicMaterial color={activeColor} transparent opacity={latestBattery ? 0.74 : 0.32} depthTest={false} />
+          </mesh>
+          <pointLight position={[0, 0, 0.3]} intensity={latestBattery ? 3.2 : 1.4} color={activeColor} distance={2.2} />
+        </>
+      )}
+    </group>
+  );
+}
+
+function BatteryStorageField({ state }: { state: MissionState }) {
+  const batteryCount = state.selectedActions.filter((action) => action.id === "batteries").length;
+  const latestBattery = state.steps.at(-1)?.choice.id === "batteries";
+
+  return (
+    <group>
+      {batteryStations.map((station) => (
+        <BatteryModule key={station.id} station={station} batteryCount={batteryCount} latestBattery={latestBattery} />
+      ))}
+    </group>
+  );
+}
+
 function HologramScene({ state }: { state: MissionState }) {
   const tone = classifyRisk(state);
   const cityById = new Map(gridCities.map((city) => [city.id, city]));
@@ -231,14 +331,18 @@ function HologramScene({ state }: { state: MissionState }) {
         {gridCities.map((city) => (
           <CityNode key={city.id} city={city} state={state.cityStates[city.id] ?? "fragile"} active={activeCity === city.id} />
         ))}
+        <BatteryStorageField state={state} />
       </group>
     </>
   );
 }
 
 export function France3DMap({ state, compact = false, onReady }: France3DMapProps) {
+  const batteryCount = state.selectedActions.filter((action) => action.id === "batteries").length;
+  const latestBattery = state.steps.at(-1)?.choice.id === "batteries";
+
   return (
-    <div className={clsx("france-3d-map", compact && "compact", `hologram-${classifyRisk(state)}`)} aria-hidden="true">
+    <div className={clsx("france-3d-map", compact && "compact", batteryCount > 0 && "storage-online", latestBattery && "storage-pulse", `hologram-${classifyRisk(state)}`)} aria-hidden="true">
       <Canvas
         dpr={[1, 1.75]}
         camera={{ position: [0, -0.35, 9.4], fov: 43, near: 0.1, far: 40 }}
@@ -269,6 +373,12 @@ export function France3DMap({ state, compact = false, onReady }: France3DMapProp
         <span>Hologramme réseau 3D</span>
         <strong>{state.metrics.blackoutRisk}% risque</strong>
       </div>
+      {batteryCount > 0 && (
+        <div className="storage-readout">
+          <span>Stockage actif</span>
+          <strong>{latestBattery ? "Décharge en cours" : `${Math.max(1, 4 - Math.min(3, batteryCount - 1))}/4 cellules`}</strong>
+        </div>
+      )}
     </div>
   );
 }
