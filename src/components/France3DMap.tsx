@@ -16,7 +16,7 @@ type France3DMapProps = {
 const labelOffsets: Record<string, readonly [number, number]> = {
   lille: [3.2, 0.8],
   paris: [2.4, -1.2],
-  strasbourg: [-8.4, 1.6],
+  strasbourg: [-17.2, 2.6],
   nantes: [2.2, -1.2],
   bordeaux: [-5.2, -1.8],
   lyon: [3.4, 0.8],
