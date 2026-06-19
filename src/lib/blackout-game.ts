@@ -103,6 +103,7 @@ export type MissionResult = {
   score: number;
   bestPoint: string;
   biggestTradeoff: string;
+  learning: string[];
   tips: string[];
 };
 
@@ -1530,6 +1531,25 @@ function resultFromMetrics(metrics: MissionMetrics, selectedActions: readonly Mi
       ? "Décaler la demande peut éviter des coupures sans construire de production instantanée."
       : "La sobriété de crise réduit la demande, mais demande une adhésion sociale.",
   ];
+  const learning = [
+    kind === "stable"
+      ? "Arbitrage réseau: tu as gardé assez de marge pour absorber le pic."
+      : kind === "partial"
+        ? "Arbitrage réseau: tu as sauvé l'essentiel, mais la marge est restée trop fine."
+        : "Arbitrage réseau: sans marge suffisante, une crise locale devient cascade nationale.",
+    gasUsed
+      ? "CO2/budget: le secours fossile stabilise vite, mais il abîme le score carbone."
+      : expensiveActions >= 2
+        ? "CO2/budget: acheter de la sécurité protège le réseau, mais le coût ressort au score."
+        : metrics.co2Score >= 70 && metrics.budget >= 55
+          ? "CO2/budget: flexibilité et demande pilotée évitent les solutions les plus sales."
+          : "CO2/budget: chaque MW d'urgence déplace le problème vers carbone ou dépenses.",
+    metrics.citizenTrust < 50
+      ? "Acceptabilité: une décision techniquement utile peut échouer si la confiance décroche."
+      : sobrietyUsed
+        ? "Acceptabilité: la sobriété marche mieux quand l'effort reste lisible et limité."
+        : "Acceptabilité: protéger les usages essentiels maintient la mission tenable.",
+  ];
 
   if (kind === "stable") {
     return {
@@ -1539,6 +1559,7 @@ function resultFromMetrics(metrics: MissionMetrics, selectedActions: readonly Mi
       score,
       bestPoint,
       biggestTradeoff,
+      learning,
       tips,
     };
   }
@@ -1551,6 +1572,7 @@ function resultFromMetrics(metrics: MissionMetrics, selectedActions: readonly Mi
       score,
       bestPoint,
       biggestTradeoff,
+      learning,
       tips,
     };
   }
@@ -1562,6 +1584,7 @@ function resultFromMetrics(metrics: MissionMetrics, selectedActions: readonly Mi
     score,
     bestPoint,
     biggestTradeoff,
+    learning,
     tips,
   };
 }
@@ -1642,6 +1665,7 @@ export function buildShareText(state: MissionState): string {
     `J'ai joué à BLACKOUT et j'ai obtenu ${state.result.score}/100 sur ${state.mode.title}.`,
     `Grade: ${state.gameRank} | XP crise: ${state.commandPoints}`,
     `Profil: ${state.strategyProfile}`,
+    `Appris: ${state.result.learning[0]}`,
     `Stabilité: ${state.metrics.stability}`,
     `CO2: ${state.metrics.co2Score}`,
     `Confiance citoyenne: ${state.metrics.citizenTrust}`,

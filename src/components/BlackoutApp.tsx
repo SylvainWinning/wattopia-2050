@@ -1028,6 +1028,14 @@ function FinalVerdict({
         </div>
         <h2>{state.result.title}</h2>
         <p>{state.result.text}</p>
+        <div className="learning-payoff" aria-label="Ce que tu viens d'apprendre">
+          <span>Ce que tu viens d&apos;apprendre</span>
+          <ol>
+            {state.result.learning.map((lesson) => (
+              <li key={lesson}>{lesson}</li>
+            ))}
+          </ol>
+        </div>
         <div className="score-lockup">
           <strong>{state.result.score}</strong>
           <span>/100</span>

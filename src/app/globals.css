@@ -2544,6 +2544,59 @@ a {
   margin-bottom: 12px;
 }
 
+.learning-payoff {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 4px;
+  padding: 14px;
+  border: 1px solid oklch(0.73 0.17 238 / 0.2);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, oklch(0.73 0.17 238 / 0.12), transparent 46%),
+    oklch(0.12 0.036 248 / 0.62);
+}
+
+.learning-payoff > span {
+  color: var(--electric);
+  font-size: 0.78rem;
+  font-weight: 880;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.learning-payoff ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: lesson;
+}
+
+.learning-payoff li {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 10px;
+  align-items: start;
+  color: var(--ink);
+  font-weight: 720;
+  line-height: 1.38;
+  counter-increment: lesson;
+}
+
+.learning-payoff li::before {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 50%;
+  color: oklch(0.08 0.03 252);
+  background: var(--blackout-ray);
+  font-size: 0.78rem;
+  font-weight: 900;
+  content: counter(lesson);
+}
+
 .final-grade {
   isolation: isolate;
   display: grid;
@@ -3478,6 +3531,7 @@ body {
 .live-data-panel,
 .education-card,
 .result-section,
+.learning-payoff,
 .profile-report,
 .tips-list li,
 .achievement-board li,
@@ -3496,6 +3550,7 @@ body {
 .arcade-alert h3,
 .arcade-alert-text,
 .arcade-map-caption strong,
+.learning-payoff li,
 .education-card h3,
 .result-copy h2,
 .data-grid strong,
@@ -3605,6 +3660,7 @@ body {
 .arcade-alert span,
 .arcade-operator svg,
 .education-card svg,
+.learning-payoff > span,
 .score-lockup {
   color: var(--blackout-blue-bolt);
 }
