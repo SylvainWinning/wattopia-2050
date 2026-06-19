@@ -515,17 +515,10 @@ function Hero({
   onStart: () => void;
   onRefresh: () => void;
 }) {
-  const badge = sourceStatus(snapshot, loading);
-
   return (
     <section id="top" className="blackout-hero">
       <div className="hero-copy">
         <div className="signal-row">
-          <span className={clsx("source-badge", snapshot?.isFallback && "fallback")}>
-            <Activity size={16} />
-            <span className="source-badge-full">{badge}</span>
-            <span className="source-badge-short">{snapshot?.isFallback ? "Démo réseau" : loading ? "Sync RTE" : "RTE live"}</span>
-          </span>
           <button type="button" className="icon-button" onClick={onRefresh} disabled={loading} aria-label="Rafraîchir les données">
             {loading ? <Loader2 size={17} className="spin" /> : <RefreshCw size={17} />}
           </button>

@@ -313,7 +313,11 @@ a {
 
 .signal-row {
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
+}
+
+.hero-copy > .signal-row {
+  justify-content: flex-start;
 }
 
 .source-badge {
