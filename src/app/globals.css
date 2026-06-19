@@ -899,7 +899,7 @@ a {
 
 .map-readout span,
 .risk-console span {
-  color: var(--muted);
+  color: oklch(0.86 0.06 236);
   font-size: 0.84rem;
   font-weight: 660;
 }
@@ -932,7 +932,7 @@ a {
 }
 
 .rank-console em {
-  color: var(--muted);
+  color: oklch(0.86 0.06 236);
   font-size: 0.78rem;
   font-style: normal;
   font-weight: 720;
@@ -4397,6 +4397,30 @@ body {
   .france-grid-map,
   .mission-visual .france-grid-map {
     height: 220px;
+  }
+
+  .result-section {
+    padding: 10px;
+  }
+
+  .result-section .france-map-stage,
+  .result-section .france-map-fallback,
+  .result-section .france-grid-map,
+  .result-section .france-3d-map {
+    height: 244px;
+    min-height: 244px;
+  }
+
+  .result-copy h2 {
+    font-size: 2.15rem;
+  }
+
+  .score-lockup {
+    margin: 8px 0;
+  }
+
+  .score-lockup strong {
+    font-size: 3.1rem;
   }
 }
 

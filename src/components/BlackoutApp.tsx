@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Activity,
   AlertTriangle,
@@ -304,6 +304,7 @@ function FranceGridMap({
   state: MissionState;
   compact?: boolean;
 }) {
+  const shouldReduceMotion = useReducedMotion();
   const tone = classifyRisk(state.metrics);
   const cityById = new Map(gridCities.map((city) => [city.id, city]));
   const activeCity = state.activeScene?.cityId;
@@ -340,8 +341,8 @@ function FranceGridMap({
               cy={activeCityData.y}
               r="9"
               initial={false}
-              animate={{ r: [7, 13, 7], opacity: [0.86, 0.16, 0.86] }}
-              transition={{ duration: 1.45, repeat: Infinity, ease: "easeOut" }}
+              animate={shouldReduceMotion ? { r: 9, opacity: 0.62 } : { r: [7, 13, 7], opacity: [0.86, 0.16, 0.86] }}
+              transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.45, repeat: Infinity, ease: "easeOut" }}
             />
             <line x1={activeCityData.x - 12} y1={activeCityData.y} x2={activeCityData.x - 6} y2={activeCityData.y} />
             <line x1={activeCityData.x + 6} y1={activeCityData.y} x2={activeCityData.x + 12} y2={activeCityData.y} />
@@ -366,8 +367,8 @@ function FranceGridMap({
               x2={to.x}
               y2={to.y}
               initial={false}
-              animate={{ pathLength: tone === "danger" ? 0.68 : 1, opacity: tone === "danger" ? 0.5 : 0.95 }}
-              transition={{ duration: 0.28 }}
+              animate={{ pathLength: shouldReduceMotion ? 1 : tone === "danger" ? 0.68 : 1, opacity: tone === "danger" ? 0.5 : 0.95 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.28 }}
             />
           );
         })}
@@ -383,20 +384,24 @@ function FranceGridMap({
                 cx={city.x}
                 cy={city.y}
                 r={radius + 1.4}
-                initial={{ opacity: cityState === "off" ? 0.04 : 0.62, scale: 0.65 }}
-                animate={{ opacity: 0, scale: cityState === "on" || cityState === "priority" ? 2.35 : 1.45 }}
-                transition={{ duration: cityState === "on" || cityState === "priority" ? 0.72 : 0.46, ease: "easeOut" }}
+                initial={shouldReduceMotion ? { opacity: 0, scale: 1 } : { opacity: cityState === "off" ? 0.04 : 0.62, scale: 0.65 }}
+                animate={shouldReduceMotion ? { opacity: 0, scale: 1 } : { opacity: 0, scale: cityState === "on" || cityState === "priority" ? 2.35 : 1.45 }}
+                transition={shouldReduceMotion ? { duration: 0 } : { duration: cityState === "on" || cityState === "priority" ? 0.72 : 0.46, ease: "easeOut" }}
               />
               <motion.circle
                 cx={city.x}
                 cy={city.y}
                 r={radius + 2}
                 initial={false}
-                animate={{
-                  opacity: cityState === "off" ? 0.1 : cityState === "fragile" ? [0.35, 0.8, 0.35] : cityState === "priority" ? [0.5, 0.95, 0.5] : 0.58,
-                  scale: cityState === "fragile" || cityState === "priority" ? [0.92, 1.13, 0.92] : 1,
-                }}
-                transition={{ duration: cityState === "priority" ? 1.55 : 1.2, repeat: cityState === "fragile" || cityState === "priority" ? Infinity : 0 }}
+                animate={
+                  shouldReduceMotion
+                    ? { opacity: cityState === "off" ? 0.1 : 0.58, scale: 1 }
+                    : {
+                        opacity: cityState === "off" ? 0.1 : cityState === "fragile" ? [0.35, 0.8, 0.35] : cityState === "priority" ? [0.5, 0.95, 0.5] : 0.58,
+                        scale: cityState === "fragile" || cityState === "priority" ? [0.92, 1.13, 0.92] : 1,
+                      }
+                }
+                transition={shouldReduceMotion ? { duration: 0 } : { duration: cityState === "priority" ? 1.55 : 1.2, repeat: cityState === "fragile" || cityState === "priority" ? Infinity : 0 }}
               />
               <circle cx={city.x} cy={city.y} r={radius} />
               {!compact && (
@@ -1304,9 +1309,17 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   const scrollToGame = (focusChoices = false) => {
     window.requestAnimationFrame(() => {
       const targetChoices = focusChoices && window.matchMedia("(max-width: 720px)").matches;
-      const target = targetChoices ? document.querySelector(".arcade-command-panel") : document.getElementById("mission");
+      const target = targetChoices ? document.querySelector(".arcade-status") : document.getElementById("mission");
       target?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  };
+
+  const replacePlayUrl = (nextModeId: MissionModeId) => {
+    const currentParams = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams();
+    params.set("mode", nextModeId);
+    if (currentParams.get("demo") === "1") params.set("demo", "1");
+    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
   };
 
   const startMission = () => {
@@ -1358,6 +1371,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     hideToast();
     setSelectedActions([]);
     setPhase("mission");
+    replacePlayUrl(modeId);
     scrollToGame();
   };
 
@@ -1428,7 +1442,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     setModeId(nextMode);
     setSelectedActions([]);
     setPhase("mission");
-    window.history.replaceState(null, "", `${window.location.pathname}${new URLSearchParams(window.location.search).get("demo") === "1" ? "?demo=1" : ""}`);
+    replacePlayUrl(nextMode);
     scrollToGame();
   };
 
