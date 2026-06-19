@@ -558,9 +558,9 @@ a {
   display: none;
 }
 
-.hero-stage .france-map-fallback .map-readout,
-.arcade-map-panel .france-map-fallback .map-readout {
-  display: none;
+.france-grid-map .sector-strip,
+.france-map-fallback .map-readout {
+  display: none !important;
 }
 
 .france-grid-map {
