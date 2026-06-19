@@ -2377,8 +2377,18 @@ a {
 }
 
 .arcade-actions-grid .choice-cta {
+  border: 1px solid oklch(0.58 0.16 241 / 0.2);
+  color: var(--blackout-blue-bolt);
+  background: oklch(0.58 0.16 241 / 0.08);
   min-height: 29px;
   font-size: 0.72rem;
+}
+
+.arcade-actions-grid .action-card:not(:disabled):hover .choice-cta,
+.arcade-actions-grid .action-card.selected .choice-cta {
+  border-color: var(--blackout-blue-bolt);
+  color: white;
+  background: var(--blackout-blue-bolt);
 }
 
 .arcade-actions-grid .action-card.risky-choice {
@@ -2447,12 +2457,12 @@ a {
   position: relative;
   overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(360px, 0.9fr) minmax(0, 1.1fr);
-  gap: 24px;
-  align-items: center;
-  margin-top: 24px;
+  grid-template-columns: minmax(340px, 0.82fr) minmax(0, 1.18fr);
+  gap: 18px;
+  align-items: start;
+  margin-top: 18px;
   margin-bottom: clamp(34px, 6vw, 72px);
-  padding: 18px;
+  padding: 14px;
 }
 
 .result-aura {
@@ -2578,17 +2588,17 @@ a {
 }
 
 .result-copy {
-  padding: clamp(10px, 2vw, 24px);
+  padding: clamp(8px, 1.6vw, 18px);
 }
 
 .result-copy h2 {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .learning-payoff {
   display: grid;
   gap: 10px;
-  margin: 18px 0 4px;
+  margin: 14px 0 14px;
   padding: 14px;
   border: 1px solid oklch(0.73 0.17 238 / 0.2);
   border-radius: 10px;
@@ -2648,7 +2658,7 @@ a {
   gap: 2px 14px;
   align-items: center;
   width: fit-content;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   padding: 12px 14px;
   border: 1px solid oklch(0.82 0.15 76 / 0.26);
   border-radius: 12px;
@@ -2709,13 +2719,13 @@ a {
 
 .final-grade span {
   grid-area: label;
-  color: white;
+  color: var(--blackout-ultramarine);
   font-weight: 840;
 }
 
 .final-grade em {
   grid-area: xp;
-  color: var(--muted);
+  color: oklch(0.34 0.055 256);
   font-style: normal;
   font-weight: 720;
 }
@@ -2724,7 +2734,7 @@ a {
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
-  margin: 18px 0;
+  margin: 12px 0 10px;
   color: var(--electric);
 }
 
@@ -2900,7 +2910,7 @@ a {
 .result-actions {
   flex-wrap: wrap;
   gap: 10px;
-  margin: 6px 0 18px;
+  margin: 4px 0 14px;
 }
 
 .result-stable {
@@ -3102,7 +3112,7 @@ a {
   align-items: center;
   width: fit-content;
   padding: 5px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius);
   color: #182663;
   background: oklch(1 0 0 / 0.86);
   font-size: 0.76rem;
@@ -3545,7 +3555,7 @@ body {
 }
 
 .brand-lockup span {
-  border-radius: 4px;
+  border-radius: var(--radius);
   background: var(--blackout-blue-bolt);
   color: white;
 }
@@ -3562,7 +3572,7 @@ body {
 .header-cta,
 .primary-action,
 .choice-cta {
-  border-radius: 4px;
+  border-radius: var(--radius);
   color: white;
   background: var(--blackout-blue-bolt);
 }
@@ -3576,7 +3586,7 @@ body {
 .secondary-action,
 .icon-button {
   border: 1px solid var(--blackout-border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   color: var(--blackout-ultramarine);
   background: white;
 }
@@ -3632,7 +3642,7 @@ body {
   width: fit-content;
   margin-bottom: 12px;
   padding: 7px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius);
   color: oklch(0.52 0.15 244);
   background: oklch(0.58 0.16 241 / 0.08);
   border: 1px solid oklch(0.58 0.16 241 / 0.16);
@@ -3700,6 +3710,7 @@ body {
 .mode-choice:hover span,
 .mode-choice.active span,
 .action-body strong,
+.section-heading h2,
 .arcade-heading h2,
 .arcade-alert h3,
 .arcade-alert-text,
@@ -3707,6 +3718,7 @@ body {
 .learning-payoff li,
 .education-card h3,
 .result-copy h2,
+.live-data-panel h2,
 .data-grid strong,
 .sources-footer strong {
   color: var(--blackout-ultramarine);
@@ -3799,6 +3811,14 @@ body {
 }
 
 .arcade-actions-grid .choice-cta {
+  border: 1px solid oklch(0.58 0.16 241 / 0.2);
+  color: var(--blackout-blue-bolt);
+  background: oklch(0.58 0.16 241 / 0.08);
+}
+
+.arcade-actions-grid .action-card:not(:disabled):hover .choice-cta,
+.arcade-actions-grid .action-card.selected .choice-cta {
+  border-color: var(--blackout-blue-bolt);
   color: white;
   background: var(--blackout-blue-bolt);
 }
@@ -4146,6 +4166,14 @@ body {
   .mission-visual .france-grid-map {
     height: 178px;
     min-height: 178px;
+  }
+
+  .hero-stage .france-map-stage,
+  .hero-stage .france-map-fallback,
+  .hero-stage .france-grid-map,
+  .hero-stage .france-3d-map {
+    height: 224px;
+    min-height: 224px;
   }
 
   .arcade-map-panel .france-3d-map {

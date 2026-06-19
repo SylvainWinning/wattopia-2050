@@ -1005,14 +1005,6 @@ function FinalVerdict({
         </div>
         <h2>{state.result.title}</h2>
         <p>{state.result.text}</p>
-        <div className="learning-payoff" aria-label="Ce que tu viens d'apprendre">
-          <span>Ce que tu viens d&apos;apprendre</span>
-          <ol>
-            {state.result.learning.map((lesson) => (
-              <li key={lesson}>{lesson}</li>
-            ))}
-          </ol>
-        </div>
         <div className="score-lockup">
           <strong>{state.result.score}</strong>
           <span>/100</span>
@@ -1029,6 +1021,14 @@ function FinalVerdict({
           <button type="button" className="secondary-action button-reset" onClick={onReplay}>
             Recommencer cette manche
           </button>
+        </div>
+        <div className="learning-payoff" aria-label="Ce que tu viens d'apprendre">
+          <span>Ce que tu viens d&apos;apprendre</span>
+          <ol>
+            {state.result.learning.map((lesson) => (
+              <li key={lesson}>{lesson}</li>
+            ))}
+          </ol>
         </div>
         <div className="profile-report">
           <span>Profil opérateur</span>
@@ -1217,6 +1217,10 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     window.setTimeout(() => toastNode?.classList.remove("visible"), 3400);
   }, []);
 
+  const hideToast = () => {
+    document.getElementById("copy-toast")?.classList.remove("visible");
+  };
+
   const missionState = useMemo(() => simulateMission(modeId, selectedActions, snapshot), [modeId, selectedActions, snapshot]);
 
   const triggerEasterEgg = useCallback(() => {
@@ -1350,6 +1354,8 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   const replay = () => {
     inputLockRef.current = false;
     setInputLocked(false);
+    setShareFallbackText("");
+    hideToast();
     setSelectedActions([]);
     setPhase("mission");
     scrollToGame();
@@ -1417,6 +1423,8 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   const nextRound = () => {
     inputLockRef.current = false;
     setInputLocked(false);
+    setShareFallbackText("");
+    hideToast();
     setModeId(nextMode);
     setSelectedActions([]);
     setPhase("mission");
@@ -1455,15 +1463,17 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
 
       <MissionSelector modeId={modeId} onSelect={selectMode} />
 
-      <MissionExperience
-        state={missionState}
-        phase={phase}
-        snapshot={snapshot}
-        loading={loading}
-        inputLocked={inputLocked}
-        onChoose={chooseAction}
-        onFinish={() => setPhase("result")}
-      />
+      {phase !== "result" && (
+        <MissionExperience
+          state={missionState}
+          phase={phase}
+          snapshot={snapshot}
+          loading={loading}
+          inputLocked={inputLocked}
+          onChoose={chooseAction}
+          onFinish={() => setPhase("result")}
+        />
+      )}
 
       {phase === "result" && <FinalVerdict state={missionState} nextMode={nextMode} onCopy={copyResult} onNext={nextRound} onReplay={replay} />}
 
