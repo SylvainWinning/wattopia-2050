@@ -1017,6 +1017,19 @@ function FinalVerdict({
           <strong>{state.result.score}</strong>
           <span>/100</span>
         </div>
+        <div className="result-actions">
+          <button type="button" className="primary-action" onClick={onCopy}>
+            <Copy size={17} />
+            Copier mon résultat
+          </button>
+          <button type="button" className="primary-action next-round-action" onClick={onNext}>
+            <Zap size={17} />
+            Manche suivante: {missionModes[nextMode].shortTitle}
+          </button>
+          <button type="button" className="secondary-action button-reset" onClick={onReplay}>
+            Recommencer cette manche
+          </button>
+        </div>
         <div className="profile-report">
           <span>Profil opérateur</span>
           <strong>{state.strategyProfile}</strong>
@@ -1060,19 +1073,6 @@ function FinalVerdict({
             <li key={tip}>{tip}</li>
           ))}
         </ul>
-        <div className="result-actions">
-          <button type="button" className="primary-action" onClick={onCopy}>
-            <Copy size={17} />
-            Copier mon résultat
-          </button>
-          <button type="button" className="primary-action next-round-action" onClick={onNext}>
-            <Zap size={17} />
-            Manche suivante: {missionModes[nextMode].shortTitle}
-          </button>
-          <button type="button" className="secondary-action button-reset" onClick={onReplay}>
-            Recommencer cette manche
-          </button>
-        </div>
       </div>
     </section>
   );
