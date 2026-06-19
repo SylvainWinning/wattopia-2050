@@ -563,50 +563,32 @@ function MissionSelector({
   onSelect: (modeId: MissionModeId) => void;
 }) {
   return (
-    <section className="mode-select-section" aria-label="Choix de mission">
-      <div className="play-rules">
+    <section className="mode-select-section quick-start-section" aria-label="Choix de mission">
+      <div className="quick-start-card">
         <div>
-          <span>Comment gagner</span>
-          <strong>5 tours. 8 choix à chaque tour. Certains ordres sont trompeurs.</strong>
-          <p>Ton job est simple : garde les villes allumées, baisse le risque blackout, et évite les ordres séduisants qui sacrifient CO2, budget ou confiance.</p>
+          <span>Mission prête</span>
+          <strong>{missionModes[modeId].title}</strong>
+          <p>5 ordres. Effets immédiats. Garde la France allumée sans sacrifier CO2, budget ou confiance.</p>
         </div>
-        <ol aria-label="Règles rapides">
-          <li>
-            <strong>1</strong>
-            Choisis une mission
-          </li>
-          <li>
-            <strong>2</strong>
-            Lis l&apos;alerte du tour
-          </li>
-          <li>
-            <strong>3</strong>
-            Envoie un ordre
-          </li>
-          <li>
-            <strong>4</strong>
-            Regarde la France réagir
-          </li>
-        </ol>
-      </div>
-      <div className="mode-strip">
-        {modeIds.map((id) => {
-          const mode = missionModes[id];
-          const active = id === modeId;
+        <div className="mode-strip">
+          {modeIds.map((id) => {
+            const mode = missionModes[id];
+            const active = id === modeId;
 
-          return (
-            <button
-              type="button"
-              key={id}
-              className={clsx("mode-choice", active && "active")}
-              onClick={() => onSelect(id)}
-            >
-              <em>{active ? "Mission sélectionnée" : "Choisir"}</em>
-              <span>{mode.title}</span>
-              <strong>{mode.objective}</strong>
-            </button>
-          );
-        })}
+            return (
+              <button
+                type="button"
+                key={id}
+                className={clsx("mode-choice", active && "active")}
+                onClick={() => onSelect(id)}
+              >
+                <em>{active ? "Sélectionnée" : "Changer"}</em>
+                <span>{mode.shortTitle}</span>
+                <strong>{mode.objective}</strong>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -1320,11 +1302,19 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     };
   }, [triggerEasterEgg]);
 
+  const scrollToGame = (focusChoices = false) => {
+    window.requestAnimationFrame(() => {
+      const targetChoices = focusChoices && window.matchMedia("(max-width: 720px)").matches;
+      const target = targetChoices ? document.querySelector(".arcade-command-panel") : document.getElementById("mission");
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
   const startMission = () => {
     inputLockRef.current = false;
     setInputLocked(false);
     setPhase("mission");
-    document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToGame(true);
   };
 
   const startJuryDemo = () => {
@@ -1334,7 +1324,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     setSelectedActions([]);
     setPhase("mission");
     window.history.replaceState(null, "", `${window.location.pathname}?demo=1`);
-    document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToGame(true);
   };
 
   const selectMode = (nextModeId: MissionModeId) => {
@@ -1343,6 +1333,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     setModeId(nextModeId);
     setSelectedActions([]);
     setPhase("mission");
+    scrollToGame(true);
   };
 
   const chooseAction = (actionId: ActionId) => {
@@ -1376,7 +1367,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     setInputLocked(false);
     setSelectedActions([]);
     setPhase("mission");
-    document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToGame();
   };
 
   const handleBrandClick = () => {
@@ -1445,7 +1436,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     setSelectedActions([]);
     setPhase("mission");
     window.history.replaceState(null, "", `${window.location.pathname}${new URLSearchParams(window.location.search).get("demo") === "1" ? "?demo=1" : ""}`);
-    document.getElementById("mission")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToGame();
   };
 
   return (

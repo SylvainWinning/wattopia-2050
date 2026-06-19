@@ -956,7 +956,47 @@ a {
   display: grid;
   gap: 14px;
   width: min(1180px, calc(100% - 32px));
-  margin: 0 auto clamp(36px, 5vw, 62px);
+  margin: -24px auto clamp(18px, 3vw, 34px);
+}
+
+.quick-start-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.52fr) minmax(0, 1.48fr);
+  gap: 12px;
+  align-items: stretch;
+  padding: 12px;
+  border: 1px solid oklch(0.78 0.13 178 / 0.2);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, oklch(0.73 0.17 238 / 0.1), transparent 42%),
+    oklch(0.1 0.034 246 / 0.88);
+}
+
+.quick-start-card > div:first-child {
+  display: grid;
+  gap: 5px;
+  align-content: center;
+  min-width: 0;
+}
+
+.quick-start-card > div:first-child span {
+  color: var(--cyan);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.quick-start-card > div:first-child strong {
+  color: white;
+  font-size: 1.08rem;
+  line-height: 1.18;
+}
+
+.quick-start-card > div:first-child p {
+  max-width: 52ch;
+  margin: 0;
+  color: oklch(0.88 0.03 250);
+  font-size: 0.86rem;
+  line-height: 1.35;
 }
 
 .play-rules {
@@ -1035,7 +1075,7 @@ a {
 .mode-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .mode-choice,
@@ -1045,11 +1085,11 @@ a {
 
 .mode-choice {
   display: grid;
-  gap: 8px;
-  min-height: 128px;
-  padding: 18px;
+  gap: 6px;
+  min-height: 92px;
+  padding: 12px;
   border: 1px solid oklch(1 0 0 / 0.1);
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--muted);
   background: oklch(1 0 0 / 0.055);
   transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
@@ -1065,7 +1105,7 @@ a {
 
 .mode-choice span {
   color: white;
-  font-size: 1.05rem;
+  font-size: 0.96rem;
   font-weight: 820;
 }
 
@@ -1086,9 +1126,9 @@ a {
 }
 
 .mode-choice strong {
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   font-weight: 580;
-  line-height: 1.45;
+  line-height: 1.32;
 }
 
 .mission-shell,
@@ -2188,6 +2228,7 @@ a {
   display: grid;
   gap: 10px;
   padding: 12px;
+  scroll-margin-top: 78px;
 }
 
 .arcade-choice-deck {
@@ -3859,8 +3900,16 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .quick-start-card {
+    grid-template-columns: 1fr;
+  }
+
   .play-rules ol {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-start-card .mode-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .mode-strip,
@@ -4126,6 +4175,44 @@ body {
 
   .play-rules ol {
     grid-template-columns: 1fr;
+  }
+
+  .mode-select-section {
+    width: min(100% - 24px, 1180px);
+    margin-top: -12px;
+    margin-bottom: 16px;
+  }
+
+  .quick-start-card {
+    padding: 9px;
+  }
+
+  .quick-start-card > div:first-child {
+    display: none;
+  }
+
+  .quick-start-card .mode-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .quick-start-card .mode-choice {
+    min-height: 66px;
+    padding: 9px 8px;
+  }
+
+  .quick-start-card .mode-choice em {
+    padding: 3px 6px;
+    font-size: 0.62rem;
+  }
+
+  .quick-start-card .mode-choice span {
+    font-size: 0.78rem;
+    line-height: 1.1;
+  }
+
+  .quick-start-card .mode-choice strong {
+    display: none;
   }
 
   .turn-brief {
