@@ -3130,19 +3130,22 @@ a {
   left: 50%;
   bottom: 28px;
   z-index: 90;
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  align-items: center;
+  gap: 18px;
   overflow: hidden;
-  width: min(720px, calc(100vw - 32px));
-  min-height: 210px;
-  padding: 22px 178px 22px 22px;
-  border: 1px solid oklch(0.76 0.14 176 / 0.58);
-  border-radius: 18px;
+  width: min(760px, calc(100vw - 32px));
+  min-height: 226px;
+  padding: 22px;
+  border: 1px solid oklch(0.74 0.13 178 / 0.68);
+  border-radius: 16px;
   color: white;
   background:
-    radial-gradient(circle at 84% 18%, oklch(0.89 0.13 176 / 0.92), transparent 6.8rem),
-    radial-gradient(circle at 15% 110%, oklch(0.58 0.16 241 / 0.72), transparent 14rem),
-    linear-gradient(122deg, oklch(0.21 0.13 268) 0 47%, #007bc5 47% 70%, oklch(0.76 0.14 176) 70% 100%);
-  box-shadow: 0 12px 32px oklch(0.18 0.09 268 / 0.28), 0 0 0 6px oklch(0.78 0.13 178 / 0.12);
+    radial-gradient(circle at 88% 26%, oklch(0.88 0.13 176 / 0.84), transparent 7.2rem),
+    radial-gradient(circle at 8% 100%, oklch(0.48 0.16 244 / 0.78), transparent 16rem),
+    linear-gradient(124deg, oklch(0.16 0.11 267) 0 40%, #007bc5 40% 68%, oklch(0.75 0.15 169) 68% 100%);
+  box-shadow: 0 0 0 6px oklch(0.78 0.13 178 / 0.12);
   opacity: 0;
   pointer-events: none;
   transform: translateX(-50%) translateY(18px) scale(0.97);
@@ -3151,25 +3154,24 @@ a {
 
 .transition-easter-egg::before {
   position: absolute;
-  inset: -44% auto auto 50%;
-  width: 28%;
-  height: 190%;
-  background: linear-gradient(180deg, oklch(1 0 0 / 0.46), oklch(1 0 0 / 0.08));
+  inset: -46% auto auto 47%;
+  width: 20%;
+  height: 210%;
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.52), oklch(1 0 0 / 0.06));
   content: "";
-  transform: rotate(24deg);
+  transform: rotate(24deg) translateX(-8px);
 }
 
 .transition-easter-egg::after {
   position: absolute;
-  right: 31px;
-  bottom: 31px;
-  width: 100px;
-  height: 58px;
-  border: 4px solid oklch(1 0 0 / 0.55);
-  border-top: 0;
-  border-radius: 0 0 999px 999px;
+  right: -36px;
+  top: -36px;
+  width: 180px;
+  height: 180px;
+  border: 1px solid oklch(1 0 0 / 0.24);
+  border-radius: 999px;
   content: "";
-  opacity: 0.82;
+  opacity: 0.68;
 }
 
 .transition-easter-egg.visible {
@@ -3178,29 +3180,36 @@ a {
   animation: easter-pop 760ms var(--ease-out-quint) both;
 }
 
+.easter-copy {
+  position: relative;
+  z-index: 3;
+  min-width: 0;
+}
+
 .easter-badge {
   position: relative;
   z-index: 3;
   display: inline-flex;
-  gap: 7px;
+  gap: 8px;
   align-items: center;
   width: fit-content;
-  margin-bottom: 11px;
-  padding: 8px 11px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
   border-radius: 999px;
   color: #182663;
   background: white;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 900;
+  box-shadow: 0 0 0 1px oklch(1 0 0 / 0.22);
 }
 
 .transition-easter-egg strong {
   position: relative;
   z-index: 3;
   display: block;
-  max-width: 15ch;
+  max-width: 17ch;
   color: white;
-  font-size: clamp(1.75rem, 4vw, 2.72rem);
+  font-size: clamp(1.85rem, 4.8vw, 3rem);
   line-height: 0.98;
   text-wrap: balance;
 }
@@ -3209,11 +3218,16 @@ a {
   position: relative;
   z-index: 3;
   max-width: 46ch;
-  margin: 12px 0 14px;
+  margin: 12px 0 12px;
   color: oklch(0.95 0.028 224);
-  font-size: 1rem;
+  font-size: 1.02rem;
   font-weight: 720;
   line-height: 1.32;
+}
+
+.transition-easter-egg p b {
+  color: white;
+  font-weight: 940;
 }
 
 .transition-easter-egg em {
@@ -3222,9 +3236,40 @@ a {
   display: block;
   max-width: 48ch;
   color: oklch(0.94 0.035 220);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-style: normal;
   font-weight: 680;
+}
+
+.easter-flex-meter {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  width: min(330px, 100%);
+  height: 32px;
+  margin: 0 0 12px;
+  padding: 4px;
+  border: 1px solid oklch(1 0 0 / 0.18);
+  border-radius: 999px;
+  background: oklch(0.07 0.05 252 / 0.54);
+}
+
+.easter-flex-meter span {
+  display: block;
+  width: 28%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #007bc5, oklch(0.77 0.14 169));
+  box-shadow: 0 0 18px oklch(0.76 0.14 176 / 0.58);
+}
+
+.easter-flex-meter em {
+  position: absolute;
+  right: 10px;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 950;
 }
 
 .easter-letter-row {
@@ -3232,7 +3277,7 @@ a {
   z-index: 3;
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .easter-letter-row span {
@@ -3249,17 +3294,25 @@ a {
   box-shadow: 0 0 16px oklch(0.78 0.13 178 / 0.24);
 }
 
+.easter-stage {
+  position: relative;
+  z-index: 2;
+  height: 178px;
+  min-width: 176px;
+}
+
 .easter-smile {
   position: absolute;
-  right: 52px;
-  top: 54px;
+  right: 16px;
+  top: 36px;
   z-index: 1;
-  width: 112px;
-  height: 112px;
+  width: 124px;
+  height: 124px;
   border-radius: 999px;
   background:
     radial-gradient(circle at 35% 38%, white 0 7px, transparent 8px),
-    radial-gradient(circle at 66% 38%, white 0 7px, transparent 8px);
+    radial-gradient(circle at 66% 38%, white 0 7px, transparent 8px),
+    radial-gradient(circle at 50% 50%, oklch(1 0 0 / 0.12), transparent 60%);
   opacity: 0.92;
 }
 
@@ -3277,14 +3330,55 @@ a {
 
 .easter-bolt {
   position: absolute;
-  right: 155px;
-  top: 25px;
+  left: 0;
+  top: 2px;
   z-index: 1;
-  width: 98px;
-  height: 168px;
-  background: oklch(1 0 0 / 0.2);
+  width: 112px;
+  height: 180px;
+  background: oklch(1 0 0 / 0.23);
   clip-path: polygon(48% 0, 100% 0, 65% 42%, 90% 42%, 24% 100%, 42% 55%, 14% 55%);
   transform: rotate(12deg);
+}
+
+.easter-candles {
+  position: absolute;
+  left: 18px;
+  bottom: 4px;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.easter-candles span {
+  position: relative;
+  display: block;
+  width: 12px;
+  height: 34px;
+  border-radius: 5px 5px 2px 2px;
+  background: oklch(1 0 0 / 0.9);
+  box-shadow: inset 0 -10px 0 oklch(0.86 0.08 95 / 0.26);
+}
+
+.easter-candles span:nth-child(2) {
+  height: 27px;
+}
+
+.easter-candles span:nth-child(3) {
+  height: 31px;
+}
+
+.easter-candles span::before {
+  position: absolute;
+  left: 3px;
+  top: -13px;
+  width: 7px;
+  height: 11px;
+  border-radius: 999px 999px 999px 0;
+  background: oklch(0.86 0.17 80);
+  box-shadow: 0 0 12px oklch(0.86 0.17 80 / 0.9);
+  content: "";
+  transform: rotate(42deg);
 }
 
 .transition-easter-egg i {
@@ -3299,19 +3393,19 @@ a {
 }
 
 .transition-easter-egg i:nth-of-type(1) {
-  right: 166px;
-  top: 28px;
+  right: 172px;
+  top: 24px;
 }
 
 .transition-easter-egg i:nth-of-type(2) {
-  right: 40px;
-  top: 38px;
+  right: 48px;
+  top: 34px;
   background: white;
 }
 
 .transition-easter-egg i:nth-of-type(3) {
   right: 144px;
-  bottom: 33px;
+  bottom: 30px;
   background: #007bc5;
 }
 
@@ -3671,6 +3765,50 @@ a {
   }
 }
 
+.transition-easter-egg.visible .easter-flex-meter span {
+  animation: easter-meter-charge 820ms var(--ease-out-quint) 260ms both;
+}
+
+.transition-easter-egg.visible .easter-letter-row span {
+  animation: easter-letter-pop 520ms var(--ease-out-quint) both;
+}
+
+.transition-easter-egg.visible .easter-letter-row span:nth-child(1) {
+  animation-delay: 360ms;
+}
+
+.transition-easter-egg.visible .easter-letter-row span:nth-child(2) {
+  animation-delay: 420ms;
+}
+
+.transition-easter-egg.visible .easter-letter-row span:nth-child(3) {
+  animation-delay: 480ms;
+}
+
+.transition-easter-egg.visible .easter-letter-row span:nth-child(4) {
+  animation-delay: 540ms;
+}
+
+.transition-easter-egg.visible .easter-letter-row span:nth-child(5) {
+  animation-delay: 600ms;
+}
+
+.transition-easter-egg.visible .easter-smile {
+  animation: easter-smile-wink 860ms var(--ease-out-quint) 640ms both;
+}
+
+.transition-easter-egg.visible .easter-candles span::before {
+  animation: candle-out 620ms var(--ease-out-quint) 1040ms forwards;
+}
+
+.transition-easter-egg.visible .easter-candles span:nth-child(2)::before {
+  animation-delay: 1160ms;
+}
+
+.transition-easter-egg.visible .easter-candles span:nth-child(3)::before {
+  animation-delay: 1280ms;
+}
+
 .transition-easter-egg.visible i {
   animation: easter-dot 980ms var(--ease-out-quint) 120ms both;
 }
@@ -3699,11 +3837,79 @@ a {
   }
 }
 
+@keyframes easter-meter-charge {
+  0% {
+    width: 28%;
+    filter: brightness(0.95);
+  }
+
+  68% {
+    width: 86%;
+    filter: brightness(1.28);
+  }
+
+  100% {
+    width: 78%;
+    filter: brightness(1.08);
+  }
+}
+
+@keyframes easter-letter-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.74);
+  }
+
+  62% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.08);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes easter-smile-wink {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  42% {
+    transform: scale(1.04) rotate(-2deg);
+  }
+
+  62% {
+    transform: scale(0.98) rotate(1deg);
+  }
+}
+
+@keyframes candle-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(42deg);
+  }
+
+  50% {
+    opacity: 0.75;
+    transform: translateY(-5px) scale(1.25) rotate(28deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-11px) scale(0.18) rotate(12deg);
+  }
+}
+
 @media (max-width: 720px) {
   .transition-easter-egg {
     bottom: 14px;
-    min-height: 184px;
-    padding: 18px 126px 18px 16px;
+    grid-template-columns: minmax(0, 1fr) 104px;
+    gap: 10px;
+    min-height: 196px;
+    padding: 16px;
     border-radius: 15px;
   }
 
@@ -3713,19 +3919,25 @@ a {
   }
 
   .transition-easter-egg p {
-    max-width: 24ch;
+    max-width: 27ch;
     margin: 9px 0 11px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
   }
 
   .transition-easter-egg em {
-    max-width: 24ch;
+    max-width: 27ch;
     font-size: 0.68rem;
   }
 
   .easter-badge {
     padding: 7px 9px;
     font-size: 0.68rem;
+  }
+
+  .easter-flex-meter {
+    width: min(220px, 100%);
+    height: 28px;
+    margin-bottom: 9px;
   }
 
   .easter-letter-row {
@@ -3740,26 +3952,42 @@ a {
     font-size: 0.72rem;
   }
 
+  .easter-stage {
+    height: 154px;
+    min-width: 94px;
+  }
+
   .easter-smile {
-    right: 22px;
-    top: 52px;
-    width: 86px;
-    height: 86px;
+    right: 0;
+    top: 45px;
+    width: 78px;
+    height: 78px;
   }
 
   .easter-smile::after {
-    left: 18px;
-    right: 18px;
-    bottom: 19px;
-    height: 28px;
+    left: 16px;
+    right: 16px;
+    bottom: 17px;
+    height: 25px;
     border-width: 4px;
   }
 
   .easter-bolt {
-    right: 104px;
-    top: 28px;
-    width: 66px;
-    height: 128px;
+    left: -2px;
+    top: 16px;
+    width: 58px;
+    height: 118px;
+  }
+
+  .easter-candles {
+    left: 4px;
+    bottom: 1px;
+    gap: 6px;
+  }
+
+  .easter-candles span {
+    width: 10px;
+    height: 28px;
   }
 }
 

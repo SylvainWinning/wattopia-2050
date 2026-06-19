@@ -1603,20 +1603,35 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
       )}
 
       <div id="transition-easter-egg" className="transition-easter-egg" aria-hidden="true">
-        <div className="easter-badge">
-          <Sparkles size={16} />
-          Clin d&apos;œil sponsor déverrouillé
+        <div className="easter-copy">
+          <div className="easter-badge">
+            <Sparkles size={16} />
+            Clin d&apos;œil ENGIE
+          </div>
+          <strong>Mode bleu-vert activé.</strong>
+          <p>
+            <b>+3 MW de flexibilité.</b> Stress réseau en baisse. BLACKOUT range les bougies.
+          </p>
+          <div className="easter-flex-meter">
+            <span />
+            <em>+3 MW</em>
+          </div>
+          <div className="easter-letter-row" aria-hidden="true">
+            {["E", "N", "G", "I", "E"].map((letter, index) => (
+              <span key={`${letter}-${index}`}>{letter}</span>
+            ))}
+          </div>
+          <em>Bonus non officiel, version hackathon. Bleu énergie, vert transition.</em>
         </div>
-        <strong>Le réseau passe au bleu-vert.</strong>
-        <p>Flexibilité +3 MW. Sourire opérateur +100. Blackout un peu moins dramatique.</p>
-        <div className="easter-letter-row" aria-hidden="true">
-          {["E", "N", "G", "I", "E"].map((letter, index) => (
-            <span key={`${letter}-${index}`}>{letter}</span>
-          ))}
+        <div className="easter-stage" aria-hidden="true">
+          <div className="easter-smile" />
+          <div className="easter-bolt" />
+          <div className="easter-candles">
+            <span />
+            <span />
+            <span />
+          </div>
         </div>
-        <em>Promis, ce n&apos;est pas officiel. Juste un petit sourire de transition.</em>
-        <div className="easter-smile" />
-        <div className="easter-bolt" />
         <i />
         <i />
         <i />
