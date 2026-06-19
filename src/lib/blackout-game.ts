@@ -825,9 +825,9 @@ export const missionModes: Record<MissionModeId, MissionMode> = {
       scene(
         "20:04",
         "Les citoyens réagissent",
-        "L'alerte est comprise, mais les usages ne baissent pas partout. La confiance peut sauver ou casser la fin de mission.",
-        "lille",
-        "Cellule communication: un ordre trop brutal peut stabiliser le réseau et perdre l'adhésion.",
+        "L'alerte est comprise, mais les usages ne baissent pas partout. Marseille reste le point chaud du réseau sud-est.",
+        "marseille",
+        "Cellule communication: un ordre trop brutal peut stabiliser le réseau et perdre l'adhésion autour de Marseille.",
         {
           title: "Signal sobriété reçu",
           text: "Les usages baissent dans une partie des foyers.",
@@ -839,7 +839,7 @@ export const missionModes: Record<MissionModeId, MissionMode> = {
             title: "Alerte claire et limitée",
             description: "Demander un effort daté, visible, expliqué, sans menace.",
             tactical: "Bonne pédagogie, effet modéré.",
-            protect: ["paris", "lille"],
+            protect: ["paris", "marseille"],
             effect: { stability: 13, co2Score: 11, budget: 8, citizenTrust: 1, blackoutRisk: -12, lightsOn: 7 },
           },
           {
@@ -855,7 +855,7 @@ export const missionModes: Record<MissionModeId, MissionMode> = {
             title: "Acheter une marge sociale",
             description: "Payer très cher pour éviter une nouvelle demande aux habitants.",
             tactical: "Confort préservé, budget secoué.",
-            protect: ["paris", "strasbourg", "lille"],
+            protect: ["paris", "strasbourg", "marseille"],
             effect: { stability: 18, co2Score: -4, budget: -20, citizenTrust: 2, blackoutRisk: -15, lightsOn: 10 },
           },
         ],
