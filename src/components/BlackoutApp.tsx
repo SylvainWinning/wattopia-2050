@@ -23,11 +23,14 @@ import {
   Sparkles,
   TimerReset,
   Trophy,
+  Volume2,
+  VolumeX,
   Waves,
   Zap,
   type LucideIcon,
 } from "lucide-react";
 import clsx from "clsx";
+import { BlackoutAudioEngine, type BlackoutSoundCue } from "@/lib/blackout-audio";
 import { fetchLiveMixSnapshot } from "@/lib/fetch-live-mix";
 import { franceCorsicaPoints, franceMainlandPoints, franceRegionLines, pointsToSvgPath } from "@/lib/france-map-geometry";
 import type { LiveMixSnapshot } from "@/lib/live-mix";
@@ -51,6 +54,8 @@ import {
 } from "@/lib/blackout-game";
 
 type Phase = "intro" | "mission" | "result";
+
+const soundPreferenceKey = "blackout-sound-enabled";
 
 type France3DMapProps = {
   state: MissionState;
@@ -148,6 +153,18 @@ function effectEntries(effect: MetricEffect) {
 function effectIsGood(key: keyof MissionMetrics, value: number) {
   if (key === "blackoutRisk") return value < 0;
   return value > 0;
+}
+
+function soundForChoice(choice: CrisisChoice): BlackoutSoundCue {
+  const entries = effectEntries(choice.effect);
+  const goodSignals = entries.filter(({ key, value }) => effectIsGood(key, value)).length;
+  return choice.trap || goodSignals < entries.length / 2 ? "choice-risk" : "choice-good";
+}
+
+function soundForResult(kind: MissionState["result"]["kind"]): BlackoutSoundCue {
+  if (kind === "stable") return "win";
+  if (kind === "partial") return "partial";
+  return "blackout";
 }
 
 function choiceHint(choice: CrisisChoice, action: MissionAction) {
@@ -1216,7 +1233,11 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   const [toast, setToast] = useState("Résultat copié");
   const [shareFallbackText, setShareFallbackText] = useState("");
   const [inputLocked, setInputLocked] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const inputLockRef = useRef(false);
+  const audioRef = useRef<BlackoutAudioEngine | null>(null);
+  const resultSoundPlayedRef = useRef(false);
+  const restoredResultRef = useRef(false);
   const easterSequenceRef = useRef("");
   const easterTimerRef = useRef<number | null>(null);
   const logoTapRef = useRef({ count: 0, timer: 0 });
@@ -1234,18 +1255,45 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
 
   const missionState = useMemo(() => simulateMission(modeId, selectedActions, snapshot), [modeId, selectedActions, snapshot]);
 
+  const playSound = useCallback(
+    (cue: BlackoutSoundCue, volume = 0.55) => {
+      if (!soundEnabled) return;
+      audioRef.current ??= new BlackoutAudioEngine();
+      void audioRef.current.play(cue, volume);
+    },
+    [soundEnabled],
+  );
+
+  const toggleSound = () => {
+    setSoundEnabled((enabled) => {
+      const nextEnabled = !enabled;
+      try {
+        window.localStorage.setItem(soundPreferenceKey, nextEnabled ? "1" : "0");
+      } catch {
+        // Local storage is optional; the control still works for the current session.
+      }
+      if (nextEnabled) {
+        audioRef.current ??= new BlackoutAudioEngine();
+        void audioRef.current.play("arm", 0.38);
+      }
+      showToast(nextEnabled ? "Son BLACKOUT activé" : "Son BLACKOUT coupé");
+      return nextEnabled;
+    });
+  };
+
   const triggerEasterEgg = useCallback(() => {
     const appNode = document.querySelector(".blackout-app");
     const easterNode = document.getElementById("transition-easter-egg");
     appNode?.classList.add("easter-transition");
     easterNode?.classList.add("visible");
     showToast("Rayon flexible activé");
+    playSound("easter", 0.42);
     if (easterTimerRef.current) window.clearTimeout(easterTimerRef.current);
     easterTimerRef.current = window.setTimeout(() => {
       appNode?.classList.remove("easter-transition");
       easterNode?.classList.remove("visible");
     }, 4200);
-  }, [showToast]);
+  }, [playSound, showToast]);
 
   const loadSnapshot = useCallback(async () => {
     setLoading(true);
@@ -1260,6 +1308,22 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   }, []);
 
   useEffect(() => {
+    const preferenceTimer = window.setTimeout(() => {
+      try {
+        setSoundEnabled(window.localStorage.getItem(soundPreferenceKey) !== "0");
+      } catch {
+        setSoundEnabled(true);
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(preferenceTimer);
+      audioRef.current?.close();
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
     const restoreTimer = window.setTimeout(() => {
       const params = new URLSearchParams(window.location.search);
       const restoredMode = parseMode(params.get("mode"));
@@ -1267,6 +1331,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
       setModeId(restoredMode);
       setSelectedActions(restoredActions);
       if (restoredActions.length >= MAX_DECISIONS || params.get("result")) {
+        restoredResultRef.current = true;
         setPhase("result");
       }
     }, 0);
@@ -1283,12 +1348,18 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   useEffect(() => {
     if (phase !== "result") return;
 
+    if (!restoredResultRef.current && !resultSoundPlayedRef.current) {
+      resultSoundPlayedRef.current = true;
+      playSound(soundForResult(missionState.result.kind), missionState.result.kind === "blackout" ? 0.52 : 0.58);
+    }
+    restoredResultRef.current = false;
+
     const scrollTimer = window.setTimeout(() => {
       document.getElementById("resultat")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 40);
 
     return () => window.clearTimeout(scrollTimer);
-  }, [phase]);
+  }, [missionState.result.kind, phase, playSound]);
 
   useEffect(() => {
     const logoTapState = logoTapRef.current;
@@ -1331,6 +1402,8 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   const startMission = () => {
     inputLockRef.current = false;
     setInputLocked(false);
+    resultSoundPlayedRef.current = false;
+    playSound("arm", 0.42);
     setPhase("mission");
     scrollToGame(true);
   };
@@ -1340,6 +1413,8 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     setInputLocked(false);
     setModeId(nextModeId);
     setSelectedActions([]);
+    resultSoundPlayedRef.current = false;
+    playSound("arm", 0.38);
     setPhase("mission");
     scrollToGame(true);
   };
@@ -1358,6 +1433,8 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
       }
 
       const nextActions = [...currentActions, actionId];
+      const sceneChoice = missionState.activeScene?.choices.find((choice) => choice.id === actionId);
+      if (sceneChoice) playSound(soundForChoice(sceneChoice), 0.5);
       window.setTimeout(() => {
         if (nextActions.length >= MAX_DECISIONS) {
           setPhase("result");
@@ -1376,6 +1453,8 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     setShareFallbackText("");
     hideToast();
     setSelectedActions([]);
+    resultSoundPlayedRef.current = false;
+    playSound("arm", 0.34);
     setPhase("mission");
     replacePlayUrl(modeId);
     scrollToGame();
@@ -1397,6 +1476,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   };
 
   const copyResult = async () => {
+    playSound("copy", 0.35);
     const params = new URLSearchParams();
     params.set("mode", modeId);
     params.set("score", String(missionState.result.score));
@@ -1447,9 +1527,16 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     hideToast();
     setModeId(nextMode);
     setSelectedActions([]);
+    resultSoundPlayedRef.current = false;
+    playSound("arm", 0.36);
     setPhase("mission");
     replacePlayUrl(nextMode);
     scrollToGame();
+  };
+
+  const finishMission = () => {
+    if (phase === "result") return;
+    setPhase("result");
   };
 
   return (
@@ -1469,6 +1556,16 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
         </nav>
         <button type="button" className="header-cta control-action" onClick={startMission}>
           Prendre le contrôle
+        </button>
+        <button
+          type="button"
+          className={clsx("icon-button sound-toggle", soundEnabled && "sound-on")}
+          onClick={toggleSound}
+          aria-pressed={soundEnabled}
+          aria-label={soundEnabled ? "Couper le son" : "Activer le son"}
+          title={soundEnabled ? "Couper le son" : "Activer le son"}
+        >
+          {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
         </button>
       </header>
 
@@ -1491,7 +1588,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
           loading={loading}
           inputLocked={inputLocked}
           onChoose={chooseAction}
-          onFinish={() => setPhase("result")}
+          onFinish={finishMission}
         />
       )}
 

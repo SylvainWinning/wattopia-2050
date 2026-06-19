@@ -261,6 +261,28 @@ a {
   opacity: 0.62;
 }
 
+.sound-toggle {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.sound-toggle::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--faint);
+  box-shadow: 0 0 0 2px white;
+}
+
+.sound-toggle.sound-on::after {
+  background: var(--blackout-teal);
+  box-shadow: 0 0 0 2px white, 0 0 12px oklch(0.74 0.13 176 / 0.72);
+}
+
 .blackout-hero {
   position: relative;
   display: grid;
