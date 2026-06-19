@@ -60,6 +60,7 @@ const soundPreferenceKey = "blackout-sound-enabled";
 type France3DMapProps = {
   state: MissionState;
   compact?: boolean;
+  boostActive?: boolean;
   onReady?: () => void;
 };
 
@@ -448,10 +449,12 @@ function FranceHybridMap({
   state,
   compact = false,
   enable3D = true,
+  boostActive = false,
 }: {
   state: MissionState;
   compact?: boolean;
   enable3D?: boolean;
+  boostActive?: boolean;
 }) {
   const [threeReady, setThreeReady] = useState(false);
   const [canRender3D, setCanRender3D] = useState(false);
@@ -488,7 +491,7 @@ function FranceHybridMap({
       </div>
       {show3D && (
         <div className={clsx("france-map-3d-layer", threeReady && "ready")}>
-          <France3DMap state={state} compact={compact} onReady={() => setThreeReady(true)} />
+          <France3DMap state={state} compact={compact} boostActive={boostActive} onReady={() => setThreeReady(true)} />
         </div>
       )}
     </div>
@@ -500,6 +503,7 @@ function Hero({
   snapshot,
   loading,
   enable3D,
+  boostActive,
   onStart,
   onRefresh,
 }: {
@@ -507,6 +511,7 @@ function Hero({
   snapshot: LiveMixSnapshot | null;
   loading: boolean;
   enable3D: boolean;
+  boostActive: boolean;
   onStart: () => void;
   onRefresh: () => void;
 }) {
@@ -553,7 +558,7 @@ function Hero({
         <p className="data-note">{buildMissionFromSnapshot(snapshot)}</p>
       </div>
       <div className="hero-stage">
-        <FranceHybridMap state={state} enable3D={enable3D} />
+        <FranceHybridMap state={state} enable3D={enable3D} boostActive={boostActive} />
         <div className="rank-console">
           <span>Grade potentiel</span>
           <strong>{state.gameRank}</strong>
@@ -931,6 +936,7 @@ function MissionExperience({
   onChoose,
   onFinish,
   inputLocked,
+  boostActive,
 }: {
   state: MissionState;
   phase: Phase;
@@ -939,6 +945,7 @@ function MissionExperience({
   onChoose: (actionId: ActionId) => void;
   onFinish: () => void;
   inputLocked: boolean;
+  boostActive: boolean;
 }) {
   const isComplete = state.selectedActions.length >= MAX_DECISIONS;
   const currentTurn = Math.min(state.selectedActions.length + 1, MAX_DECISIONS);
@@ -966,7 +973,7 @@ function MissionExperience({
       <ArcadeStatusBar state={state} currentTurn={currentTurn} />
       <div className="arcade-layout">
         <div className="arcade-map-panel">
-          <FranceHybridMap state={state} enable3D={phase === "mission"} />
+          <FranceHybridMap state={state} enable3D={phase === "mission"} boostActive={boostActive} />
           <div className="arcade-map-caption">
             <strong>{state.metrics.lightsOn}% du réseau allumé</strong>
             <span>{state.decisionsRemaining} ordre{state.decisionsRemaining > 1 ? "s" : ""} restant{state.decisionsRemaining > 1 ? "s" : ""}</span>
@@ -992,12 +999,14 @@ function FinalVerdict({
   onCopy,
   onNext,
   onReplay,
+  boostActive,
 }: {
   state: MissionState;
   nextMode: MissionModeId;
   onCopy: () => void;
   onNext: () => void;
   onReplay: () => void;
+  boostActive: boolean;
 }) {
   const fragileCities = gridCities.filter((city) => state.cityStates[city.id] === "fragile").map((city) => city.name);
   const offCities = gridCities.filter((city) => state.cityStates[city.id] === "off").map((city) => city.name);
@@ -1014,7 +1023,7 @@ function FinalVerdict({
           <span />
           <strong>{state.result.kind === "stable" ? "VICTOIRE" : state.result.kind === "partial" ? "SAUVETAGE PARTIEL" : "BLACKOUT"}</strong>
         </div>
-        <FranceHybridMap state={state} compact />
+        <FranceHybridMap state={state} compact boostActive={boostActive} />
       </div>
       <div className="result-copy">
         <span>Verdict final</span>
@@ -1227,10 +1236,12 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   const [shareFallbackText, setShareFallbackText] = useState("");
   const [inputLocked, setInputLocked] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [easterBoostActive, setEasterBoostActive] = useState(false);
   const inputLockRef = useRef(false);
   const audioRef = useRef<BlackoutAudioEngine | null>(null);
   const resultSoundPlayedRef = useRef(false);
   const restoredResultRef = useRef(false);
+  const queryEasterPlayedRef = useRef(false);
   const easterSequenceRef = useRef("");
   const easterTimerRef = useRef<number | null>(null);
   const logoTapRef = useRef({ count: 0, timer: 0 });
@@ -1274,14 +1285,16 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     });
   };
 
-  const triggerEasterEgg = useCallback(() => {
+  const triggerEasterEgg = useCallback((withSound = true) => {
     const appNode = document.querySelector(".blackout-app");
     const easterNode = document.getElementById("transition-easter-egg");
+    setEasterBoostActive(true);
     appNode?.classList.add("easter-transition");
     easterNode?.classList.add("visible");
-    playSound("easter", 0.52);
+    if (withSound) playSound("easter", 0.52);
     if (easterTimerRef.current) window.clearTimeout(easterTimerRef.current);
     easterTimerRef.current = window.setTimeout(() => {
+      setEasterBoostActive(false);
       appNode?.classList.remove("easter-transition");
       easterNode?.classList.remove("visible");
     }, 6800);
@@ -1330,12 +1343,20 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     const refreshTimer = window.setTimeout(() => {
       void loadSnapshot();
     }, 0);
+    const qaTimer = window.setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("qa") === "easter-53fb07a" && !queryEasterPlayedRef.current) {
+        queryEasterPlayedRef.current = true;
+        triggerEasterEgg(false);
+      }
+    }, 900);
 
     return () => {
       window.clearTimeout(restoreTimer);
       window.clearTimeout(refreshTimer);
+      window.clearTimeout(qaTimer);
     };
-  }, [loadSnapshot]);
+  }, [loadSnapshot, triggerEasterEgg]);
 
   useEffect(() => {
     if (phase !== "result") return;
@@ -1532,7 +1553,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
   };
 
   return (
-    <main className={clsx("blackout-app", `app-mode-${modeId}`, `app-phase-${phase}`)}>
+    <main className={clsx("blackout-app", `app-mode-${modeId}`, `app-phase-${phase}`, easterBoostActive && "easter-boost-active")}>
       <header className="app-header">
         <a href="#top" className="brand-lockup" aria-label="BLACKOUT" onPointerDown={handleBrandClick}>
           <span>
@@ -1566,6 +1587,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
         snapshot={snapshot}
         loading={loading}
         enable3D={phase === "intro"}
+        boostActive={easterBoostActive}
         onRefresh={loadSnapshot}
         onStart={startMission}
       />
@@ -1579,12 +1601,13 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
           snapshot={snapshot}
           loading={loading}
           inputLocked={inputLocked}
+          boostActive={easterBoostActive}
           onChoose={chooseAction}
           onFinish={finishMission}
         />
       )}
 
-      {phase === "result" && <FinalVerdict state={missionState} nextMode={nextMode} onCopy={copyResult} onNext={nextRound} onReplay={replay} />}
+      {phase === "result" && <FinalVerdict state={missionState} nextMode={nextMode} boostActive={easterBoostActive} onCopy={copyResult} onNext={nextRound} onReplay={replay} />}
 
       <LiveDataPanel snapshot={snapshot} loading={loading} onRefresh={loadSnapshot} />
       <EducationSection />

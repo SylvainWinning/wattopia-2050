@@ -10,6 +10,7 @@ import { gridCities, gridEdges, type CityState, type GridCity, type MissionState
 type France3DMapProps = {
   state: MissionState;
   compact?: boolean;
+  boostActive?: boolean;
   onReady?: () => void;
 };
 
@@ -188,6 +189,63 @@ function FlowDot({ curve, color, phase, speed }: { curve: THREE.QuadraticBezierC
   );
 }
 
+function FlexBeam({ city, index }: { city: GridCity; index: number }) {
+  const color = index % 2 === 0 ? mapPalette.transitionMint : mapPalette.energyBlue;
+  const curve = useMemo(() => {
+    const start = toScenePoint(city.x, city.y, city.id === "lille" ? 0.7 : 0.88);
+    const end = toScenePoint(51.4, 44.2, 1.42);
+    const mid = start.clone().lerp(end, 0.5);
+    mid.z += 0.42 + start.distanceTo(end) * 0.055;
+    return new THREE.QuadraticBezierCurve3(start, mid, end);
+  }, [city]);
+  const geometry = useMemo(() => new THREE.TubeGeometry(curve, 36, 0.011, 6, false), [curve]);
+
+  return (
+    <group>
+      <mesh geometry={geometry} renderOrder={24}>
+        <meshBasicMaterial color={color} transparent opacity={0.62} depthTest={false} />
+      </mesh>
+      <FlowDot curve={curve} color={color} phase={index * 0.17} speed={0.78} />
+    </group>
+  );
+}
+
+function FlexReserveCore({ active, risk }: { active: boolean; risk: number }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const ringRef = useRef<THREE.Mesh>(null);
+  const coreColor = risk > 64 ? mapPalette.amber : mapPalette.transitionMint;
+
+  useFrame(({ clock }) => {
+    if (!groupRef.current) return;
+    const tempo = active ? 1 : 0.35;
+    groupRef.current.rotation.z = clock.elapsedTime * 0.42;
+    groupRef.current.rotation.y = Math.sin(clock.elapsedTime * 0.7) * 0.18;
+    groupRef.current.position.z = 1.38 + Math.sin(clock.elapsedTime * 2.1) * 0.055 * tempo;
+    if (ringRef.current) {
+      const scale = active ? 1.08 + Math.sin(clock.elapsedTime * 4.2) * 0.12 : 0.92;
+      ringRef.current.scale.setScalar(scale);
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={toScenePoint(51.4, 44.2, 1.38)} renderOrder={26}>
+      <mesh renderOrder={26}>
+        <icosahedronGeometry args={[0.22, 1]} />
+        <meshStandardMaterial color={coreColor} emissive={coreColor} emissiveIntensity={active ? 2.9 : 1.1} roughness={0.2} metalness={0.46} depthTest={false} />
+      </mesh>
+      <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]} renderOrder={27}>
+        <torusGeometry args={[0.52, active ? 0.014 : 0.009, 10, 72]} />
+        <meshBasicMaterial color={coreColor} transparent opacity={active ? 0.82 : 0.28} depthTest={false} />
+      </mesh>
+      <mesh rotation={[0.9, 0.2, 0.7]} renderOrder={27}>
+        <torusGeometry args={[0.38, 0.008, 8, 56]} />
+        <meshBasicMaterial color={mapPalette.energyBlue} transparent opacity={active ? 0.72 : 0.2} depthTest={false} />
+      </mesh>
+      <pointLight position={[0, 0, 0.42]} intensity={active ? 5.6 : 1.2} color={coreColor} distance={3.2} />
+    </group>
+  );
+}
+
 function CityNode({ city, state, active }: { city: GridCity; state: CityState; active: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
   const color = cityColor(state);
@@ -307,10 +365,11 @@ function BatteryStorageField({ state }: { state: MissionState }) {
   );
 }
 
-function HologramScene({ state }: { state: MissionState }) {
+function HologramScene({ state, boostActive }: { state: MissionState; boostActive: boolean }) {
   const tone = classifyRisk(state);
   const cityById = new Map(gridCities.map((city) => [city.id, city]));
   const activeCity = state.activeScene?.cityId;
+  const boostedCities = gridCities.filter((city) => city.id === "paris" || city.id === "lyon" || city.id === "marseille");
 
   return (
     <>
@@ -332,17 +391,19 @@ function HologramScene({ state }: { state: MissionState }) {
           <CityNode key={city.id} city={city} state={state.cityStates[city.id] ?? "fragile"} active={activeCity === city.id} />
         ))}
         <BatteryStorageField state={state} />
+        <FlexReserveCore active={boostActive} risk={state.metrics.blackoutRisk} />
+        {boostActive && boostedCities.map((city, index) => <FlexBeam key={`boost-${city.id}`} city={city} index={index} />)}
       </group>
     </>
   );
 }
 
-export function France3DMap({ state, compact = false, onReady }: France3DMapProps) {
+export function France3DMap({ state, compact = false, boostActive = false, onReady }: France3DMapProps) {
   const batteryCount = state.selectedActions.filter((action) => action.id === "batteries").length;
   const latestBattery = state.steps.at(-1)?.choice.id === "batteries";
 
   return (
-    <div className={clsx("france-3d-map", compact && "compact", batteryCount > 0 && "storage-online", latestBattery && "storage-pulse", `hologram-${classifyRisk(state)}`)} aria-hidden="true">
+    <div className={clsx("france-3d-map", compact && "compact", batteryCount > 0 && "storage-online", latestBattery && "storage-pulse", boostActive && "flex-boost-online", `hologram-${classifyRisk(state)}`)} aria-hidden="true">
       <Canvas
         dpr={[1, 1.75]}
         camera={{ position: [0, -0.35, 9.4], fov: 43, near: 0.1, far: 40 }}
@@ -352,7 +413,7 @@ export function France3DMap({ state, compact = false, onReady }: France3DMapProp
           onReady?.();
         }}
       >
-        <HologramScene state={state} />
+        <HologramScene state={state} boostActive={boostActive} />
       </Canvas>
       <div className="france-3d-labels" aria-hidden="true">
         {gridCities.map((city) => {
@@ -377,6 +438,12 @@ export function France3DMap({ state, compact = false, onReady }: France3DMapProp
         <div className="storage-readout">
           <span>Stockage actif</span>
           <strong>{latestBattery ? "Décharge en cours" : `${Math.max(1, 4 - Math.min(3, batteryCount - 1))}/4 cellules`}</strong>
+        </div>
+      )}
+      {boostActive && (
+        <div className="flex-core-readout">
+          <span>Noyau flexibilité</span>
+          <strong>+3 MW injectés</strong>
         </div>
       )}
     </div>

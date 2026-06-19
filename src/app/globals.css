@@ -583,7 +583,61 @@ a {
 }
 
 .france-3d-map.storage-pulse .storage-readout {
-  animation: storage-readout-pop 520ms var(--ease-out);
+  animation: storage-readout-pop 520ms var(--ease-out-quint);
+}
+
+.france-3d-map.flex-boost-online {
+  background:
+    radial-gradient(circle at 52% 42%, oklch(0.86 0.14 176 / 0.24), transparent 14rem),
+    radial-gradient(circle at 44% 48%, oklch(0.58 0.16 241 / 0.22), transparent 16rem),
+    linear-gradient(145deg, oklch(0.045 0.026 250), oklch(0.14 0.05 238));
+}
+
+.france-3d-map.flex-boost-online::before {
+  content: "";
+  position: absolute;
+  inset: 9%;
+  z-index: 3;
+  border: 1px solid oklch(0.78 0.13 178 / 0.22);
+  border-radius: 999px;
+  opacity: 0.72;
+  pointer-events: none;
+  transform: rotate(-8deg);
+  animation: flex-core-orbit 1.8s var(--ease-out-quint) infinite;
+}
+
+.flex-core-readout {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  z-index: 6;
+  display: grid;
+  gap: 2px;
+  min-width: 148px;
+  padding: 9px 11px;
+  border: 1px solid oklch(0.78 0.13 178 / 0.42);
+  border-radius: 10px;
+  color: oklch(0.9 0.065 205);
+  background:
+    linear-gradient(135deg, oklch(0.13 0.072 238 / 0.92), oklch(0.12 0.08 176 / 0.86)),
+    oklch(0.05 0.025 255 / 0.86);
+  box-shadow: 0 0 0 1px oklch(1 0 0 / 0.08), 0 0 24px oklch(0.74 0.13 176 / 0.3);
+  animation: storage-readout-pop 520ms var(--ease-out-quint);
+}
+
+.france-3d-map.storage-online .flex-core-readout {
+  bottom: 78px;
+}
+
+.flex-core-readout span {
+  color: oklch(0.82 0.13 176);
+  font-size: 0.7rem;
+  font-weight: 860;
+}
+
+.flex-core-readout strong {
+  color: white;
+  font-size: 0.92rem;
 }
 
 .hero-stage .hologram-readout,
@@ -3571,6 +3625,23 @@ a {
   100% {
     transform: translateY(0) scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes flex-core-orbit {
+  0% {
+    opacity: 0.35;
+    transform: rotate(-8deg) scale(0.96);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: rotate(7deg) scale(1.02);
+  }
+
+  100% {
+    opacity: 0.35;
+    transform: rotate(-8deg) scale(0.96);
   }
 }
 
