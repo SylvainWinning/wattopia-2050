@@ -304,7 +304,13 @@ function FranceGridMap({
   state: MissionState;
   compact?: boolean;
 }) {
-  const shouldReduceMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotion();
+  const [motionPreferenceReady, setMotionPreferenceReady] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMotionPreferenceReady(true), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+  const shouldReduceMotion = motionPreferenceReady && prefersReducedMotion;
   const tone = classifyRisk(state.metrics);
   const cityById = new Map(gridCities.map((city) => [city.id, city]));
   const activeCity = state.activeScene?.cityId;
