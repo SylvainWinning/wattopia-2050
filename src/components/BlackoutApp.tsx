@@ -1279,14 +1279,13 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     const easterNode = document.getElementById("transition-easter-egg");
     appNode?.classList.add("easter-transition");
     easterNode?.classList.add("visible");
-    showToast("Rayon flexible activé");
     playSound("easter", 0.42);
     if (easterTimerRef.current) window.clearTimeout(easterTimerRef.current);
     easterTimerRef.current = window.setTimeout(() => {
       appNode?.classList.remove("easter-transition");
       easterNode?.classList.remove("visible");
-    }, 4200);
-  }, [playSound, showToast]);
+    }, 6800);
+  }, [playSound]);
 
   const loadSnapshot = useCallback(async () => {
     setLoading(true);
@@ -1604,12 +1603,20 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
       )}
 
       <div id="transition-easter-egg" className="transition-easter-egg" aria-hidden="true">
-        <span>
+        <div className="easter-badge">
           <Sparkles size={16} />
-          Rayon flexible débloqué
-        </span>
-        <strong>Le réseau fait son clin d&apos;œil.</strong>
-        <em>Blue bolt, vert transition, marge +3 MW imaginaire.</em>
+          Clin d&apos;œil sponsor déverrouillé
+        </div>
+        <strong>Le réseau passe au bleu-vert.</strong>
+        <p>Flexibilité +3 MW. Sourire opérateur +100. Blackout un peu moins dramatique.</p>
+        <div className="easter-letter-row" aria-hidden="true">
+          {["E", "N", "G", "I", "E"].map((letter, index) => (
+            <span key={`${letter}-${index}`}>{letter}</span>
+          ))}
+        </div>
+        <em>Promis, ce n&apos;est pas officiel. Juste un petit sourire de transition.</em>
+        <div className="easter-smile" />
+        <div className="easter-bolt" />
         <i />
         <i />
         <i />
