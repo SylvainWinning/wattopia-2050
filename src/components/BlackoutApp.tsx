@@ -1229,7 +1229,7 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     const easterNode = document.getElementById("transition-easter-egg");
     appNode?.classList.add("easter-transition");
     easterNode?.classList.add("visible");
-    showToast("Mode transition activé");
+    showToast("Rayon flexible activé");
     if (easterTimerRef.current) window.clearTimeout(easterTimerRef.current);
     easterTimerRef.current = window.setTimeout(() => {
       appNode?.classList.remove("easter-transition");
@@ -1502,10 +1502,13 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
       <div id="transition-easter-egg" className="transition-easter-egg" aria-hidden="true">
         <span>
           <Sparkles size={16} />
-          Signal réseau
+          Rayon flexible débloqué
         </span>
-        <strong>Mix flexible engagé</strong>
-        <em>bleu + vert, réseau en équilibre</em>
+        <strong>Le réseau fait son clin d&apos;œil.</strong>
+        <em>Blue bolt, vert transition, marge +3 MW imaginaire.</em>
+        <i />
+        <i />
+        <i />
       </div>
 
       <div id="copy-toast" className="copy-toast" aria-live="polite">
