@@ -467,22 +467,22 @@ export const missionModes: Record<MissionModeId, MissionMode> = {
     scenes: [
       scene(
         "19:08",
-        "Le Nord décroche",
-        "La fréquence baisse sur l'axe Lille-Paris. Si Paris absorbe tout, le nord passe en coupure tournante.",
-        "lille",
+        "Marseille sous tension",
+        "La fréquence baisse sur l'axe Lyon-Marseille. Si la liaison Rhône absorbe tout, le sud-est passe en coupure tournante.",
+        "marseille",
         "Dispatch national: il faut gagner 900 MW en moins de 7 minutes.",
         {
           title: "Pic de froid à 19h30",
-          text: "La demande augmente brutalement dans le nord et l'est.",
+          text: "La demande augmente brutalement autour des grandes métropoles du sud-est.",
           effect: { stability: -7, blackoutRisk: 9, lightsOn: -6 },
         },
         [
           {
             id: "batteries",
-            title: "Décharger les batteries du nord",
-            description: "Injecter très vite une réserve courte sur Lille et Paris.",
+            title: "Décharger les batteries du sud",
+            description: "Injecter très vite une réserve courte sur Marseille et Lyon.",
             tactical: "Puissant sur la fréquence, limité dans le temps.",
-            protect: ["lille", "paris"],
+            protect: ["marseille", "lyon"],
             effect: { stability: 21, co2Score: 5, budget: -13, citizenTrust: 2, blackoutRisk: -19, lightsOn: 12 },
           },
           {
@@ -490,7 +490,7 @@ export const missionModes: Record<MissionModeId, MissionMode> = {
             title: "Allumer le gaz de secours",
             description: "Apporter de la puissance pilotable avant que la cascade démarre.",
             tactical: "Sauve vite, mais abîme le carbone.",
-            protect: ["lille", "paris", "lyon"],
+            protect: ["marseille", "lyon", "paris"],
             effect: { stability: 26, co2Score: -26, budget: -15, citizenTrust: -5, blackoutRisk: -23, lightsOn: 14 },
           },
           {
@@ -498,7 +498,7 @@ export const missionModes: Record<MissionModeId, MissionMode> = {
             title: "Alerte sobriété nationale",
             description: "Demander une baisse immédiate des usages non essentiels.",
             tactical: "Moins cher, plus incertain.",
-            protect: ["lille"],
+            protect: ["marseille"],
             effect: { stability: 12, co2Score: 10, budget: 8, citizenTrust: -4, blackoutRisk: -11, lightsOn: 7 },
           },
         ],
