@@ -932,12 +932,14 @@ a {
 .map-readout span,
 .map-readout strong,
 .risk-console span,
+.rank-console span,
 .risk-console strong {
   display: block;
 }
 
 .map-readout span,
-.risk-console span {
+.risk-console span,
+.rank-console span {
   color: oklch(0.86 0.06 236);
   font-size: 0.84rem;
   font-weight: 660;
