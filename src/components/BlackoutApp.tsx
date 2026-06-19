@@ -480,7 +480,6 @@ function Hero({
   loading,
   enable3D,
   onStart,
-  onDemo,
   onRefresh,
 }: {
   state: MissionState;
@@ -488,7 +487,6 @@ function Hero({
   loading: boolean;
   enable3D: boolean;
   onStart: () => void;
-  onDemo: () => void;
   onRefresh: () => void;
 }) {
   const badge = sourceStatus(snapshot, loading);
@@ -529,9 +527,6 @@ function Hero({
           <button type="button" className="primary-action control-action" onClick={onStart}>
             <Zap size={18} />
             Prendre le contrôle
-          </button>
-          <button type="button" className="secondary-action button-reset" onClick={onDemo}>
-            Démo jury 90s
           </button>
         </div>
         <p className="data-note">{buildMissionFromSnapshot(snapshot)}</p>
@@ -1317,16 +1312,6 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
     scrollToGame(true);
   };
 
-  const startJuryDemo = () => {
-    inputLockRef.current = false;
-    setInputLocked(false);
-    setModeId("france");
-    setSelectedActions([]);
-    setPhase("mission");
-    window.history.replaceState(null, "", `${window.location.pathname}?demo=1`);
-    scrollToGame(true);
-  };
-
   const selectMode = (nextModeId: MissionModeId) => {
     inputLockRef.current = false;
     setInputLocked(false);
@@ -1466,7 +1451,6 @@ export default function BlackoutApp({ initialSnapshot }: { initialSnapshot: Live
         enable3D={phase === "intro"}
         onRefresh={loadSnapshot}
         onStart={startMission}
-        onDemo={startJuryDemo}
       />
 
       <MissionSelector modeId={modeId} onSelect={selectMode} />
