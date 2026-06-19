@@ -436,13 +436,6 @@ function FranceGridMap({
           );
         })}
       </svg>
-      {!compact && (
-        <div className="sector-strip" aria-hidden="true">
-          <span>NORD</span>
-          <span>OUEST</span>
-          <span>SUD-EST</span>
-        </div>
-      )}
       <div className="map-readout">
         <span>{state.metrics.lightsOn}% des zones restent allumées</span>
         <strong>{state.metrics.blackoutRisk}% risque blackout</strong>

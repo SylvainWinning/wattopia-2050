@@ -913,20 +913,6 @@ a {
   animation: city-reconnect 1.9s ease-in-out infinite;
 }
 
-.sector-strip {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 50%;
-  z-index: 2;
-  display: flex;
-  justify-content: space-between;
-  color: oklch(0.77 0.035 250 / 0.32);
-  font-size: 0.68rem;
-  font-weight: 850;
-  pointer-events: none;
-}
-
 .map-readout,
 .risk-console,
 .rank-console {
